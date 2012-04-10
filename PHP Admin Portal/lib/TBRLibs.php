@@ -1,5 +1,28 @@
 <?php
-$debug = false;
+
+/*
+		$assocItem = array();
+		$assocItem['callid'] = $item[];
+		$assocItem['customerid'] = $item[];
+		$assocItem['calltype'] = $item[];
+		$assocItem['calldatetime'] = $item[];
+		$assocItem['duration'] = $item[];
+		
+		$assocItem['direction'] = $item[];
+		$assocItem['sourceip'] = $item[];
+		$assocItem['originatingnumber'] = $item[];
+		$assocItem['destinationnumber'] = $item[];
+		$assocItem['lrn'] = $item[];
+		
+		$assocItem['cnamdipped'] = $item[];
+		$assocItem['ratecenter'] = $item[];
+		$assocItem['carrierid'] = $item[];
+		$assocItem['wholesalerate'] = $item[];
+		$assocItem['wholesaleprice'] = $item[];
+		
+	   */
+	   
+$debug = true;
 function print_debug($debugString){
 	global $debug;
 	if($debug){
@@ -73,11 +96,30 @@ function InsertDataIntoCallRecordMaster($keyedData, $connectstring){
 	$insertedItemCount = 0;
 	$lineCount = 2;
 	
+	
+	foreach($keyedData as $row){
+		$result = InsertRowIntoCallRecordMaster($row, $connectstring, $table);
+		if($result = 0){
+			$insertedItemCount++;
+		}
+		else{
+			$duplicateRows[] = $lineCount;
+		}
+		$lineCount++;
+	}
+	
+	$ret = array();
+	$ret['DuplicateRows'] = $duplicateRows;
+	$ret['InsertedItemCount'] = $insertedItemCount;
+	return $ret;
+
+}
+function InsertRowIntoCallRecordMaster($row, $connectstring, $table){
+ 
 	#begin connecting to the database
 	$db = pg_connect($connectstring);
 	set_time_limit(0);
 	
-	foreach($keyedData as $row){
 		$checkStatement = "SELECT 1 FROM ".$table." 
 				WHERE callid = '". $row['callid']."';";
 		$checkResults = pg_query($checkStatement);
@@ -85,9 +127,7 @@ function InsertDataIntoCallRecordMaster($keyedData, $connectstring){
 		
 		if(count($checkArray[0]) > 0){
 			print_debug('Duplicate row found : ' .$row['callid']);
-			$duplicateRows[] = $lineCount;
-			$lineCount++;
-			continue;
+			return 1;
 		}
 		
 		#build an array that contains "$col = $value" strings to add to various queries later
@@ -103,22 +143,14 @@ function InsertDataIntoCallRecordMaster($keyedData, $connectstring){
 				SELECT	".implode($values,",")."
 				RETURNING 1 as callid;";
 		
-		$insertResults = pg_query($insertStatement);
+		$insertResults = pg_query($insertStatement) or die();
 		$callidArray = pg_fetch_all($insertResults);
 		
 		$callid =  $callidArray[0]['callid'];
 		
-		$lineCount++;
-		$insertedItemCount++;
-	}
-	
+		
 	pg_close($db);
-	
-	$ret = array();
-	$ret['DuplicateRows'] = $duplicateRows;
-	$ret['InsertedItemCount'] = $insertedItemCount;
-	return $ret;
-
+	return 0;
 }
 function PrintResults($results){
 	$duplicateRows = $results['DuplicateRows'];
@@ -140,7 +172,14 @@ HEREDOC;
 	$content .= $insertedItemCount . " items inserted.<br>";
 	return $content;
 }
-
+function PrintResults2($insertedItemCount, $duplicateCount, $voidedCount){
+	$results = <<< HEREDOC
+	{$insertedItemCount} items inserted.
+	{$voidedCount} calls with zero duration.
+	{$duplicateCount} duplicate records found. 
+HEREDOC;
+	return $results;
+}
 
 function ProcessTelastic($theData, $connectstring){
 	$delim = ',';
@@ -520,8 +559,6 @@ function ProcessVOIP($theData, $connectString){
 	$voidedCalls = 0;
 	
 	$rawKeyedData = TurnCSVIntoAssocArray($theData, $delim, '\n');
-	print_debug("Keys : ");
-	print_debug(implode(array_keys($rawKeyedData[0]), ","));
 	$keyedData = array();
 	foreach($rawKeyedData as $row){
 	/*CallType,StartTime,StopTime,CallDuration,BillDuration,CallMinimum,CallIncrement,BasePrice,CallPrice,
@@ -530,16 +567,25 @@ function ProcessVOIP($theData, $connectString){
 		switch ($row['CallType']){
 			case 'TERM_EXT_US_INTER':
 				$assocItem['calltype'] = 25;
+				break;
 			case '800OrigC':
 				$assocItem['calltype'] = 30;
+				break;
 			case '800OrigE':
 				$assocItem['calltype'] = 30;
+				break;
 			case 'Orig-Tiered':
 				$assocItem['calltype'] = 15;
+				break;
 			case 'TERM_INTERSTATE':
 				$assocItem['calltype'] = 10;
+				break;
 			case 'TERM_INTRASTATE':
 				$assocItem['calltype'] = 5;
+				break;
+		}
+		if(!array_key_exists('StartTime', $row)){
+			continue;
 		}
 		$assocItem['calldatetime'] = $row['StartTime'];
 		$assocItem['duration'] = intval($row['CallDuration']);
@@ -568,5 +614,57 @@ function ProcessVOIP($theData, $connectString){
 	$insertResults['VoidedCalls'] = $voidedCalls;
 	$finalResult = PrintResults($insertResults);
 	return $finalResult;
+}
+
+function ProcessAsterisk($filename, $connectString){
+	$table = 'callrecordmaster_tbr';
+
+	$duplicateRows = 0;
+	$insertedItemCount = 0;
+	$voidedCalls = 0;
+	$handle = fopen($filename, 'r');
+	if($handle == false){
+		#error
+		$error = 'Error';
+		return $error;
+	}
+	while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+    // NOTE: the fields in Master.csv can vary. This should work by default 
+	//on all installations but you may have to edit the next line to match your configuration
+    list($accountcode,$src, $dst, $dcontext, $clid, $channel, $dstchannel, $lastapp, $lastdata, $start, $answer, $end, $duration,
+     $billsec, $disposition, $amaflags, $uniqueID, $unknown ) = $data;
+		if($billsec == 0 or $billsec == '0'){
+			$voidedCalls++;
+			continue;
+		}
+		$assocItem = array();
+		$assocItem['customerid'] = $accountcode;
+		$assocItem['calldatetime'] = $start;
+		$assocItem['duration'] = $billsec;
+		$assocItem['originatingnumber'] = $src;
+		$assocItem['destinationnumber'] = $dst;
+		$assocItem['carrierid'] = $dstchannel;
+		
+		$assocItem['cnamdipped'] = 'f';
+		
+		$assocItem['callid'] = $assocItem['calldatetime'] 
+								. '_' . $assocItem['originatingnumber']
+								. '_' . $assocItem['destinationnumber']
+								. '_' . $assocItem['duration'];
+								
+		$result = InsertRowIntoCallRecordMaster($assocItem, $connectString, $table);
+		if($result == 0){
+			$insertedItemCount++;
+		}
+		else if($result ==2){
+			die();
+		}
+		else{
+			$duplicateRows++;
+		}
+	}
+	fclose($handle);
+	
+	return PrintResults2($insertedItemCount, $duplicateRows, $voidedCalls);
 }
 ?>

@@ -4,7 +4,7 @@
 	include 'config.php';
 
 	$query = 'SELECT * FROM callrecordmaster_tbr where calltype is null';
-	$viewQuery = 'SELECT callid, customerid, calltype, calldatetime, duration, direction, 
+	$viewQuery = 'SELECT callid, customerid, calldatetime, duration, direction, 
        sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
        ratecenter, carrierid
 	   FROM callrecordmaster_tbr

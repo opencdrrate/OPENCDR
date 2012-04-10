@@ -106,6 +106,40 @@ HEREDOC;
 	return $output;
 }
 
+function AssocArrayToTable($assocArray, $keys){
+	$table = <<< HEREDOC
+	<table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
+	<tr><thead>
+HEREDOC;
+	foreach($keys as $key){
+		$table .= <<< HEREDOC
+		<th>{$key}</th>
+HEREDOC;
+	}
+	foreach($assocArray as $row){
+		$table .= '<tr>';
+		foreach($row as $element){
+			$table .= '<td>';
+			$table .= $element;
+			$table .= '</td>';
+		}
+		$table .= '</tr>';
+	}
+	$numberOfColumns = count($keys);
+	$table .= <<< HEREDOC
+	</thead></tr>
+HEREDOC;
+	$table .= <<< HEREDOC
+	<tfoot>
+	    	<tr>
+		    <td colspan="{$numberOfColumns}"></td>
+	    	</tr>
+	    </tfoot>
+	</table>
+HEREDOC;
+	return $table;
+}
+
 function CreateDropDown($connectString, $name, $table){
 $query = 'select '.$name.' from '.$table.' order by '.$name.';';
 $db = pg_connect($connectString);

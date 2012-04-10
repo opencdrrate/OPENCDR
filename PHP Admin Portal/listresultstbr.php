@@ -30,8 +30,6 @@ $thinktelMap['"Call Date"'] = 'calldate';
 $thinktelMap['"Usage Type"'] = 'usagetype';
 $thinktelMap['"Call Duration (Seconds)"'] = 'rawduration';
 ?>
-
-
 <?php
 include 'lib/TBRLibs.php';
 include 'config.php';
@@ -40,8 +38,8 @@ $content = '';
 if(isset($_POST['loadImport'])){
 	
 	$myFile = $_FILES['uploadedFile']['tmp_name'];
-	$type = $_POST['type'];
 	
+	$type = $_POST['type'];
 	if($myFile == ""){
 		if($_FILES['uploadedFile']['error'] == 1){
 			$content .= "<font color=\"red\">Error importing file</font><br>";
@@ -51,15 +49,20 @@ if(isset($_POST['loadImport'])){
 		}
 		
 	}
+	else if($type == 'asterisk'){
+		$content .= ProcessAsterisk($myFile, $connectstring);
+	}
 	else{
 		$fh = fopen($myFile, 'r');
 		$theData = fread($fh, filesize($myFile));
 		fclose($fh);
+		
 		echo "Please wait <br>";
 		echo '<blink>Working</blink>';
 		
 		echo '<form name="myForm" enctype="multipart/form-data" action="listresultstbr.php" method="POST">';
 		echo '<input type="hidden" name="type" value="'.$type.'"/>';
+		#echo '<input type="hidden" name="file" value="'.$myFile.'">';
 		if($type == 'telastic'){
 			echo '<input type="hidden" name="importTelastic" value="1"/>';
 		}
@@ -98,7 +101,9 @@ if(isset($_POST['loadImport'])){
 		echo '	document.myForm.submit();';
 		echo '</script>';
 		echo '<!--';
+		
 	}
+	
 }
 else if(isset($_POST['import'])){
 	include 'config.php';
@@ -267,27 +272,6 @@ HEREDOC;
 	pg_close($db);
 	
 }
-		/*
-		$assocItem = array();
-		$assocItem['callid'] = $item[];
-		$assocItem['customerid'] = $item[];
-		$assocItem['calltype'] = $item[];
-		$assocItem['calldatetime'] = $item[];
-		$assocItem['duration'] = $item[];
-		
-		$assocItem['direction'] = $item[];
-		$assocItem['sourceip'] = $item[];
-		$assocItem['originatingnumber'] = $item[];
-		$assocItem['destinationnumber'] = $item[];
-		$assocItem['lrn'] = $item[];
-		
-		$assocItem['cnamdipped'] = $item[];
-		$assocItem['ratecenter'] = $item[];
-		$assocItem['carrierid'] = $item[];
-		$assocItem['wholesalerate'] = $item[];
-		$assocItem['wholesaleprice'] = $item[];
-		
-	   */
 else if(isset($_POST['importTelastic'])){
 	$theData = $_POST['data'];
 	$content .= ProcessTelastic($theData, $connectstring);
@@ -339,25 +323,102 @@ else if(isset($_POST['dirtsimple'])){
 <?php
 	include 'config.php';
 	include 'lib/SQLQueryFuncs.php';
-
-	$query = 'SELECT * FROM "callrecordmaster_tbr" where calltype is not null';
+	$db = pg_connect($connectstring);
+	$queryNumberofRows = 'SELECT count(*) FROM callrecordmaster_tbr;';
+	$numOfRowsResult = pg_query($queryNumberofRows) or die(print pg_last_error());
+	$numberOfRowsArray = pg_fetch_row($numOfRowsResult);
+	$numberOfRows = $numberOfRowsArray[0];
+	
+	$offset = 0;
+	if(isset($_POST["offset"])){
+		$offset = $_POST["offset"];
+	}
+	
+	$limit = 1000;
+	$endoffset = min($offset + $limit, $numberOfRows);
+	$prevoffset = max($offset - $limit, 0);
+		
+	$query = 'SELECT callid, customerid, calltype, calldatetime, duration, direction, 
+       sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
+       ratecenter, carrierid, wholesalerate, wholesaleprice
+		FROM callrecordmaster_tbr';
+	
+	$limitedQuery = $query
+		. " LIMIT "
+		. $limit
+		. " OFFSET "
+		. $offset	
+		. ";";
 
 	$titlespiped = "CallID,CustomerID,CallType,CallDateTime,Duration,Direction,SourceIP,OriginationNumber,DestinationNumber,LRN,CNAMDipped,RateCenter,CarrierID";
 	$titles = preg_split("/,/",$titlespiped,-1);
-	$queryResult = SQLSelectQuery($connectstring, $query, ",", "\n");
-	$htmltable = QueryResultToTable($queryResult, ",",$titles); 
+	
+	$queryResults = pg_query($db, $limitedQuery);
+	$allArrayResults = array();
+	
+	while($row = pg_fetch_assoc($queryResults)){
+		$callType = $row['calltype'];
+
+		if($callType == '5'){
+			$row['calltype'] = 'Intrastate';
+		}
+		else if($callType == '10'){
+			$row['calltype'] = 'Interstate';
+		}
+		else if($callType == '15'){
+			$row['calltype'] = 'Tiered Origination';
+		}
+		else if($callType == '20'){
+			$row['calltype'] = 'Termination of Indeterminate Jurisdiction';
+		}
+		else if($callType == '25'){
+			$row['calltype'] = 'International';
+		}
+		else if($callType == '30'){
+			$row['calltype'] = 'Toll-free Origination';
+		}
+		else if($callType == '35'){
+			$row['calltype'] = 'Simple Termination';
+		}
+		else{
+			$row['calltype'] = 'Unknown';
+		}
+		$allArrayResults[] = $row;
+	}
+	$htmltable = AssocArrayToTable($allArrayResults,$titles); 
 ?> 
 
-		<?php echo GetPageHead("List Results TBR", "main.php");?>
+<?php
+
+$javaScripts = <<< HEREDOC
+<script type="text/javascript">
+function confirmRateCalls(){
+	var agree=confirm("This will rate 1 day worth of CDR for each call type. This may take several minutes to run.");
+	if (agree){
+		window.location = "ratecalls.php";
+
+	}
+	else{
+	}
+}
+</script>
+HEREDOC;
+ ?>
+ 
+		<?php echo GetPageHead("List Results TBR", "main.php", $javaScripts);?>
 		
 		<div id="body">
 			<?php echo $content;?>
+			<br>
+			<form action="javascript:confirmRateCalls()" method="post">
+				<input type="submit" class="btn blue add-customer" value="Rate Calls">
+			</form>
 			<form name="export" action="exportpipe.php" method="post">
 				<input type="submit" class="btn orange export" value="Export Table">
 				<input type="hidden" name="queryString" value="<?php echo htmlspecialchars($query);?>">
 				<input type="hidden" name="filename" value="TBRExport.csv">
 			</form>
-			
+			<br>
 			<form enctype="multipart/form-data" action="listresultstbr.php" method="post">
 				<input type="hidden" name="loadImport" value="1"/>
 				<select name="type">
@@ -373,10 +434,34 @@ else if(isset($_POST['dirtsimple'])){
 					<option value="slinger">Slinger</option>
 					<option value="cisco">Cisco Call Manager 7.1</option>
 					<option value="voip">VOIP Innovations</option>
+					<option value="asterisk">Asterisk</option>
 				</select>
 				<input name="uploadedFile" type="File" />
 				<input type="submit" value="Import File"/>
 			</form>
+			<br>
+			<?php
+			$limitOptions = <<< HEREDOC
+		Showing rows : {$offset} to {$endoffset} <br>
+		Total number of rows : {$numberOfRows}
+		<br>
+HEREDOC;
+		if($offset > 0){
+			$limitOptions .= '
+			<form action="listresultstbr.php" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
+			<input type="hidden" name="offset" value="'.$prevoffset.'">
+			<input type="submit" value="View prev '.$limit.' results"/>
+			</form>';
+		}
+		if($endoffset < $numberOfRows){
+		$limitOptions .= '
+		<form action="listresultstbr.php" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
+		<input type="hidden" name="offset" value="'.$endoffset.'">
+		<input type="submit" value="View next '.$limit.' results"/>
+		</form>';
+		}
+		echo $limitOptions;
+			?>
 			<?php echo $htmltable; ?>
 	
 		</div>

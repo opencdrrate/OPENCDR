@@ -48,7 +48,32 @@ HEREDOC;
 	$result = pg_query_params($db,'SELECT * FROM "callrecordmaster" where cast(calldatetime as date) between $1 and $2', array($start, $end));
 
 	while($myrow = pg_fetch_assoc($result)) {
- 
+ $callType = $myrow['calltype'];
+
+		if($callType == '5'){
+			$myrow['calltype'] = 'Intrastate';
+		}
+		else if($callType == '10'){
+			$myrow['calltype'] = 'Interstate';
+		}
+		else if($callType == '15'){
+			$myrow['calltype'] = 'Tiered Origination';
+		}
+		else if($callType == '20'){
+			$myrow['calltype'] = 'Termination of Indeterminate Jurisdiction';
+		}
+		else if($callType == '25'){
+			$myrow['calltype'] = 'International';
+		}
+		else if($callType == '30'){
+			$myrow['calltype'] = 'Toll-free Origination';
+		}
+		else if($callType == '35'){
+			$myrow['calltype'] = 'Simple Termination';
+		}
+		else{
+			$myrow['calltype'] = 'Unknown';
+		}
 $htmltable .= <<<HEREDOC
 <tr>
 <td>{$myrow['callid']}</td>

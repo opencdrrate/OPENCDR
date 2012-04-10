@@ -15,8 +15,8 @@
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE "InternationalRateMaster";
-CREATE TABLE "InternationalRateMaster"(
+DROP TABLE internationalratemaster;
+CREATE TABLE internationalratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(10) NOT NULL,
 		EffectiveDate timestamp NOT NULL,

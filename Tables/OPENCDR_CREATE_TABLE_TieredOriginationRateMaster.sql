@@ -15,8 +15,8 @@
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE "TieredOriginationRateMaster";
-CREATE TABLE "TieredOriginationRateMaster"(
+DROP TABLE tieredoriginationratemaster;
+CREATE TABLE tieredoriginationratemaster(
         CustomerID varchar(15) NOT NULL,
 		Tier smallint NOT NULL,
         EffectiveDate date NOT NULL,

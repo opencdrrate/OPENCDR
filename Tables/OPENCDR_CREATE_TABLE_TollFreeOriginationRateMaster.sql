@@ -15,8 +15,8 @@
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE "TollFreeOriginationRateMaster";
-CREATE TABLE "TollFreeOriginationRateMaster"(
+DROP TABLE tollfreeoriginationratemaster;
+CREATE TABLE tollfreeoriginationratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(10) NOT NULL,
 		EffectiveDate timestamp NOT NULL,

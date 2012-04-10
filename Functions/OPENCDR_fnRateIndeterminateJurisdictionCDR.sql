@@ -32,7 +32,7 @@ BEGIN
 RAISE NOTICE 'Function started at %', StartDateTime;
 
 -- get date of the oldest unrated (TBR) CDR for inter call type = 20
-SELECT INTO CDRDate MIN(CallDateTime) FROM "CallRecordMaster_TBR"
+SELECT INTO CDRDate MIN(CallDateTime) FROM "callrecordmaster_tbr"
 WHERE CallType = 20;
 IF CDRDATE IS NULL THEN 
 RAISE NOTICE 'No calls to rate.';
@@ -69,7 +69,7 @@ RAISE NOTICE 'Gathering new records to rate.'; gentime = TIMEOFDAY();
 
 INSERT INTO cdrindjur (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, Destinationnumber, LRN, LRNDipFee, BilledNumber, NPANXXX, RetailRate, RetailPrice, CNAMDipped, CNAMFee, wholesalerate, wholesaleprice)
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, 0, null, null, null, null, CNAMdipped, 0, wholesalerate, wholesaleprice
-FROM "CallRecordMaster_TBR" 
+FROM "callrecordmaster_tbr" 
 WHERE cast(CallDateTime as date) = CDRDate AND CallType = 20
 LIMIT PROCESSING_LIMIT;
 GET DIAGNOSTICS rec_count = ROW_COUNT;
@@ -126,34 +126,34 @@ CREATE INDEX LRN_CustomerID ON cdrindjur(LRN,CustomerID);
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
--- retrieve CNAMRate from CustomerMaster 
+-- retrieve CNAMRate from customermaster 
 RAISE NOTICE 'Retrieving CNAMRate.'; gentime = TIMEOFDAY();
-UPDATE cdrindjur SET CNAMFee = CNAMDipRate FROM "CustomerMaster" WHERE cdrindjur.CNAMDipped = true AND cdrindjur.CustomerID = "CustomerMaster".CustomerID;
+UPDATE cdrindjur SET CNAMFee = CNAMDipRate FROM "customermaster" WHERE cdrindjur.CNAMDipped = true AND cdrindjur.CustomerID = "customermaster".CustomerID;
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
--- retrieve LRNDipFee from CustomerMaster
+-- retrieve LRNDipFee from customermaster
 RAISE NOTICE 'Retrieving LRNDIPFee.'; gentime = TIMEOFDAY();
-UPDATE cdrindjur SET LRNDipFee = LRNDipRate FROM "CustomerMaster" 
+UPDATE cdrindjur SET LRNDipFee = LRNDipRate FROM "customermaster" 
 WHERE trim(both ' ' from LRN) <> '' AND 
 LRN is not null AND 
-cdrindjur.CustomerID = "CustomerMaster".CustomerID;
+cdrindjur.CustomerID = "customermaster".CustomerID;
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 RAISE NOTICE 'Regenerating effective sheet'; gentime = TIMEOFDAY();
 -- Regenerate intra effective sheet if any customers in this batch have 5 as their IndeterminateJurisdictionCallType
-IF EXISTS(SELECT * from cdrindjur where CustomerID in (SELECT CustomerID FROM "CustomerMaster" WHERE IndeterminateJurisdictionCallType = 5)) THEN
+IF EXISTS(SELECT * from cdrindjur where CustomerID in (SELECT CustomerID FROM "customermaster" WHERE IndeterminateJurisdictionCallType = 5)) THEN
 
 	IF CDRDate <> (SELECT SettingValue FROM "SystemSettings_Date"
 WHERE SettingName = 'INTRA_EFFECTIVE_RATE_DATE') OR (select count(*) FROM "SystemSettings_Date" WHERE SettingName = 'INTRA_EFFECTIVE_RATE_DATE') = 0
 THEN
-		TRUNCATE TABLE "EffectiveIntrastateRateMaster";
+		TRUNCATE TABLE "effectiveintrastateratemaster";
 
 		gentime = TIMEOFDAY();
 		RAISE NOTICE 'Generating new intra effective rates. This may take several minutes. Process Started At %', gentime;
 
-		INSERT INTO "EffectiveIntrastateRateMaster" 
+		INSERT INTO "effectiveintrastateratemaster" 
 		SELECT ratesheet.CustomerID, ratesheet.NPANXXX, RetailRate FROM "IntrastateRateMaster" AS ratesheet
 		INNER JOIN (SELECT CustomerID, NPANXXX, MAX(effectivedate) AS effectivedate FROM "IntrastateRateMaster" WHERE effectivedate <= CDRDate GROUP BY CustomerID, NPANXXX) AS inaffect
 		ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.NPANXXX = inaffect.NPANXXX AND ratesheet.effectivedate = inaffect.EffectiveDate;
@@ -168,17 +168,17 @@ THEN
 end if;
 
 -- Regenerate inter effective sheet if any customers have 10 as their IndeterminateJurisdictionCallType
-IF EXISTS(SELECT * from cdrindjur where CustomerID in (SELECT CustomerID FROM "CustomerMaster" WHERE IndeterminateJurisdictionCallType =10)) THEN
+IF EXISTS(SELECT * from cdrindjur where CustomerID in (SELECT CustomerID FROM "customermaster" WHERE IndeterminateJurisdictionCallType =10)) THEN
 
 	IF CDRDate <> (SELECT SettingValue FROM "SystemSettings_Date"
 	WHERE SettingName = 'INTER_EFFECTIVE_RATE_DATE') OR (select count(*) FROM "SystemSettings_Date" WHERE SettingName = 'INTER_EFFECTIVE_RATE_DATE') = 0
 	THEN
-			TRUNCATE TABLE "EffectiveInterstateRateMaster";
+			TRUNCATE TABLE "effectiveinterstateratemaster";
 
 			gentime = TIMEOFDAY();
 			RAISE NOTICE 'Generating new inter effective rates. This may take several minutes. Process Started At %', gentime;
 
-			INSERT INTO "EffectiveInterstateRateMaster" 
+			INSERT INTO "effectiveinterstateratemaster" 
 			SELECT ratesheet.CustomerID, ratesheet.NPANXXX, RetailRate FROM "InterstateRateMaster" AS ratesheet
 			INNER JOIN (SELECT CustomerID, NPANXXX, MAX(effectivedate) AS effectivedate FROM "InterstateRateMaster" WHERE effectivedate <= CDRDate GROUP BY CustomerID, NPANXXX) AS inaffect
 			ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.NPANXXX = inaffect.NPANXXX AND ratesheet.effectivedate = inaffect.EffectiveDate;
@@ -196,27 +196,27 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 		-- get retail rates
 		-- INTRA
 		RAISE NOTICE 'Getting intra retail rates.'; gentime = TIMEOFDAY();
-		UPDATE cdrindjur SET retailrate = "EffectiveIntrastateRateMaster".retailrate 
-		FROM "EffectiveIntrastateRateMaster"
-		WHERE cdrindjur.customerid = "EffectiveIntrastateRateMaster".customerid AND cdrindjur.NPANXXX = "EffectiveIntrastateRateMaster".npanxxx AND cdrindjur.CustomerID in 	(select CustomerID from "CustomerMaster" WHERE IndeterminateJurisdictionCallType = 5);
+		UPDATE cdrindjur SET retailrate = "effectiveintrastateratemaster".retailrate 
+		FROM "effectiveintrastateratemaster"
+		WHERE cdrindjur.customerid = "effectiveintrastateratemaster".customerid AND cdrindjur.NPANXXX = "effectiveintrastateratemaster".npanxxx AND cdrindjur.CustomerID in 	(select CustomerID from "customermaster" WHERE IndeterminateJurisdictionCallType = 5);
 		EndDateTime = TIMEOFDAY();
 		RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);	
 
 		-- INTER
 				RAISE NOTICE 'Getting inter retail rates.'; gentime = TIMEOFDAY();
-		UPDATE cdrindjur SET retailrate = "EffectiveInterstateRateMaster".retailrate 
-		FROM "EffectiveInterstateRateMaster"
-		WHERE cdrindjur.customerid = "EffectiveInterstateRateMaster".customerid AND cdrindjur.NPANXXX = "EffectiveInterstateRateMaster".npanxxx AND cdrindjur.CustomerID in 	(select CustomerID from "CustomerMaster" WHERE IndeterminateJurisdictionCallType =10);
+		UPDATE cdrindjur SET retailrate = "effectiveinterstateratemaster".retailrate 
+		FROM "effectiveinterstateratemaster"
+		WHERE cdrindjur.customerid = "effectiveinterstateratemaster".customerid AND cdrindjur.NPANXXX = "effectiveinterstateratemaster".npanxxx AND cdrindjur.CustomerID in 	(select CustomerID from "customermaster" WHERE IndeterminateJurisdictionCallType =10);
 		EndDateTime = TIMEOFDAY();
 		RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 		-- move all records to HELD that we could not find the rate for
 		RAISE NOTICE 'Moving unrated records to HELD table.'; gentime = TIMEOFDAY();
-		INSERT INTO "CallRecordMaster_HELD" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, ErrorMessage) 
+		INSERT INTO "callrecordmaster_held" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, ErrorMessage) 
 		SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, 'No Rate for NPANXXX'
-		FROM cdrindjur where cdrindjur.RetailRate is null AND cdrindjur.CallID not in (SELECT CallID FROM "CallRecordMaster_HELD");
+		FROM cdrindjur where cdrindjur.RetailRate is null AND cdrindjur.CallID not in (SELECT CallID FROM "callrecordmaster_held");
 
-		DELETE FROM "CallRecordMaster_TBR" WHERE "CallRecordMaster_TBR".CallID in (SELECT CallID FROM cdrindjur WHERE RetailRate is null);
+		DELETE FROM "callrecordmaster_tbr" WHERE "callrecordmaster_tbr".CallID in (SELECT CallID FROM cdrindjur WHERE RetailRate is null);
 
 		DELETE FROM cdrindjur WHERE RetailRate is null;
 		EndDateTime = TIMEOFDAY();
@@ -244,14 +244,14 @@ UPDATE cdrindjur SET RetailPrice = RetailPrice + LRNDipFee;
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
--- move rated records to the CallRecordMaster
+-- move rated records to the callrecordmaster
 RAISE NOTICE 'Moving rated records to the master table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster" (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice) 
+INSERT INTO "callrecordmaster" (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, current_timestamp, RetailRate, CNAMdipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice
 FROM cdrindjur; 
--- WHERE CallID not in (SELECT CallID FROM "CallRecordMaster"); This can go in as a failsafe, but will slow things down
+-- WHERE CallID not in (SELECT CallID FROM "callrecordmaster"); This can go in as a failsafe, but will slow things down
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT CallID FROM cdrindjur);
+DELETE FROM "callrecordmaster_tbr" WHERE CallID in (SELECT CallID FROM cdrindjur);
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 

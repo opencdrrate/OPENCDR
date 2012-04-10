@@ -3,6 +3,14 @@
 include 'lib/Page.php';
 include 'config.php'; 
 
+if(isset($_GET['move'])){
+	$db = pg_connect($connectstring);
+	
+	$moveString = 'SELECT "fnMoveHELDCDRToTBR"();';
+	pg_query($db, $moveString);
+	
+	pg_close($db);
+}
 $htmltable = <<<HEREDOC
 <table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
 <tr><thead>
@@ -37,7 +45,32 @@ HEREDOC;
 	$csv_hdr .= "\n";
 
 	        while($myrow = pg_fetch_assoc($result)) { 
+$callType = $myrow['calltype'];
 
+		if($callType == '5'){
+			$myrow['calltype'] = 'Intrastate';
+		}
+		else if($callType == '10'){
+			$myrow['calltype'] = 'Interstate';
+		}
+		else if($callType == '15'){
+			$myrow['calltype'] = 'Tiered Origination';
+		}
+		else if($callType == '20'){
+			$myrow['calltype'] = 'Termination of Indeterminate Jurisdiction';
+		}
+		else if($callType == '25'){
+			$myrow['calltype'] = 'International';
+		}
+		else if($callType == '30'){
+			$myrow['calltype'] = 'Toll-free Origination';
+		}
+		else if($callType == '35'){
+			$myrow['calltype'] = 'Simple Termination';
+		}
+		else{
+			$myrow['calltype'] = 'Unknown';
+		}
            $htmltable .= <<<HEREDOC
 <tr><td>{$myrow['callid']}</td><td>{$myrow['customerid']}</td><td>{$myrow['calltype']}</td><td>{$myrow['calldatetime']}</td><td>{$myrow['duration']}</td><td>{$myrow['direction']}</td><td>{$myrow['sourceip']}</td><td>{$myrow['originatingnumber']}</td><td>{$myrow['destinationnumber']}</td><td>{$myrow['lrn']}</td><td>{$myrow['cnamdipped']}</td><td>{$myrow['ratecenter']}</td><td>{$myrow['carrierid']}</td><td>{$myrow['errormessage']}</td></tr>\n
 HEREDOC;
@@ -61,6 +94,9 @@ HEREDOC;
     	<input type="hidden" value="<? echo $csv_hdr; ?>" name="csv_hdr">
     	<input type="hidden" value="<? echo $csv_output; ?>" name="csv_output">
 	<input type="hidden" value="HELDExport" name="filename">
+	</form>
+	<form action="listresultsheld.php?move=1" method="post">
+   	<input type="submit" class="btn blue add-customer" value="Move to Rating Queue"/>
 	</form>
 	<?php echo $htmltable; ?>
 </div>

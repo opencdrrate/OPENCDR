@@ -5,6 +5,8 @@ echo GetPageHead("Reports", "main.php");
 ?>
 
 <div id="body">
+<p><font color="red">Calls must be successfully rated before they can be reported on.</font></p>
+<br/>
 
 <a href="rep_callsbycustomerandtype.php">Calls by Customer and Type</a></br>
 <a href="rep_callsbycustomerandtypepermonth.php">Calls by Customer and Type (per Month)</a></br>
