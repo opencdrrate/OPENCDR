@@ -50,7 +50,7 @@ HEREDOC;
 <td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$interstateconfpage}&load=1>Edit</a></td>
 <td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$intrastateconfpage}&load=1>Edit</a></td>
 <td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$tieredorigconfpage}&load=1>Edit</a></td>
-<td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$internationalconfpage}&load=1>Edit</a></td>
+<td align="center"><a href=internationalrates.php?customerid={$myrow['customerid']}>Edit</a></td>
 <td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$tollfreeconfpage}&load=1>Edit</a></td>
 <td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$simpletermconfpage}&load=1>Edit</a></td>
 </tr>

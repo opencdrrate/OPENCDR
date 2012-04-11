@@ -59,6 +59,7 @@ if(isset($_GET['logout'])){
 <tr><td>Password : </td><td><input type="password" name="pwd"/></td></tr>
 <tr><td><input type="submit" value="Login"/></td><td></td></tr>
 </table>
-</form>
+</form><br>
+<a href="forgotpassword.php">Forgot password?</a>
 </div>
 <?php echo GetPageFoot();?>

@@ -10,7 +10,7 @@
 	   FROM callrecordmaster_tbr
 	   where calltype is null';
 	   
-	$titlespiped = "CallID,CustomerID,CallType,CallDateTime,Duration,Direction,SourceIP,OriginationNumber,DestinationNumber,LRN,CNAMDip,RateCenter,CarrierID";
+	$titlespiped = "CallID,CustomerID,CallDateTime,Duration,Direction,SourceIP,OriginationNumber,DestinationNumber,LRN,CNAMDip,RateCenter,CarrierID";
 	
 	$titles = preg_split("/,/",$titlespiped,-1);
 	$queryResult = SQLSelectQuery($connectstring, $viewQuery, ",", "\n");
