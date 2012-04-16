@@ -209,6 +209,7 @@ class tc_calendar{
 
 	//calendar constructor
 	function tc_calendar($objname, $date_picker = false, $show_input = true){
+	date_default_timezone_set('America/New_York');
 		$this->objname = $objname;
 		//$this->year_display_from_current = 50;
 		$this->date_picker = $date_picker;

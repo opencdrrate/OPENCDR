@@ -324,7 +324,7 @@ else if(isset($_POST['dirtsimple'])){
 	include 'config.php';
 	include 'lib/SQLQueryFuncs.php';
 	$db = pg_connect($connectstring);
-	$queryNumberofRows = 'SELECT count(*) FROM callrecordmaster_tbr;';
+	$queryNumberofRows = 'SELECT count(*) FROM callrecordmaster_tbr WHERE calltype is not NULL;';
 	$numOfRowsResult = pg_query($queryNumberofRows) or die(print pg_last_error());
 	$numberOfRowsArray = pg_fetch_row($numOfRowsResult);
 	$numberOfRows = $numberOfRowsArray[0];
@@ -338,10 +338,12 @@ else if(isset($_POST['dirtsimple'])){
 	$endoffset = min($offset + $limit, $numberOfRows);
 	$prevoffset = max($offset - $limit, 0);
 		
-	$query = 'SELECT callid, customerid, calltype, calldatetime, duration, direction, 
+	$query = <<< HEREDOC
+	SELECT callid, customerid, calltype, calldatetime, duration, direction, 
        sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
        ratecenter, carrierid, wholesalerate, wholesaleprice
-		FROM callrecordmaster_tbr';
+		FROM callrecordmaster_tbr WHERE calltype is not NULL
+HEREDOC;
 	
 	$limitedQuery = $query
 		. " LIMIT "

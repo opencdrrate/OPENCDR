@@ -1,7 +1,7 @@
 <?php
 include 'config.php';
 include 'lib/Page.php'; 
-
+date_default_timezone_set('America/New_York');
 function CreateDropDown($connectString){
 
 $query = 'select distinct(billingcycle) from customermaster order by billingcycle;';

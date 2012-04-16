@@ -43,28 +43,28 @@ RAISE NOTICE 'CDR Date: %', CDRDate;
 RAISE NOTICE 'PROCESSING_LIMIT: %', PROCESSING_LIMIT;
 
 -- determine if we need to regenerate "effective" rate sheet
-IF CDRDate <> (SELECT SettingValue FROM systemsettings_date
-WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE') OR (select count(*) FROM systemsettings_date WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE') = 0
-THEN
-gentime = TIMEOFDAY();
-RAISE NOTICE 'Generating new effective rates. This may take several minutes. Process Started At %', gentime;
--- Generate Effective SIMPLETERM Rate Sheet
-TRUNCATE TABLE effectivesimpleterminationratemaster;
+--IF CDRDate <> (SELECT SettingValue FROM systemsettings_date
+--WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE') OR (select count(*) FROM systemsettings_date WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE') = 0
+--THEN
+	gentime = TIMEOFDAY();
+	RAISE NOTICE 'Generating new effective rates. This may take several minutes. Process Started At %', gentime;
+	-- Generate Effective SIMPLETERM Rate Sheet
+	TRUNCATE TABLE effectivesimpleterminationratemaster;
 
-INSERT INTO effectivesimpleterminationratemaster 
-SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM simpleterminationratemaster AS ratesheet
-INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM simpleterminationratemaster WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
-ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.BilledPrefix = inaffect.BilledPrefix AND ratesheet.effectivedate = inaffect. EffectiveDate;
-GET DIAGNOSTICS rec_count = ROW_COUNT;
+	INSERT INTO effectivesimpleterminationratemaster 
+	SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM simpleterminationratemaster AS ratesheet
+	INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM simpleterminationratemaster WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
+	ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.BilledPrefix = inaffect.BilledPrefix AND ratesheet.effectivedate = inaffect. EffectiveDate;
+	GET DIAGNOSTICS rec_count = ROW_COUNT;
 
-DELETE FROM systemsettings_date WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE';
-INSERT INTO systemsettings_date VALUES ('SIMPLETERM_EFFECTIVE_RATE_DATE', CDRDate);
+	DELETE FROM systemsettings_date WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE';
+	INSERT INTO systemsettings_date VALUES ('SIMPLETERM_EFFECTIVE_RATE_DATE', CDRDate);
 
-EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Generation of new rates completed at %', age(EndDateTime,gentime);
+	EndDateTime = TIMEOFDAY();
+	RAISE NOTICE 'Generation of new rates completed at %', age(EndDateTime,gentime);
 
-INSERT INTO processhistory VALUES('Generating Simple Termination Rate Sheet', gentime, EndDateTime,age(EndDateTime, gentime),rec_count);
-END IF;
+	INSERT INTO processhistory VALUES('Generating Simple Termination Rate Sheet', gentime, EndDateTime,age(EndDateTime, gentime),rec_count);
+--END IF;
 
 -- create temporary processing table 
 CREATE TEMPORARY TABLE cdrsimterm (
@@ -205,8 +205,8 @@ UPDATE cdrsimterm SET RetailPrice = RetailRate * BilledDuration / 60.00000;
 
 -- move rated records to the CallRecordMaster
 RAISE NOTICE 'Moving rated records to the master table.'; gentime = TIMEOFDAY();
-INSERT INTO callrecordmaster (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, CarrierID, RateCenter, wholesalerate, wholesaleprice) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, null, 0, BilledPrefix, current_timestamp, RetailRate, null, 0, RetailPrice, CarrierID, RateCenter, wholesalerate, wholesaleprice
+INSERT INTO callrecordmaster (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, BilledPrefix, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, CarrierID, RateCenter, wholesalerate, wholesaleprice) 
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, null, 0, DestinationNumber, BilledPrefix, current_timestamp, RetailRate, null, 0, RetailPrice, CarrierID, RateCenter, wholesalerate, wholesaleprice
 FROM cdrsimterm; -- WHERE CallID not in (SELECT CallID FROM callrecordmaster); This can go in as a failsafe, but will slow things down
 
 DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT CallID FROM cdrsimterm);

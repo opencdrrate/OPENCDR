@@ -1,7 +1,7 @@
 <?php
-include 'lib/Page.php';
-include 'lib/session.php';
-include 'vars/config.php';
+include_once 'lib/Page.php';
+include_once 'lib/session.php';
+include_once 'vars/config.php';
 
 if(!isset($_GET['token'])){
 	#You need to be logged in to view this page

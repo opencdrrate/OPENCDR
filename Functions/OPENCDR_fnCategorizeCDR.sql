@@ -31,7 +31,7 @@ RAISE NOTICE 'Function started at %', StartDateTime;
 --massages source/dest into E.164
 update callrecordmaster_tbr set OriginatingNumber = '+1' || OriginatingNumber where char_length(OriginatingNumber) = 10 and substring(OriginatingNumber from 1 for 1) <> '+';
 update callrecordmaster_tbr set OriginatingNumber = '+' || OriginatingNumber where char_length(OriginatingNumber) = 11 and substring(OriginatingNumber from 1 for 1) = '1';
-update callrecordmaster_tbr set DestinationNumber = '+1' || DestinationNumber where char_length(DestinationNumber) = 10 and substring(DestinationNumber from 1 for 1) <> '+';
+update callrecordmaster_tbr set DestinationNumber = '+1' || DestinationNumber where char_length(DestinationNumber) = 10 and substring(DestinationNumber from 1 for 1) not in ('+', '0');
 update callrecordmaster_tbr set DestinationNumber = '+' || DestinationNumber where char_length(DestinationNumber) = 11 and substring(DestinationNumber from 1 for 1) = '1';
 update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 4 for 20) where substring(DestinationNumber from 1 for 3) = '011';
 
@@ -73,6 +73,14 @@ RAISE NOTICE 'Flagging international calls.'; gentime = TIMEOFDAY();
 --add code here to assign call type 25 for international NANPA outbound destinations
 update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
     and substring(DestinationNumber from 1 for 5) in ('+1242', '+1246', '+1264', '+1268', '+1284', '+1340', '+1345', '+1441', '+1473', '+1649', '+1664', '+1758', '+1767', '+1784', '+1787', '+1809', '+1829', '+1849', '+1868', '+1869', '+1876');
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '00';
+
+/*south africa*/
+update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 3 for 12) where CallType = 25
+    and substring(DestinationNumber from 1 for 2) = '00' and char_length(DestinationNumber) = 14;
+    
 
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
@@ -119,6 +127,9 @@ update callrecordmaster_tbr set CallType = 5 where CallID in (select CallID from
 
 update callrecordmaster_tbr set CallType = 10 where CallID in (select CallID from cdr where SourceState <> DestState and not SourceState is null);
 
+
+/*south africa*/
+update callrecordmaster_tbr set CallType = 35 where CallType is null and Direction = 'O' and char_length(DestinationNumber) in (10, 11) and substring(DestinationNumber from 1 for 1) = '0';
 
 
 EndDateTime = TIMEOFDAY();

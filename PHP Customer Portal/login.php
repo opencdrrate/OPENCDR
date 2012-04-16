@@ -1,8 +1,9 @@
 <?php
-include 'vars/config.php';
-include 'lib/Page.php';
-include 'lib/session.php';
-include $libdir . 'encryption.php';
+include_once 'vars/config.php';
+include_once 'lib/Page.php';
+include_once 'lib/session.php';
+include_once 'lib/passwordrecovery.php';
+include_once 'lib/encryption.php';
 
 $errors = '';
 $content = '';
@@ -17,6 +18,28 @@ if(isset($_GET['error'])){
 	$errType = $_GET['error'];
 	if($errType='notloggedin'){
 		trigger_error('Your session expired.  Please login again.');
+	}
+}
+
+if(isset($_POST['func'])){
+	$func = $_POST['func'];
+	if($func == 'resetpwd'){
+	
+		$token = $_POST['token'];
+		$newPassword = $_POST['pwd'];
+		$confirm = $_POST['confirm'];
+		if($confirm == $newPassword){
+			if($username = VerifyToken($token, $connectstring)){
+				ResetPassword($username, $connectstring);
+				ChangePassword($username, '', $newPassword, $connectstring);
+				DeleteToken($username,$connectstring);
+			}
+		}
+		else{
+			$error = <<< HEREDOC
+		<font color="red">Your new password doesn't match.  Click on the link provided in your confirmation e-mail to try again.</font><br>
+HEREDOC;
+		}
 	}
 }
 

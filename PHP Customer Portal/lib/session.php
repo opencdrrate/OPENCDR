@@ -1,11 +1,5 @@
 <?php
-$debug = true;
-function print_debug($debugString){
-	global $debug;
-	if($debug){
-		echo $debugString.'<br>';
-	}
-}
+include 'debug.php';
 
 function BeginSession($username, $connectstring){
 	print_debug( 'Attempting to begin session');
@@ -80,7 +74,7 @@ function GetToken($username, $connectstring){
 }
 
 function GenerateToken($username){
-	include_once './../PHP Admin Portal/Lib/encryption.php';
+	include_once 'encryption.php';
 	return substr(hash_password($username, RandomAlphaNum(5)),0,10);
 }
 

@@ -1,13 +1,4 @@
-<html>
-<head>
 
-    <meta charset="UTF-8">
-    <title>Main</title>
-
-    <!-- Stylesheet -->
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/style.css" />
-	
-</head>
 <?php 
 	include 'lib/Page.php';
 	include 'config.php'; 
@@ -204,4 +195,3 @@
 	<br/>
     </div>
     <?php echo GetPageFoot("","");?>
-</html>
