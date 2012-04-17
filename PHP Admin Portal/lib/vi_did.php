@@ -26,18 +26,29 @@ class VI_Client{
 		$this->secret = $pwd;
 	}
 	/*
-	public function GetDidCount(){
+	public function GetDidCount($state, $lata, $ratecenter, $npa, $nxx, $tier, $t38, $cnam){
 		print_debug('Getting a count of DIDs : ' . $this->login);
 		$result = $this->client->getDIDCount(
 			array(	'login'=>$this->login, 
-					'secret' => $this->secret));
+					'secret' => $this->secret,
+					'state' => $state,
+					'lata' => $lata,
+					'rateCenter' => $ratecenter,
+					'npa' => $npa,
+					'nxx' => $nxx,
+					'tier' => $tier,
+					't38' => $t38,
+					'cnam' => $cnam));
 		$DIDCountResult = $result->getDIDCountResult;
-		$DIDCountsObj = $DIDCountResult->DIDCounts;
-		return $DIDCountResult;
+		if($DIDCountResult->responseMessage != 'Success'){
+			return 0;
+		}
+		return $DIDCountResult->DIDLocators;
 	}*/
 	
 	public function getDIDs($state, $lata, $ratecenter, $npa, $nxx, $tier, $t38, $cnam){
 		print_debug('Getting a DID list');
+		set_time_limit(0);
 		$result = $this->client->getDIDs(
 			array(	'login'=>$this->login, 
 					'secret' => $this->secret,

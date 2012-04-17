@@ -15,7 +15,7 @@
 	$db = pg_connect($connectstring);
 	set_time_limit(0);
 	
-	$table = 'internationalratemaster';
+	$table = 'simpleterminationratemaster';
 	$customerNumberField = 'customerid';
 	$customerid = $_GET["customerid"];
 	
@@ -90,7 +90,6 @@ HEREDOC;
 		. " OFFSET "
 		. $offset	
 		. ";";
-
 	$content .= <<<HEREDOC
 		
 	<!-- THE EXPORT BUTTON -->
@@ -101,7 +100,7 @@ HEREDOC;
 	</form>
 	
 	<!-- THE IMPORT BUTTON -->
-	<form enctype="multipart/form-data" action="internationalrates.php?customerid={$customerid}" method="POST">
+	<form enctype="multipart/form-data" action="simpletermination.php?customerid={$customerid}" method="POST">
 	<input type="hidden" name="import" value="1"/>
 	Choose a file to import: <input name="uploadedFile" type="File" />
 	<input type="submit" value="import File" />
@@ -114,7 +113,7 @@ HEREDOC;
 		
 	if($offset > 0){
 		$content .= '
-		<form action="internationalrates.php?customerid='.$customerid.'&offset='.$prevoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
+		<form action="simpletermination.php?customerid='.$customerid.'&offset='.$prevoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
 		<input type="hidden" name="customerid" value="'.$customerid.'">
 		<input type="hidden" name="query" value="1"/>
 		<input type="submit" value="View prev '.$limit.' results"/>
@@ -122,7 +121,7 @@ HEREDOC;
 	}
 	if($endoffset < $numberOfRows){
 	$content .= '
-	<form action="internationalrates.php?customerid='.$customerid.'&offset='.$endoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
+	<form action="simpletermination.php?customerid='.$customerid.'&offset='.$endoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
 	<input type="hidden" name="query" value="1"/>
 	<input type="submit" value="View next '.$limit.' results"/>
 	</form>';
@@ -138,7 +137,7 @@ HEREDOC;
 ?>
 
 
-	<?php echo GetPageHead('View Customer International Rates', 'rates.php');?>
+	<?php echo GetPageHead('View Customer Simple Termination Rates', 'rates.php');?>
 	<div id="body">
 	<?php echo $errors;?>
 	<?php echo $content;?>

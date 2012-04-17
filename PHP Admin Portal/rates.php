@@ -47,12 +47,12 @@ HEREDOC;
 <td>{$myrow['customerid']}</td>
 <td align="center"><a href=listcustomerrecurringcharges.php?customerid={$myrow['customerid']}>Edit</a></td>
 <td align="center"><a href=listcustomeronetimecharges.php?customerid={$myrow['customerid']}>Edit</a></td>
-<td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$interstateconfpage}&load=1>Edit</a></td>
-<td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$intrastateconfpage}&load=1>Edit</a></td>
-<td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$tieredorigconfpage}&load=1>Edit</a></td>
+<td align="center"><a href=interstaterates.php?customerid={$myrow['customerid']}>Edit</a></td>
+<td align="center"><a href=intrastaterates.php?customerid={$myrow['customerid']}>Edit</a></td>
+<td align="center"><a href=tieredorigrates.php?customerid={$myrow['customerid']}>Edit</a></td>
 <td align="center"><a href=internationalrates.php?customerid={$myrow['customerid']}>Edit</a></td>
-<td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$tollfreeconfpage}&load=1>Edit</a></td>
-<td align="center"><a href=ratequery.php?customerid={$myrow['customerid']}&confpage={$simpletermconfpage}&load=1>Edit</a></td>
+<td align="center"><a href=tollfreeorig.php?customerid={$myrow['customerid']}>Edit</a></td>
+<td align="center"><a href=simpletermination.php?customerid={$myrow['customerid']}>Edit</a></td>
 </tr>
 HEREDOC;
         

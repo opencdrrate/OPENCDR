@@ -2,7 +2,6 @@
 	include 'lib/Page.php';
 	include 'config.php';
 	include 'lib/SQLQueryFuncs.php';
-	
 	$errors = '';
 	function customError($errno, $errstr)
 	{
@@ -10,25 +9,24 @@
 		$errors .= '<font color="red">'.$errstr.'</font><br>';
 	}
 	set_error_handler("customError");
-	
 	$content = '';
 	$db = pg_connect($connectstring);
 	set_time_limit(0);
 	
-	$table = 'internationalratemaster';
+	$table = 'interstateratemaster';
 	$customerNumberField = 'customerid';
 	$customerid = $_GET["customerid"];
-	
+	/*customerid, effectivedate, npanxxx, retailrate*/
 	if(isset($_POST["import"])){
 	
 					$deleteStatement = <<< HEREDOC
 						DELETE FROM {$table} 
 						WHERE "customerid" = $1 
 							AND "effectivedate" = $2 
-							AND "billedprefix" = $3;
+							AND "npanxxx" = $3;
 HEREDOC;
 					$insertStatement = <<< HEREDOC
-						INSERT INTO {$table}("customerid","effectivedate","billedprefix","retailrate")
+						INSERT INTO {$table}("customerid","effectivedate","npanxxx","retailrate")
 						VALUES ($1,$2,$3,$4);
 HEREDOC;
 	
@@ -46,13 +44,11 @@ HEREDOC;
 				foreach($data as $word){
 					str_replace('"',"",$word);
 				}
-				list($effectivedate,$billedprefix,$retailrate) = $data;
-				if(substr($billedprefix, 0,1) != '+'){
-					$billedprefix = '+' . $billedprefix;
-				}
-				$deleteParams = array($customerid, $effectivedate,$billedprefix);
-				$insertParams = array($customerid, $effectivedate,$billedprefix, $retailrate);
+				list($effectivedate,$npanxxx,$retailrate) = $data;
+				$deleteParams = array($customerid, $effectivedate,$npanxxx);
+				$insertParams = array($customerid, $effectivedate,$npanxxx, $retailrate);
 
+				
 				$result = pg_execute($db, "delete", $deleteParams);
 				if(!$result){
 					trigger_error('Error on line ' .$j . ' of file.');
@@ -81,9 +77,9 @@ HEREDOC;
 	$prevoffset = max($offset - $limit, 0);
 
 
-	$fullQuery = "SELECT effectivedate,billedprefix,retailrate FROM " . $table 
+	$fullQuery = "SELECT effectivedate,npanxxx,retailrate FROM " . $table 
 		. " WHERE " . $customerNumberField . " = '" . $customerid . "'"
-		. " ORDER BY effectivedate,billedprefix";
+		. " ORDER BY effectivedate,npanxxx";
 	$limitedQuery = $fullQuery
 		. " LIMIT "
 		. $limit
@@ -101,7 +97,7 @@ HEREDOC;
 	</form>
 	
 	<!-- THE IMPORT BUTTON -->
-	<form enctype="multipart/form-data" action="internationalrates.php?customerid={$customerid}" method="POST">
+	<form enctype="multipart/form-data" action="interstaterates.php?customerid={$customerid}" method="POST">
 	<input type="hidden" name="import" value="1"/>
 	Choose a file to import: <input name="uploadedFile" type="File" />
 	<input type="submit" value="import File" />
@@ -114,7 +110,7 @@ HEREDOC;
 		
 	if($offset > 0){
 		$content .= '
-		<form action="internationalrates.php?customerid='.$customerid.'&offset='.$prevoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
+		<form action="interstaterates.php?customerid='.$customerid.'&offset='.$prevoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
 		<input type="hidden" name="customerid" value="'.$customerid.'">
 		<input type="hidden" name="query" value="1"/>
 		<input type="submit" value="View prev '.$limit.' results"/>
@@ -122,7 +118,7 @@ HEREDOC;
 	}
 	if($endoffset < $numberOfRows){
 	$content .= '
-	<form action="internationalrates.php?customerid='.$customerid.'&offset='.$endoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
+	<form action="interstaterates.php?customerid='.$customerid.'&offset='.$endoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
 	<input type="hidden" name="query" value="1"/>
 	<input type="submit" value="View next '.$limit.' results"/>
 	</form>';
@@ -133,12 +129,12 @@ HEREDOC;
 	while($row = pg_fetch_assoc($limitedQueryResult)){
 		$assocArray[] = $row;
 	}
-	$content .= AssocArrayToTable($assocArray, array('effectivedate','billedprefix','retailrate'));
+	$content .= AssocArrayToTable($assocArray, array('effectivedate','npanxxx','retailrate'));
 	pg_close($db);
 ?>
 
 
-	<?php echo GetPageHead('View Customer International Rates', 'rates.php');?>
+	<?php echo GetPageHead('View Customer Interstate Rates', 'rates.php');?>
 	<div id="body">
 	<?php echo $errors;?>
 	<?php echo $content;?>

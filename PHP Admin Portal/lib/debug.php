@@ -1,6 +1,6 @@
 <?php
 
-$debug = true;
+$debug = false;
 function print_debug($debugString){
 	global $debug;
 	if($debug){

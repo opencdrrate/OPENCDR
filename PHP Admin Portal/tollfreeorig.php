@@ -3,19 +3,11 @@
 	include 'config.php';
 	include 'lib/SQLQueryFuncs.php';
 	
-	$errors = '';
-	function customError($errno, $errstr)
-	{
-		global $errors;
-		$errors .= '<font color="red">'.$errstr.'</font><br>';
-	}
-	set_error_handler("customError");
-	
 	$content = '';
 	$db = pg_connect($connectstring);
 	set_time_limit(0);
 	
-	$table = 'internationalratemaster';
+	$table = 'tollfreeoriginationratemaster';
 	$customerNumberField = 'customerid';
 	$customerid = $_GET["customerid"];
 	
@@ -43,10 +35,11 @@ HEREDOC;
 			$handle = fopen($myFile, 'r');
 			$j = 1;
 			while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-				foreach($data as $word){
-					str_replace('"',"",$word);
-				}
 				list($effectivedate,$billedprefix,$retailrate) = $data;
+				if($j == 1){
+					$j++;
+					continue;
+				}
 				if(substr($billedprefix, 0,1) != '+'){
 					$billedprefix = '+' . $billedprefix;
 				}
@@ -54,14 +47,7 @@ HEREDOC;
 				$insertParams = array($customerid, $effectivedate,$billedprefix, $retailrate);
 
 				$result = pg_execute($db, "delete", $deleteParams);
-				if(!$result){
-					trigger_error('Error on line ' .$j . ' of file.');
-				}
 				$result = pg_execute($db, "insert", $insertParams);
-				if(!$result){
-					trigger_error('Error on line ' .$j . ' of file.');
-				}
-				$j++;
 			}
 			fclose($handle);
 		}
@@ -91,6 +77,12 @@ HEREDOC;
 		. $offset	
 		. ";";
 
+	$content = <<< HEREDOC
+	A valid file is a csv with the following as the first line: <br><br>
+	effectivedate,billedprefix,retailrate<p><br>
+	Every subsequent line will have the appropriate data.<br>
+	Note that there are <b>no surrounding quotes anywhere</b> and <b>all column names are case sensitive</b>.<br>
+HEREDOC;
 	$content .= <<<HEREDOC
 		
 	<!-- THE EXPORT BUTTON -->
@@ -101,7 +93,7 @@ HEREDOC;
 	</form>
 	
 	<!-- THE IMPORT BUTTON -->
-	<form enctype="multipart/form-data" action="internationalrates.php?customerid={$customerid}" method="POST">
+	<form enctype="multipart/form-data" action="tollfreeorig.php?customerid={$customerid}" method="POST">
 	<input type="hidden" name="import" value="1"/>
 	Choose a file to import: <input name="uploadedFile" type="File" />
 	<input type="submit" value="import File" />
@@ -114,7 +106,7 @@ HEREDOC;
 		
 	if($offset > 0){
 		$content .= '
-		<form action="internationalrates.php?customerid='.$customerid.'&offset='.$prevoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
+		<form action="tollfreeorig.php?customerid='.$customerid.'&offset='.$prevoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
 		<input type="hidden" name="customerid" value="'.$customerid.'">
 		<input type="hidden" name="query" value="1"/>
 		<input type="submit" value="View prev '.$limit.' results"/>
@@ -122,7 +114,7 @@ HEREDOC;
 	}
 	if($endoffset < $numberOfRows){
 	$content .= '
-	<form action="internationalrates.php?customerid='.$customerid.'&offset='.$endoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
+	<form action="tollfreeorig.php?customerid='.$customerid.'&offset='.$endoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
 	<input type="hidden" name="query" value="1"/>
 	<input type="submit" value="View next '.$limit.' results"/>
 	</form>';
@@ -138,9 +130,8 @@ HEREDOC;
 ?>
 
 
-	<?php echo GetPageHead('View Customer International Rates', 'rates.php');?>
+	<?php echo GetPageHead('View Customer Toll-Free Rates', 'rates.php');?>
 	<div id="body">
-	<?php echo $errors;?>
 	<?php echo $content;?>
 	</div>
 	<?php echo GetPageFoot();?>

@@ -79,6 +79,9 @@ HEREDOC;
 	<form action="adddid.php">
 	<input type="submit" class="btn blue add-customer" value="Add Manual DID"> 
 	</form>
+	<form action="addvoipdid.php">
+	<input type="submit" class="btn blue add-customer" value="Add VOIP DID"> 
+	</form>
 
     <form name="export" action="exportpipe.php" method="post">
 		<input type="submit" class="btn orange export" value="Export table to CSV">
