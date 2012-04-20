@@ -1,5 +1,5 @@
---======================================================================--
-/*  OpenCDRRate – Rate your call records.
+ï»¿--======================================================================--
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 DROP TABLE simpleterminationratemaster;
 CREATE TABLE simpleterminationratemaster(
 		CustomerID varchar(15) NOT NULL,
-		BilledPrefix varchar(10) NOT NULL,
+		BilledPrefix varchar(11) NOT NULL,
 		EffectiveDate timestamp NOT NULL,
 		RetailRate numeric(9,7) NOT NULL,
 		RowID serial4 UNIQUE NOT NULL,

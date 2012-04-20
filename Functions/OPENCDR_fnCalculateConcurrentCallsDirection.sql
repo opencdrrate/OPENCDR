@@ -1,5 +1,5 @@
 ﻿--======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify

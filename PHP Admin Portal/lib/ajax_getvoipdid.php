@@ -26,7 +26,13 @@ $cnam = '';
 if(isset($_GET['function'])){
 	$function = $_GET['function'];
 	if($function == 'count'){
-		$out = $client->GetDIDs($state, $lata, $ratecenter, $npa, $nxx, $tier, $t38, $cnam);
+		try{
+			$out = $client->GetDIDs($state, $lata, $ratecenter, $npa, $nxx, $tier, $t38, $cnam);
+		}
+		catch(Exception $e){
+			echo $e->getMessage();
+			return;
+		}
 		if($out == false){
 			return;	
 		}
@@ -104,7 +110,14 @@ if(isset($_GET['function'])){
 		<th>t38</th>
 		</tr></thead>
 HEREDOC;
-		$out = $client->GetDIDs($state, $lata, $ratecenter, $npa, $nxx, $tier, $t38, $cnam);
+		try{
+			$out = $client->GetDIDs($state, $lata, $ratecenter, $npa, $nxx, $tier, $t38, $cnam);
+		}
+		
+		catch(Exception $e){
+			echo $e->getMessage();
+			return;
+		}
 		if($out == false){
 			return;
 		}

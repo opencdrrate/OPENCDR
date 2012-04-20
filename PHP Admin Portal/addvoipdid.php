@@ -128,8 +128,11 @@ function PopulateMenus(state,ratecenter,tier,lata){
 						+ "&lata="+lata
 						+ "&function=count",
 			success: function(msg){
-				if (msg != ""){
-					$("#result").html("Found " + msg + " DIDs").show();
+				if (msg.indexOf("Error") != -1){
+					$("#result").html('<font color="red">'+msg+'</font>');
+				}
+				else if (msg != ""){
+					$("#result").html("Found " + msg + " DIDs");
 					$("#showresults").show('<button>Show Results</button>');
 				}
 				else{

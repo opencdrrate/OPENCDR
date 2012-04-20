@@ -6,35 +6,22 @@
 	function customError($errno, $errstr)
 	{
 		global $errors;
-		$errors .= '<font color="red">'.$errstr.'</font><br>';
+		if($errors == ''){
+			$errors .= '<font color="red">'.$errstr.'</font><br>';
+		}
 	}
 	set_error_handler("customError");
-	$content = '';
-	$db = pg_connect($connectstring);
-	set_time_limit(0);
 	
-	$table = 'tieredoriginationratemaster';
-	$customerNumberField = 'customerid';
+	$content = '';
 	$customerid = $_GET["customerid"];
+	
+	$table = new psql_tollfreeoriginationratemaster($connectstring);
+	$table->Connect();
 	if(isset($_POST["import"])){
 	
-					$deleteStatement = <<< HEREDOC
-						DELETE FROM {$table} 
-						WHERE "customerid" = $1 
-							AND "effectivedate" = $2 
-							AND "tier" = $3;
-HEREDOC;
-					$insertStatement = <<< HEREDOC
-						INSERT INTO {$table}("customerid","effectivedate","tier","retailrate")
-						VALUES ($1,$2,$3,$4);
-HEREDOC;
-	
-		$result = pg_prepare($db, "delete", $deleteStatement);
-		$result = pg_prepare($db, "insert", $insertStatement);
-					
 		$myFile = $_FILES['uploadedFile']['tmp_name'];
 		if($myFile == ""){
-			$content .= "Invalid File";
+			trigger_error("Please choose a file");
 		}
 		else{
 			$handle = fopen($myFile, 'r');
@@ -44,47 +31,46 @@ HEREDOC;
 					str_replace('"',"",$word);
 				}
 				list($effectivedate,$tier,$retailrate) = $data;
-				$deleteParams = array($customerid, $effectivedate,$tier);
-				$insertParams = array($customerid, $effectivedate,$tier, $retailrate);
-
-				$result = pg_execute($db, "delete", $deleteParams);
-				if(!$result){
-					trigger_error('Error on line ' .$j . ' of file.');
+				$oldParams = array('customerid'=>$customerid,
+									'effectivedate'=>$effectivedate,
+									'tier'=>$tier);
+				$newParams = array('customerid'=>$customerid, 
+									'effectivedate'=>$effectivedate,
+									'tier'=>$tier, 
+									'retailrate'=>$retailrate);
+				try{
+					$table->Update($oldParams, $newParams);
 				}
-				$result = pg_execute($db, "insert", $insertParams);
-				if(!$result){
-					trigger_error('Error on line ' .$j . ' of file.');
+				catch(Exception $e){
+					trigger_error($e->getMessage() . ' on line ' . $j);
 				}
 				$j++;
 			}
 			fclose($handle);
+			$itemsInserted = $table->rowsAdded - $table->rowsDeleted;
+			$itemsReplaced = $table->rowsDeleted;
+			$content .= <<< HEREDOC
+			{$itemsInserted} rates inserted<br>
+			{$itemsReplaced} rates updated<br>
+HEREDOC;
 		}
 	}
 	
-    $queryNumberofRows = 'SELECT count(*) FROM '.$table.' WHERE "customerid" = \''.$customerid.'\';';
-	$numOfRowsResult = pg_query($queryNumberofRows) or die(print pg_last_error());
-	$numberOfRowsArray = pg_fetch_row($numOfRowsResult);
-	$numberOfRows = $numberOfRowsArray[0];
+	$numberOfRows = $table->CountRows($customerid);
 	
 	$offset = 0;
 	if(isset($_GET["offset"])){
 		$offset = $_GET["offset"];
 	}
+	
 	$limit = 5000;
+	$assocArray = $table->LimitedQuery($customerid, $limit, $offset);
+	
 	$endoffset = min($offset + $limit, $numberOfRows);
 	$prevoffset = max($offset - $limit, 0);
-
-
-	$fullQuery = "SELECT effectivedate,tier,retailrate FROM " . $table 
-		. " WHERE " . $customerNumberField . " = '" . $customerid . "'"
-		. " ORDER BY effectivedate,tier";
-	$limitedQuery = $fullQuery
-		. " LIMIT "
-		. $limit
-		. " OFFSET "
-		. $offset	
-		. ";";
-
+	$fullQuery = "SELECT effectivedate,tier,retailrate FROM ".$table->table_name
+			. " WHERE customerid = '" . $customerid . "'"
+			. " ORDER BY effectivedate,tier";
 	$content .= <<<HEREDOC
 		
 	<!-- THE EXPORT BUTTON -->
@@ -105,6 +91,7 @@ HEREDOC;
 	Total number of rows : {$numberOfRows}
 	<br>'
 HEREDOC;
+		
 	if($offset > 0){
 		$content .= '
 		<form action="tieredorigrates.php?customerid='.$customerid.'&offset='.$prevoffset.'" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
@@ -121,19 +108,21 @@ HEREDOC;
 	</form>';
 	}
 	
-	$limitedQueryResult = pg_query($db, $limitedQuery);
-	$assocArray = array();
-	while($row = pg_fetch_assoc($limitedQueryResult)){
-		$assocArray[] = $row;
-	}
 	$content .= AssocArrayToTable($assocArray, array('effectivedate','tier','retailrate'));
-	pg_close($db);
+	
+	$table->Disconnect();
 ?>
 
 
 	<?php echo GetPageHead('View Tiered Origination Rates', 'rates.php');?>
 	<div id="body">
 	<?php echo $errors;?>
+	<?php
+	$max_upload = (int)(ini_get('upload_max_filesize'));
+	$memory_limit = (int)(ini_get('memory_limit'));
+	echo 'Max file size ' . $max_upload . 'mb <br>';
+	echo 'Memory limit ' . $memory_limit . 'mb <br>';
+	?>
 	<?php echo $content;?>
 	</div>
 	<?php echo GetPageFoot();?>

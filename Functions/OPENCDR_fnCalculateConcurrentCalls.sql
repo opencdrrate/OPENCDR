@@ -1,4 +1,4 @@
-﻿CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCalls"()
+CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCalls"()
   RETURNS integer AS
 $BODY$
 

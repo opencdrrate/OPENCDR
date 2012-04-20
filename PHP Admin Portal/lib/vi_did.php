@@ -63,6 +63,7 @@ class VI_Client{
 			);
 		$didResult = $result->getDIDsResult;
 		if($didResult->responseMessage != 'Success'){
+			throw new Exception('Error ' . $didResult->responseCode . ': ' . $didResult->responseMessage);
 			return false;
 		}
 		return $didResult->DIDLocators->DIDLocator;
