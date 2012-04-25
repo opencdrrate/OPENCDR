@@ -667,4 +667,97 @@ function ProcessAsterisk($filename, $connectString){
 	
 	return PrintResults2($insertedItemCount, $duplicateRows, $voidedCalls);
 }
+function ProcessITel($filename, $connectString){
+	include_once './DAL/table_callrecordmaster_tbr.php';
+
+	$duplicateRows = 0;
+	$insertedItemCount = 0;
+	$voidedCalls = 0;
+	$handle = fopen($filename, 'r');
+	if($handle == false){
+		#error
+		$error = 'Error';
+		return $error;
+	}
+	$table = new psql_callrecordmaster_tbr($connectString);
+	$table->Connect();
+	while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
+		/*
+		Column 1 = CallDateTime
+		Column 2 = CarrierID
+		Column 3 = OrigNumber
+		Column 4 = ignore
+		Column 5 = DestNumber
+		Column 6 = ignore
+		Colomn 7 = duration
+		*/
+		list($CallDateTime, $CarrierID,$OrigNumber, $ignore,$DestNumber, $ignore,$duration) = $data;
+			if($duration == 0 or $duration == '0'){
+				$voidedCalls++;
+				continue;
+			}
+			$assocItem = array();
+			$assocItem['calldatetime'] = $CallDateTime;
+			$assocItem['duration'] = $duration;
+			$assocItem['originatingnumber'] = $OrigNumber;
+			$assocItem['destinationnumber'] = $DestNumber;
+			$assocItem['carrierid'] = $CarrierID;
+			
+			$assocItem['cnamdipped'] = 'f';
+			
+			$assocItem['callid'] = $assocItem['calldatetime'] 
+									. '_' . $assocItem['originatingnumber']
+									. '_' . $assocItem['destinationnumber']
+									. '_' . $assocItem['duration'];
+									
+			$table->Insert($assocItem);
+	}
+	fclose($handle);
+	$table->Disconnect();
+	return PrintResults2($table->InsertedCount, $table->SkippedDuplicateCount, $voidedCalls);
+}
+
+
+function ProcessThinktel($filename, $connectString){
+	include_once './DAL/table_thinktelcdr.php';
+
+	$duplicateRows = 0;
+	$insertedItemCount = 0;
+	$voidedCalls = 0;
+	$handle = fopen($filename, 'r');
+	if($handle == false){
+		#error
+		$error = 'Error';
+		return $error;
+	}
+	$table = new psql_thinktelcdr($connectString);
+	$table->Connect();
+	while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
+/*Billing Number,Source Number,Destination Number,Call Date,Rounded Call ` (Seconds),Usage Type,
+Billed Amount (Dollars),Source Location,Destination Location,Rate (Dollars Per Minute),Label,
+Raw Duration*/
+		list($BillingNumber, $SourceNumber,$DestinationNumber,$CallDate,$Duration, 
+				$Type,$Amount,$SrcLocation,$DestLocation,$Rate, $Label, $RawDuration) = $data;
+			if($Duration == 0 or $Duration == '0'){
+				$voidedCalls++;
+				continue;
+			}
+			$assocItem = array();
+			$assocItem['calldate'] = $CallDate;
+			$assocItem['rawduration'] = $Duration;
+			$assocItem['sourcenumber'] = $SourceNumber;
+			$assocItem['destinationnumber'] = $DestinationNumber;
+			
+			$assocItem['callid'] = $assocItem['calldate'] 
+									. '_' . $assocItem['sourcenumber']
+									. '_' . $assocItem['destinationnumber']
+									. '_' . $assocItem['rawduration'];
+									
+			$table->Insert($assocItem);
+	}
+	fclose($handle);
+	$table->MoveToTBR();
+	$table->Disconnect();
+	return PrintResults2($table->InsertedCount, $table->SkippedDuplicateCount, $voidedCalls);
+}
 ?>

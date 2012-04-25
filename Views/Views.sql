@@ -1,5 +1,5 @@
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -42,7 +42,7 @@ CREATE OR REPLACE VIEW "vwcalldirection" AS  SELECT callrecordmaster.callid, cal
         END AS "OutboundBilledDuration"
    FROM callrecordmaster;
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -63,7 +63,7 @@ CREATE OR REPLACE VIEW vwcallspermonthpercarrier AS  SELECT date_part('year'::te
   GROUP BY date_part('year'::text, callrecordmaster.calldatetime), date_part('month'::text, callrecordmaster.calldatetime), callrecordmaster.carrierid, callrecordmaster.direction
   ORDER BY date_part('year'::text, callrecordmaster.calldatetime), date_part('month'::text, callrecordmaster.calldatetime), callrecordmaster.carrierid, callrecordmaster.direction;
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -84,7 +84,7 @@ CREATE OR REPLACE VIEW vwcallspermonthpercarrierratecenter AS  SELECT date_part(
   GROUP BY date_part('year'::text, callrecordmaster.calldatetime), date_part('month'::text, callrecordmaster.calldatetime), callrecordmaster.carrierid, callrecordmaster.direction, callrecordmaster.ratecenter
   ORDER BY date_part('year'::text, callrecordmaster.calldatetime), date_part('month'::text, callrecordmaster.calldatetime), callrecordmaster.carrierid, callrecordmaster.direction, callrecordmaster.ratecenter;
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -117,7 +117,7 @@ UNION ALL
 SELECT 35 as "CallType", 'Simple Termination' as "CallTypeDesc"
 ;
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -138,7 +138,7 @@ create or replace view vwcustomercharges
 as
 
 select a.customerid, sum(b.lineitemamount) as "TotalCharges" from customermaster as a inner join billingbatchdetails as b on a.customerid = b.customerid group by a.customerid;--======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify

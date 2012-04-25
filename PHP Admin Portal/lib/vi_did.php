@@ -68,5 +68,47 @@ class VI_Client{
 		}
 		return $didResult->DIDLocators->DIDLocator;
 	}
+	
+	public function reserveDIDs($tnList){
+		$didList = array();
+		foreach($tnList as $tn){
+			$didList[] = array('epg' => 30,
+								'tn' => $tn);
+		}
+		$params = array( 	'login'=>$this->login, 
+							'secret' => $this->secret,
+							'didParams' => $didList);
+		$result = $this->client->reserveDID($params);
+		return $result;
+	}
+	
+	public function assignDIDs($tnList, $epg){
+		$didList = array();
+		foreach($tnList as $tn){
+			$didList[] = array('epg' => $epg,
+								'tn' => $tn);
+		}
+		$params = array( 	'login'=>$this->login, 
+							'secret' => $this->secret,
+							'didParams' => $didList);
+		$result = $this->client->assignDID($params);
+		$didResult = $result->assignDIDResult;
+		
+		if($didResult->responseMessage != 'Success'){
+			throw new Exception('Error ' . $didResult->responseCode . ': ' . $didResult->responseMessage);
+			return false;
+		}
+		$didStatuses = $didResult->DIDs->DID;
+		$output = array();
+		if(gettype($didStatuses) != "array"){
+			$output[] = array('tn' => $didStatuses->tn, 'status' => $didStatuses->status, 'statusCode' => $didStatuses->statusCode);
+		}
+		else{
+			foreach($didStatuses as $status){
+				$output[] = array('tn' => $status->tn, 'status' => $status->status, 'statusCode' => $status->statusCode);
+			}
+		}
+		return $output;
+	}
 }
 ?>

@@ -2,6 +2,8 @@
 
 include_once 'vi_did.php';
 include_once '../vars/voip_login_info.php';
+include_once '../DAL/table_customermaster.php';
+include_ONCE '../config.php';
 $client = new VI_Client($vi_user,$vi_pass);
 $state = '';
 if(isset($_GET['state'])){
@@ -98,7 +100,35 @@ if(isset($_GET['function'])){
 		echo $options;
 	}
 	else if($function == 'showall'){
+		$customerTable = new psql_customermaster($connectstring);
+		$customerTable->Connect();
+		$customers = $customerTable->SelectAll();
 		$table = <<< HEREDOC
+		<form action="showviresult.php?function=showAssignResult" method="POST" name="assignDID">
+		<table>
+		<tr>
+			<td style="width:150px">Enter your E.P.G. : </td>
+			<td><input type="text" name="epg"/></td>
+		</tr>
+		<tr>
+			<td style="width:150px">Customer id:</td>
+			<td>
+			<select name="customerid">
+				<option value="">-- Please Select --</option>
+HEREDOC;
+/*<a href=\"javascript:confirmAddDid()\">Assign DIDs</a>*/
+		foreach($customers as $customer){
+			$table .= <<< HEREDOC
+			<option value="{$customer['customerid']}">{$customer['customerid']}</option>
+HEREDOC;
+		}
+		$table .= <<< HEREDOC
+			</select>
+			</td>
+		</tr>
+		<tr><td><input type="submit" value="Assign DIDs"/></td></tr>
+		</table>
+		
 		<table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
 		<thead><tr>
 		<th>Telephone Number</th>
@@ -108,6 +138,7 @@ if(isset($_GET['function'])){
 		<th>LATA ID</th>
 		<th>Outbound CNAM</th>
 		<th>t38</th>
+		<th>Select</th>
 		</tr></thead>
 HEREDOC;
 		try{
@@ -121,6 +152,7 @@ HEREDOC;
 		if($out == false){
 			return;
 		}
+		$i= 0;
 		foreach($out as $did){
 		/*[tn] [rateCenter]  [state]  [tier]  [lataId]  [outboundCNAM]  [t38] */
 			$table .= <<< HEREDOC
@@ -132,10 +164,12 @@ HEREDOC;
 			<td>{$did->lataId}</td>
 			<td>{$did->outboundCNAM}</td>
 			<td>{$did->t38}</td>
+			<td><Input type="checkbox" name="tnList[{$i}]" value="{$did->tn}"/></td>
 			</tr>
 HEREDOC;
+		$i++;
 		}
-		$table .= '</table>';
+		$table .= '</form></table>';
 		echo $table;
 	}
 	else if($function == 'raw'){

@@ -1,4 +1,4 @@
-ï»¿CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCalls"()
+CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCalls"()
   RETURNS integer AS
 $BODY$
 
@@ -69,7 +69,7 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;ï»¿--======================================================================--
-/*  OpenCDRRate â€“ Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -166,7 +166,7 @@ END;
 
 $BODY$
   LANGUAGE plpgsql;ï»¿--======================================================================--
-/*  OpenCDRRate â€“ Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -276,7 +276,7 @@ END;
 
 $BODY$
   LANGUAGE plpgsql;ï»¿--======================================================================--
-/*  OpenCDRRate â€“ Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -383,7 +383,7 @@ END;
 
 $BODY$
   LANGUAGE plpgsql;--======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -415,7 +415,7 @@ RAISE NOTICE 'Function started at %', StartDateTime;
 --massages source/dest into E.164
 update callrecordmaster_tbr set OriginatingNumber = '+1' || OriginatingNumber where char_length(OriginatingNumber) = 10 and substring(OriginatingNumber from 1 for 1) <> '+';
 update callrecordmaster_tbr set OriginatingNumber = '+' || OriginatingNumber where char_length(OriginatingNumber) = 11 and substring(OriginatingNumber from 1 for 1) = '1';
-update callrecordmaster_tbr set DestinationNumber = '+1' || DestinationNumber where char_length(DestinationNumber) = 10 and substring(DestinationNumber from 1 for 1) <> '+';
+update callrecordmaster_tbr set DestinationNumber = '+1' || DestinationNumber where char_length(DestinationNumber) = 10 and substring(DestinationNumber from 1 for 1) not in ('+', '0');
 update callrecordmaster_tbr set DestinationNumber = '+' || DestinationNumber where char_length(DestinationNumber) = 11 and substring(DestinationNumber from 1 for 1) = '1';
 update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 4 for 20) where substring(DestinationNumber from 1 for 3) = '011';
 
@@ -457,6 +457,14 @@ RAISE NOTICE 'Flagging international calls.'; gentime = TIMEOFDAY();
 --add code here to assign call type 25 for international NANPA outbound destinations
 update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
     and substring(DestinationNumber from 1 for 5) in ('+1242', '+1246', '+1264', '+1268', '+1284', '+1340', '+1345', '+1441', '+1473', '+1649', '+1664', '+1758', '+1767', '+1784', '+1787', '+1809', '+1829', '+1849', '+1868', '+1869', '+1876');
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '00';
+
+/*south africa*/
+update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 3 for 12) where CallType = 25
+    and substring(DestinationNumber from 1 for 2) = '00' and char_length(DestinationNumber) = 14;
+    
 
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
@@ -504,6 +512,9 @@ update callrecordmaster_tbr set CallType = 5 where CallID in (select CallID from
 update callrecordmaster_tbr set CallType = 10 where CallID in (select CallID from cdr where SourceState <> DestState and not SourceState is null);
 
 
+/*south africa*/
+update callrecordmaster_tbr set CallType = 35 where CallType is null and Direction = 'O' and char_length(DestinationNumber) in (10, 11) and substring(DestinationNumber from 1 for 1) = '0';
+
 
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
@@ -519,7 +530,7 @@ RETURN 00000;
 END;
 
 $$ LANGUAGE plpgsql;--======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -559,7 +570,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -776,7 +787,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -827,7 +838,7 @@ RETURN 00000;
 END;
 
 $$ LANGUAGE plpgsql;--======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -909,7 +920,7 @@ RETURN 00000;
 END;
 
 $$ LANGUAGE plpgsql;--======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -999,7 +1010,7 @@ RETURN 00000;
 END;
 
 $$ LANGUAGE plpgsql;--======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -1045,7 +1056,7 @@ RETURN 00000;
 END;
 
 $$ LANGUAGE plpgsql;--======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -1126,7 +1137,7 @@ END;
 
 $$ LANGUAGE plpgsql;
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -1201,7 +1212,7 @@ RETURN 00000;
 END;
 
 $$ LANGUAGE plpgsql;--======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2012  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -1260,7 +1271,7 @@ RETURN 00000;
 END;
 
 $$ LANGUAGE plpgsql;--======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -1293,7 +1304,7 @@ BEGIN
 RAISE NOTICE 'Function started at %', StartDateTime;
 
 -- get date of the oldest unrated (TBR) CDR for inter call type = 20
-SELECT INTO CDRDate MIN(CallDateTime) FROM "CallRecordMaster_TBR"
+SELECT INTO CDRDate MIN(CallDateTime) FROM "callrecordmaster_tbr"
 WHERE CallType = 20;
 IF CDRDATE IS NULL THEN 
 RAISE NOTICE 'No calls to rate.';
@@ -1330,7 +1341,7 @@ RAISE NOTICE 'Gathering new records to rate.'; gentime = TIMEOFDAY();
 
 INSERT INTO cdrindjur (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, Destinationnumber, LRN, LRNDipFee, BilledNumber, NPANXXX, RetailRate, RetailPrice, CNAMDipped, CNAMFee, wholesalerate, wholesaleprice)
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, 0, null, null, null, null, CNAMdipped, 0, wholesalerate, wholesaleprice
-FROM "CallRecordMaster_TBR" 
+FROM "callrecordmaster_tbr" 
 WHERE cast(CallDateTime as date) = CDRDate AND CallType = 20
 LIMIT PROCESSING_LIMIT;
 GET DIAGNOSTICS rec_count = ROW_COUNT;
@@ -1387,34 +1398,34 @@ CREATE INDEX LRN_CustomerID ON cdrindjur(LRN,CustomerID);
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
--- retrieve CNAMRate from CustomerMaster 
+-- retrieve CNAMRate from customermaster 
 RAISE NOTICE 'Retrieving CNAMRate.'; gentime = TIMEOFDAY();
-UPDATE cdrindjur SET CNAMFee = CNAMDipRate FROM "CustomerMaster" WHERE cdrindjur.CNAMDipped = true AND cdrindjur.CustomerID = "CustomerMaster".CustomerID;
+UPDATE cdrindjur SET CNAMFee = CNAMDipRate FROM "customermaster" WHERE cdrindjur.CNAMDipped = true AND cdrindjur.CustomerID = "customermaster".CustomerID;
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
--- retrieve LRNDipFee from CustomerMaster
+-- retrieve LRNDipFee from customermaster
 RAISE NOTICE 'Retrieving LRNDIPFee.'; gentime = TIMEOFDAY();
-UPDATE cdrindjur SET LRNDipFee = LRNDipRate FROM "CustomerMaster" 
+UPDATE cdrindjur SET LRNDipFee = LRNDipRate FROM "customermaster" 
 WHERE trim(both ' ' from LRN) <> '' AND 
 LRN is not null AND 
-cdrindjur.CustomerID = "CustomerMaster".CustomerID;
+cdrindjur.CustomerID = "customermaster".CustomerID;
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 RAISE NOTICE 'Regenerating effective sheet'; gentime = TIMEOFDAY();
 -- Regenerate intra effective sheet if any customers in this batch have 5 as their IndeterminateJurisdictionCallType
-IF EXISTS(SELECT * from cdrindjur where CustomerID in (SELECT CustomerID FROM "CustomerMaster" WHERE IndeterminateJurisdictionCallType = 5)) THEN
+IF EXISTS(SELECT * from cdrindjur where CustomerID in (SELECT CustomerID FROM "customermaster" WHERE IndeterminateJurisdictionCallType = 5)) THEN
 
 	IF CDRDate <> (SELECT SettingValue FROM "SystemSettings_Date"
 WHERE SettingName = 'INTRA_EFFECTIVE_RATE_DATE') OR (select count(*) FROM "SystemSettings_Date" WHERE SettingName = 'INTRA_EFFECTIVE_RATE_DATE') = 0
 THEN
-		TRUNCATE TABLE "EffectiveIntrastateRateMaster";
+		TRUNCATE TABLE "effectiveintrastateratemaster";
 
 		gentime = TIMEOFDAY();
 		RAISE NOTICE 'Generating new intra effective rates. This may take several minutes. Process Started At %', gentime;
 
-		INSERT INTO "EffectiveIntrastateRateMaster" 
+		INSERT INTO "effectiveintrastateratemaster" 
 		SELECT ratesheet.CustomerID, ratesheet.NPANXXX, RetailRate FROM "IntrastateRateMaster" AS ratesheet
 		INNER JOIN (SELECT CustomerID, NPANXXX, MAX(effectivedate) AS effectivedate FROM "IntrastateRateMaster" WHERE effectivedate <= CDRDate GROUP BY CustomerID, NPANXXX) AS inaffect
 		ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.NPANXXX = inaffect.NPANXXX AND ratesheet.effectivedate = inaffect.EffectiveDate;
@@ -1429,17 +1440,17 @@ THEN
 end if;
 
 -- Regenerate inter effective sheet if any customers have 10 as their IndeterminateJurisdictionCallType
-IF EXISTS(SELECT * from cdrindjur where CustomerID in (SELECT CustomerID FROM "CustomerMaster" WHERE IndeterminateJurisdictionCallType =10)) THEN
+IF EXISTS(SELECT * from cdrindjur where CustomerID in (SELECT CustomerID FROM "customermaster" WHERE IndeterminateJurisdictionCallType =10)) THEN
 
 	IF CDRDate <> (SELECT SettingValue FROM "SystemSettings_Date"
 	WHERE SettingName = 'INTER_EFFECTIVE_RATE_DATE') OR (select count(*) FROM "SystemSettings_Date" WHERE SettingName = 'INTER_EFFECTIVE_RATE_DATE') = 0
 	THEN
-			TRUNCATE TABLE "EffectiveInterstateRateMaster";
+			TRUNCATE TABLE "effectiveinterstateratemaster";
 
 			gentime = TIMEOFDAY();
 			RAISE NOTICE 'Generating new inter effective rates. This may take several minutes. Process Started At %', gentime;
 
-			INSERT INTO "EffectiveInterstateRateMaster" 
+			INSERT INTO "effectiveinterstateratemaster" 
 			SELECT ratesheet.CustomerID, ratesheet.NPANXXX, RetailRate FROM "InterstateRateMaster" AS ratesheet
 			INNER JOIN (SELECT CustomerID, NPANXXX, MAX(effectivedate) AS effectivedate FROM "InterstateRateMaster" WHERE effectivedate <= CDRDate GROUP BY CustomerID, NPANXXX) AS inaffect
 			ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.NPANXXX = inaffect.NPANXXX AND ratesheet.effectivedate = inaffect.EffectiveDate;
@@ -1457,27 +1468,27 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 		-- get retail rates
 		-- INTRA
 		RAISE NOTICE 'Getting intra retail rates.'; gentime = TIMEOFDAY();
-		UPDATE cdrindjur SET retailrate = "EffectiveIntrastateRateMaster".retailrate 
-		FROM "EffectiveIntrastateRateMaster"
-		WHERE cdrindjur.customerid = "EffectiveIntrastateRateMaster".customerid AND cdrindjur.NPANXXX = "EffectiveIntrastateRateMaster".npanxxx AND cdrindjur.CustomerID in 	(select CustomerID from "CustomerMaster" WHERE IndeterminateJurisdictionCallType = 5);
+		UPDATE cdrindjur SET retailrate = "effectiveintrastateratemaster".retailrate 
+		FROM "effectiveintrastateratemaster"
+		WHERE cdrindjur.customerid = "effectiveintrastateratemaster".customerid AND cdrindjur.NPANXXX = "effectiveintrastateratemaster".npanxxx AND cdrindjur.CustomerID in 	(select CustomerID from "customermaster" WHERE IndeterminateJurisdictionCallType = 5);
 		EndDateTime = TIMEOFDAY();
 		RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);	
 
 		-- INTER
 				RAISE NOTICE 'Getting inter retail rates.'; gentime = TIMEOFDAY();
-		UPDATE cdrindjur SET retailrate = "EffectiveInterstateRateMaster".retailrate 
-		FROM "EffectiveInterstateRateMaster"
-		WHERE cdrindjur.customerid = "EffectiveInterstateRateMaster".customerid AND cdrindjur.NPANXXX = "EffectiveInterstateRateMaster".npanxxx AND cdrindjur.CustomerID in 	(select CustomerID from "CustomerMaster" WHERE IndeterminateJurisdictionCallType =10);
+		UPDATE cdrindjur SET retailrate = "effectiveinterstateratemaster".retailrate 
+		FROM "effectiveinterstateratemaster"
+		WHERE cdrindjur.customerid = "effectiveinterstateratemaster".customerid AND cdrindjur.NPANXXX = "effectiveinterstateratemaster".npanxxx AND cdrindjur.CustomerID in 	(select CustomerID from "customermaster" WHERE IndeterminateJurisdictionCallType =10);
 		EndDateTime = TIMEOFDAY();
 		RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 		-- move all records to HELD that we could not find the rate for
 		RAISE NOTICE 'Moving unrated records to HELD table.'; gentime = TIMEOFDAY();
-		INSERT INTO "CallRecordMaster_HELD" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, ErrorMessage) 
+		INSERT INTO "callrecordmaster_held" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, ErrorMessage) 
 		SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, 'No Rate for NPANXXX'
-		FROM cdrindjur where cdrindjur.RetailRate is null AND cdrindjur.CallID not in (SELECT CallID FROM "CallRecordMaster_HELD");
+		FROM cdrindjur where cdrindjur.RetailRate is null AND cdrindjur.CallID not in (SELECT CallID FROM "callrecordmaster_held");
 
-		DELETE FROM "CallRecordMaster_TBR" WHERE "CallRecordMaster_TBR".CallID in (SELECT CallID FROM cdrindjur WHERE RetailRate is null);
+		DELETE FROM "callrecordmaster_tbr" WHERE "callrecordmaster_tbr".CallID in (SELECT CallID FROM cdrindjur WHERE RetailRate is null);
 
 		DELETE FROM cdrindjur WHERE RetailRate is null;
 		EndDateTime = TIMEOFDAY();
@@ -1505,14 +1516,14 @@ UPDATE cdrindjur SET RetailPrice = RetailPrice + LRNDipFee;
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
--- move rated records to the CallRecordMaster
+-- move rated records to the callrecordmaster
 RAISE NOTICE 'Moving rated records to the master table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster" (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice) 
+INSERT INTO "callrecordmaster" (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, current_timestamp, RetailRate, CNAMdipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice
 FROM cdrindjur; 
--- WHERE CallID not in (SELECT CallID FROM "CallRecordMaster"); This can go in as a failsafe, but will slow things down
+-- WHERE CallID not in (SELECT CallID FROM "callrecordmaster"); This can go in as a failsafe, but will slow things down
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT CallID FROM cdrindjur);
+DELETE FROM "callrecordmaster_tbr" WHERE CallID in (SELECT CallID FROM cdrindjur);
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
@@ -1536,7 +1547,7 @@ END;
 
 $$ LANGUAGE plpgsql;
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -1569,7 +1580,7 @@ BEGIN
 RAISE NOTICE 'Function started at %', StartDateTime;
 
 -- get date of the oldest unrated (TBR) CDR for Inter call type = 25
-SELECT INTO CDRDate MIN(CallDateTime) FROM "CallRecordMaster_TBR"
+SELECT INTO CDRDate MIN(CallDateTime) FROM callrecordmaster_tbr
 WHERE CallType = 25;
 IF CDRDATE IS NULL THEN 
 RAISE NOTICE 'No calls to rate.';
@@ -1580,33 +1591,33 @@ RAISE NOTICE 'CDR Date: %', CDRDate;
 RAISE NOTICE 'PROCESSING_LIMIT: %', PROCESSING_LIMIT;
 
 -- determine if we need to regenerate "effective" rate sheet
-IF CDRDate <> (SELECT SettingValue FROM "SystemSettings_Date"
-WHERE SettingName = 'INTERNATIONAL_EFFECTIVE_RATE_DATE') OR (select count(*) FROM "SystemSettings_Date" WHERE SettingName = 'INTERNATIONAL_EFFECTIVE_RATE_DATE') = 0
+IF CDRDate <> (SELECT SettingValue FROM systemsettings_date
+WHERE SettingName = 'INTERNATIONAL_EFFECTIVE_RATE_DATE') OR (select count(*) FROM systemsettings_date WHERE SettingName = 'INTERNATIONAL_EFFECTIVE_RATE_DATE') = 0
 THEN
 gentime = TIMEOFDAY();
 RAISE NOTICE 'Generating new effective rates. This may take several minutes. Process Started At %', gentime;
 -- Generate Effective international Rate Sheet
-TRUNCATE TABLE "EffectiveInternationalRateMaster";
+TRUNCATE TABLE effectiveinternationalratemaster;
 
-INSERT INTO "EffectiveInternationalRateMaster" 
-SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM "InternationalRateMaster" AS ratesheet
-INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM "InternationalRateMaster" WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
+INSERT INTO effectiveinternationalratemaster 
+SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM internationalratemaster AS ratesheet
+INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM internationalratemaster WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
 ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.BilledPrefix = inaffect.BilledPrefix AND ratesheet.effectivedate = inaffect. EffectiveDate;
 GET DIAGNOSTICS rec_count = ROW_COUNT;
 
-DELETE FROM "SystemSettings_Date" WHERE SettingName = 'INTERNATIONAL_EFFECTIVE_RATE_DATE';
-INSERT INTO "SystemSettings_Date" VALUES ('INTERNATIONAL_EFFECTIVE_RATE_DATE', CDRDate);
+DELETE FROM systemsettings_date WHERE SettingName = 'INTERNATIONAL_EFFECTIVE_RATE_DATE';
+INSERT INTO systemsettings_date VALUES ('INTERNATIONAL_EFFECTIVE_RATE_DATE', CDRDate);
 
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Generation of new rates completed at %', age(EndDateTime,gentime);
 
-INSERT INTO "ProcessHistory" VALUES('Generating International Rate Sheet',gentime,EndDateTime,age(EndDateTime,gentime),rec_count);
+INSERT INTO processhistory VALUES('Generating International Rate Sheet',gentime,EndDateTime,age(EndDateTime,gentime),rec_count);
 END IF;
 
 -- create temporary processing table 
 CREATE TEMPORARY TABLE cdrinternat (
 		CallID varchar(100)     PRIMARY KEY,
-        CustomerID varchar(15) NOT NULL,
+        CustomerID varchar(15),
         CallType smallint,
         CallDateTime timestamp NOT NULL,
         Duration integer NOT NULL,
@@ -1628,7 +1639,7 @@ RAISE NOTICE 'Gathering new records to rate.'; gentime = TIMEOFDAY();
 
 INSERT INTO cdrinternat (callid, customerid, calltype, calldatetime, duration, billedduration, direction, sourceip, originatingnumber, destinationnumber, billedprefix, retailrate, retailprice, wholesalerate, wholesaleprice) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, null, wholesalerate, wholesaleprice
-FROM "CallRecordMaster_TBR" 
+FROM callrecordmaster_tbr 
 WHERE cast(CallDateTime as date) = CDRDate AND CallType = 25
 LIMIT PROCESSING_LIMIT;
 GET DIAGNOSTICS rec_count = ROW_COUNT;
@@ -1646,22 +1657,22 @@ END IF;
 
 --find customerid by ip address.
 RAISE NOTICE 'Retrieving customerID based on IP address.'; gentime = TIMEOFDAY();
-UPDATE cdrinternat SET customerid = "IPAddressMaster".customerid 
-FROM "IPAddressMaster"
-WHERE cdrinternat.sourceip = "IPAddressMaster".ipaddress and cdrinternat.customerid = '';
+UPDATE cdrinternat SET customerid = ipaddressmaster.customerid 
+FROM ipaddressmaster
+WHERE cdrinternat.sourceip = ipaddressmaster.ipaddress and coalesce(cdrinternat.customerid, '') = '';
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 
 -- move all records to HELD that we could not find the customerid for
 RAISE NOTICE 'Moving invalid customerid to HELD table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster_HELD" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, ErrorMessage) 
+INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, ErrorMessage) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, wholesalerate, wholesaleprice, 'Invalid CustomerID.'
-FROM cdrinternat where customerid = '' AND CallID not in (SELECT CallID FROM "CallRecordMaster_HELD");
+FROM cdrinternat where coalesce(customerid, '') = '' AND CallID not in (SELECT CallID FROM callrecordmaster_held);
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT CallID FROM cdrinternat where customerid = '');
+DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT CallID FROM cdrinternat where coalesce(customerid, '') = '');
 
-DELETE FROM cdrinternat where customerid = '';
+DELETE FROM cdrinternat where coalesce(customerid, '') = '';
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
@@ -1705,29 +1716,29 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 RAISE NOTICE 'Getting retail rates.'; gentime = TIMEOFDAY();
 
 FOR i IN REVERSE 10..2 LOOP
-	UPDATE cdrinternat SET billedprefix = "EffectiveInternationalRateMaster".billedprefix, retailrate = "EffectiveInternationalRateMaster".retailrate 
-	FROM "EffectiveInternationalRateMaster"
-	WHERE cdrinternat.customerid = "EffectiveInternationalRateMaster".customerid and SUBSTRING(cdrinternat.destinationnumber FROM 1 FOR i) = "EffectiveInternationalRateMaster".billedprefix and cdrinternat.retailrate is NULL;
+	UPDATE cdrinternat SET billedprefix = effectiveinternationalratemaster.billedprefix, retailrate = effectiveinternationalratemaster.retailrate 
+	FROM effectiveinternationalratemaster
+	WHERE cdrinternat.customerid = effectiveinternationalratemaster.customerid and SUBSTRING(cdrinternat.destinationnumber FROM 1 FOR i) = effectiveinternationalratemaster.billedprefix and cdrinternat.retailrate is NULL;
 END LOOP;
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- get default retail rates
 RAISE NOTICE 'Getting default rates.'; gentime = TIMEOFDAY();
-UPDATE cdrinternat SET retailrate = "EffectiveInternationalRateMaster".retailrate, billedprefix = '*' 
-FROM "EffectiveInternationalRateMaster"
-WHERE  cdrinternat.customerid = "EffectiveInternationalRateMaster".customerid AND "EffectiveInternationalRateMaster".billedprefix = '*' AND
+UPDATE cdrinternat SET retailrate = effectiveinternationalratemaster.retailrate, billedprefix = '*' 
+FROM effectiveinternationalratemaster
+WHERE  cdrinternat.customerid = effectiveinternationalratemaster.customerid AND effectiveinternationalratemaster.billedprefix = '*' AND
 cdrinternat.retailrate is null;
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- move all records to HELD that we could not find the rate for
 RAISE NOTICE 'Moving unrated records to HELD table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster_HELD" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, ErrorMessage) 
+INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, ErrorMessage) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, wholesalerate, wholesaleprice, 'No rate found.'
-FROM cdrinternat where RetailRate is null AND CallID not in (SELECT CallID FROM "CallRecordMaster_HELD");
+FROM cdrinternat where RetailRate is null AND CallID not in (SELECT CallID FROM callrecordmaster_held);
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT CallID FROM cdrinternat WHERE RetailRate is null);
+DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT CallID FROM cdrinternat WHERE RetailRate is null);
 
 DELETE FROM cdrinternat WHERE RetailRate is null;
 EndDateTime = TIMEOFDAY();
@@ -1741,11 +1752,11 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- move rated records to the CallRecordMaster
 RAISE NOTICE 'Moving rated records to the master table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster" (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, BilledPrefix, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice) 
+INSERT INTO callrecordmaster (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, BilledPrefix, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, null, 0, DestinationNumber, BilledPrefix, current_timestamp, RetailRate, null, 0, RetailPrice, wholesalerate, wholesaleprice
-FROM cdrinternat; -- WHERE CallID not in (SELECT CallID FROM "CallRecordMaster"); This can go in as a failsafe, but will slow things down
+FROM cdrinternat; -- WHERE CallID not in (SELECT CallID FROM callrecordmaster); This can go in as a failsafe, but will slow things down
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT CallID FROM cdrinternat);
+DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT CallID FROM cdrinternat);
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
@@ -1754,7 +1765,7 @@ EndDateTime = TIMEOFDAY();
 
 RAISE NOTICE 'Funtion took %', age(EndDateTime,StartDateTime);
 
-INSERT INTO "ProcessHistory" VALUES('fnRateInternationalCDR', StartDateTime, EndDateTime, age(EndDateTime, StartDateTime), rec_count);
+INSERT INTO processhistory VALUES('fnRateInternationalCDR', StartDateTime, EndDateTime, age(EndDateTime, StartDateTime), rec_count);
 
 END;
 
@@ -1768,7 +1779,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -2017,7 +2028,7 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 -- move all records to HELD that we could not find the rate for
 RAISE NOTICE 'Moving unrated records to HELD table.'; gentime = TIMEOFDAY();
 INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, ErrorMessage) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, 'No Rate found.'
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, 'No rate for NPANXX or NPANXXX.'
 FROM cdrinter where RetailRate is null; --AND CallID not in (SELECT CallID FROM "CallRecordMaster_HELD");
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
@@ -2091,7 +2102,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -2368,7 +2379,7 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 RAISE NOTICE 'Moving unrated records to HELD table.';
 gentime = TIMEOFDAY();
 INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, 'No Rate found.'
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, 'No rate for NPANXX or NPANXXX.'
 FROM cdrintra where RetailRate is null; -- AND CallID not in (SELECT CallID FROM "CallRecordMaster_HELD");
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
@@ -2457,7 +2468,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -2501,28 +2512,28 @@ RAISE NOTICE 'CDR Date: %', CDRDate;
 RAISE NOTICE 'PROCESSING_LIMIT: %', PROCESSING_LIMIT;
 
 -- determine if we need to regenerate "effective" rate sheet
-IF CDRDate <> (SELECT SettingValue FROM systemsettings_date
-WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE') OR (select count(*) FROM systemsettings_date WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE') = 0
-THEN
-gentime = TIMEOFDAY();
-RAISE NOTICE 'Generating new effective rates. This may take several minutes. Process Started At %', gentime;
--- Generate Effective SIMPLETERM Rate Sheet
-TRUNCATE TABLE effectivesimpleterminationratemaster;
+--IF CDRDate <> (SELECT SettingValue FROM systemsettings_date
+--WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE') OR (select count(*) FROM systemsettings_date WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE') = 0
+--THEN
+	gentime = TIMEOFDAY();
+	RAISE NOTICE 'Generating new effective rates. This may take several minutes. Process Started At %', gentime;
+	-- Generate Effective SIMPLETERM Rate Sheet
+	TRUNCATE TABLE effectivesimpleterminationratemaster;
 
-INSERT INTO effectivesimpleterminationratemaster 
-SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM simpleterminationratemaster AS ratesheet
-INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM simpleterminationratemaster WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
-ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.BilledPrefix = inaffect.BilledPrefix AND ratesheet.effectivedate = inaffect. EffectiveDate;
-GET DIAGNOSTICS rec_count = ROW_COUNT;
+	INSERT INTO effectivesimpleterminationratemaster 
+	SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM simpleterminationratemaster AS ratesheet
+	INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM simpleterminationratemaster WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
+	ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.BilledPrefix = inaffect.BilledPrefix AND ratesheet.effectivedate = inaffect. EffectiveDate;
+	GET DIAGNOSTICS rec_count = ROW_COUNT;
 
-DELETE FROM systemsettings_date WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE';
-INSERT INTO systemsettings_date VALUES ('SIMPLETERM_EFFECTIVE_RATE_DATE', CDRDate);
+	DELETE FROM systemsettings_date WHERE SettingName = 'SIMPLETERM_EFFECTIVE_RATE_DATE';
+	INSERT INTO systemsettings_date VALUES ('SIMPLETERM_EFFECTIVE_RATE_DATE', CDRDate);
 
-EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Generation of new rates completed at %', age(EndDateTime,gentime);
+	EndDateTime = TIMEOFDAY();
+	RAISE NOTICE 'Generation of new rates completed at %', age(EndDateTime,gentime);
 
-INSERT INTO processhistory VALUES('Generating Simple Termination Rate Sheet', gentime, EndDateTime,age(EndDateTime, gentime),rec_count);
-END IF;
+	INSERT INTO processhistory VALUES('Generating Simple Termination Rate Sheet', gentime, EndDateTime,age(EndDateTime, gentime),rec_count);
+--END IF;
 
 -- create temporary processing table 
 CREATE TEMPORARY TABLE cdrsimterm (
@@ -2663,8 +2674,8 @@ UPDATE cdrsimterm SET RetailPrice = RetailRate * BilledDuration / 60.00000;
 
 -- move rated records to the CallRecordMaster
 RAISE NOTICE 'Moving rated records to the master table.'; gentime = TIMEOFDAY();
-INSERT INTO callrecordmaster (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, CarrierID, RateCenter, wholesalerate, wholesaleprice) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, null, 0, BilledPrefix, current_timestamp, RetailRate, null, 0, RetailPrice, CarrierID, RateCenter, wholesalerate, wholesaleprice
+INSERT INTO callrecordmaster (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, BilledPrefix, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, CarrierID, RateCenter, wholesalerate, wholesaleprice) 
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, null, 0, DestinationNumber, BilledPrefix, current_timestamp, RetailRate, null, 0, RetailPrice, CarrierID, RateCenter, wholesalerate, wholesaleprice
 FROM cdrsimterm; -- WHERE CallID not in (SELECT CallID FROM callrecordmaster); This can go in as a failsafe, but will slow things down
 
 DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT CallID FROM cdrsimterm);
@@ -2690,7 +2701,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -2723,7 +2734,7 @@ BEGIN
 RAISE NOTICE 'Function started at %', StartDateTime;
 
 -- get date of the oldest unrated (TBR) CDR for inter call type = 15
-SELECT INTO CDRDate MIN(CallDateTime) FROM "CallRecordMaster_TBR"
+SELECT INTO CDRDate MIN(CallDateTime) FROM callrecordmaster_tbr
 WHERE CallType = 15;
 IF CDRDATE IS NULL THEN 
 RAISE NOTICE 'No calls to rate.';
@@ -2736,7 +2747,7 @@ RAISE NOTICE 'PROCESSING_LIMIT: %', PROCESSING_LIMIT;
 -- create temporary processing table 
 CREATE TEMPORARY TABLE cdrorig (
         CallID varchar(100)     PRIMARY KEY,
-        CustomerID varchar(15) NOT NULL,
+        CustomerID varchar(15),
         CallType smallint,
         CallDateTime timestamp NOT NULL,
         Duration integer NOT NULL,
@@ -2766,35 +2777,35 @@ RAISE NOTICE 'Gathering new records to rate.'; gentime = TIMEOFDAY();
 
 INSERT INTO cdrorig (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, NPANXXX, RetailRate, RetailPrice, CNAMDipped, CNAMFee, BilledTier, RateCenter, CarrierID, wholesalerate, wholesaleprice)
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, 0, null, null, null, null, CNAMdipped, 0, null, RateCenter, CarrierID, wholesalerate, wholesaleprice
-FROM "CallRecordMaster_TBR" 
+FROM callrecordmaster_tbr
 WHERE cast(CallDateTime as date) = CDRDate AND CallType = 15
 LIMIT PROCESSING_LIMIT;
 GET DIAGNOSTICS rec_count = ROW_COUNT;
 RAISE NOTICE '% new records to be rated.', rec_count;
 EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 
 --find customerid by ip address.
 RAISE NOTICE 'Retrieving customerID based on IP address.'; gentime = TIMEOFDAY();
-UPDATE cdrorig SET customerid = "IPAddressMaster".customerid 
-FROM "IPAddressMaster"
-WHERE cdrorig.sourceip = "IPAddressMaster".ipaddress and cdrorig.customerid = '';
+UPDATE cdrorig SET customerid = ipaddressmaster.customerid 
+FROM ipaddressmaster
+WHERE cdrorig.sourceip = ipaddressmaster.ipaddress and coalesce(cdrorig.customerid, '') = '';
 EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 
 -- move all records to HELD that we could not find the customerid for
 RAISE NOTICE 'Moving invalid customerid to HELD table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster_HELD" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
+INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, CarrierID, wholesalerate, wholesaleprice, 'Invalid CustomerID.'
-FROM cdrorig where customerid = '' AND CallID not in (SELECT CallID FROM "CallRecordMaster_HELD");
+FROM cdrorig where coalesce(customerid, '') = '' AND CallID not in (SELECT CallID FROM callrecordmaster_held);
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT CallID FROM cdrorig where customerid = '');
+DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT CallID FROM cdrorig where coalesce(customerid, '') = '');
 
-DELETE FROM cdrorig where customerid = '';
+DELETE FROM cdrorig where coalesce(customerid, '') = '';
 EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 
 
@@ -2815,23 +2826,23 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- find the tier for each call based on rate center
 RAISE NOTICE 'Finding the tier for each call based on rate center.'; gentime = TIMEOFDAY();
-UPDATE cdrorig SET BilledTier = "TieredOriginationRateCenterMaster".tier 
-FROM "TieredOriginationRateCenterMaster"
-WHERE cdrorig.ratecenter = "TieredOriginationRateCenterMaster".ratecenter;
+UPDATE cdrorig SET BilledTier = tieredoriginationratecentermaster.tier 
+FROM tieredoriginationratecentermaster
+WHERE cdrorig.ratecenter = tieredoriginationratecentermaster.ratecenter;
 EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 -- move all records to HELD that we could not find the tier for
 RAISE NOTICE 'Moving records with no tier to HELD table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster_HELD" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, RateCenter, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
+INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, RateCenter, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, RateCenter, CarrierID, wholesalerate, wholesaleprice, 'Invalid Rate Center'
 FROM cdrorig where BilledTier is null;
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT callid FROM cdrorig WHERE BilledTier is null);
+DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT callid FROM cdrorig WHERE BilledTier is null);
 
 DELETE FROM cdrorig WHERE BilledTier is null;
 EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 -- create a de-versioned rate sheet based on call date
 RAISE NOTICE 'create a de-versioned rate sheet based on call date.';
@@ -2843,27 +2854,27 @@ PRIMARY KEY (CustomerID, Tier)
 ) ON COMMIT DROP;
 
 INSERT INTO origrates (CustomerID, Tier, Retailrate)
-SELECT ratesheet.CustomerID, ratesheet.Tier, ratesheet.RetailRate FROM "TieredOriginationRateMaster" AS ratesheet INNER JOIN (SELECT CustomerID, Tier, MAX(EffectiveDate) AS EffectiveDate FROM "TieredOriginationRateMaster" WHERE EffectiveDate <= CDRDate GROUP BY CustomerID, Tier) AS inaffect ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.Tier = inaffect.Tier AND ratesheet.EffectiveDate = inaffect.EffectiveDate;
+SELECT ratesheet.CustomerID, ratesheet.Tier, ratesheet.RetailRate FROM tieredoriginationratemaster AS ratesheet INNER JOIN (SELECT CustomerID, Tier, MAX(EffectiveDate) AS EffectiveDate FROM tieredoriginationratemaster WHERE EffectiveDate <= CDRDate GROUP BY CustomerID, Tier) AS inaffect ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.Tier = inaffect.Tier AND ratesheet.EffectiveDate = inaffect.EffectiveDate;
 EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 -- get rate by tier
 RAISE NOTICE 'Get rate by tier.';
 UPDATE cdrorig SET RetailRate =  origrates.RetailRate FROM origrates WHERE cdrorig.CustomerID = origrates.CustomerID AND cdrorig.BilledTier = origrates.Tier;
 EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 -- move to HELD if there is no Tier rate found
 RAISE NOTICE 'Moving records with no tier rate to HELD table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster_HELD" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, RateCenter, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
+INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, RateCenter, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, RateCenter, CarrierID, wholesalerate, wholesaleprice, 'No Tier Rate Found'
 FROM cdrorig WHERE RetailRate is null;
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT callid FROM cdrorig WHERE RetailRate is null);
+DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT callid FROM cdrorig WHERE RetailRate is null);
 
 DELETE FROM cdrorig WHERE RetailRate is null;
 EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 -- calculate retail price
 RAISE NOTICE 'Calculate retail price.';
@@ -2871,20 +2882,20 @@ UPDATE cdrorig SET RetailPrice = RetailRate * BilledDuration / 60.00000;
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
--- move rated records to the CallRecordMaster
+-- move rated records to the callrecordmaster
 RAISE NOTICE 'Moving rated records to the master table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster" (CallID, CustomerID, CallType, CallDateTime,  Duration, BilledDuration, Direction, SourceIP, OriginatingNumber,  DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, BilledTier, RateCenter, RetailPrice, CarrierID, wholesalerate, wholesaleprice) 
+INSERT INTO callrecordmaster (CallID, CustomerID, CallType, CallDateTime,  Duration, BilledDuration, Direction, SourceIP, OriginatingNumber,  DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, BilledTier, RateCenter, RetailPrice, CarrierID, wholesalerate, wholesaleprice) 
 SELECT CallID, CustomerID, CallType, CallDateTime,  Duration, BilledDuration, 'I', SourceIP, OriginatingNumber,  DestinationNumber, LRN, LRNDipFee, OriginatingNumber, CURRENT_TIMESTAMP, RetailRate, CNAMDipped, CNAMFee, BilledTier, RateCenter, RetailPrice, CarrierID, wholesalerate, wholesaleprice FROM cdrorig;
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT callid FROM cdrorig);
+DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT callid FROM cdrorig);
 EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 -- calculate/display how long the process took
 EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Funtion took %', age(EndDateTime,StartDateTime);
+RAISE NOTICE 'Function took %', age(EndDateTime,StartDateTime);
 
-INSERT INTO "ProcessHistory" VALUES('fnRateTieredOriginationCDR', StartDateTime, EndDateTime, age(EndDateTime, StartDateTime), rec_count);
+INSERT INTO processhistory VALUES('fnRateTieredOriginationCDR', StartDateTime, EndDateTime, age(EndDateTime, StartDateTime), rec_count);
 
 RETURN 00000;
 
@@ -2896,7 +2907,7 @@ END;
 
 $$ LANGUAGE plpgsql;
 --======================================================================--
-/*  OpenCDRRate – Rate your call records.
+/*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
     This program is free software: you can redistribute it and/or modify
@@ -2929,7 +2940,7 @@ BEGIN
 RAISE NOTICE 'Function started at %', StartDateTime;
 
 -- get date of the oldest unrated (TBR) CDR for Inter call type = 30
-SELECT INTO CDRDate MIN(CallDateTime) FROM "CallRecordMaster_TBR"
+SELECT INTO CDRDate MIN(CallDateTime) FROM "callrecordmaster_tbr"
 WHERE CallType = 30;
 IF CDRDATE IS NULL THEN 
 RAISE NOTICE 'No calls to rate.';
@@ -2940,27 +2951,27 @@ RAISE NOTICE 'CDR Date: %', CDRDate;
 RAISE NOTICE 'PROCESSING_LIMIT: %', PROCESSING_LIMIT;
 
 -- determine if we need to regenerate "effective" rate sheet
-IF CDRDate <> (SELECT SettingValue FROM "SystemSettings_Date"
-WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') OR (select count(*) FROM "SystemSettings_Date" WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') = 0
+IF CDRDate <> (SELECT SettingValue FROM "systemsettings_date"
+WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') OR (select count(*) FROM "systemsettings_date" WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') = 0
 THEN
 gentime = TIMEOFDAY();
 RAISE NOTICE 'Generating new effective rates. This may take several minutes. Process Started At %', gentime;
 -- Generate Effective international Rate Sheet
-TRUNCATE TABLE "EffectiveTollFreeOriginationRateMaster";
+TRUNCATE TABLE "effectivetollfreeoriginationratemaster";
 
-INSERT INTO "EffectiveTollFreeOriginationRateMaster" 
-SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM "TollFreeOriginationRateMaster" AS ratesheet
-INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM "TollFreeOriginationRateMaster" WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
+INSERT INTO "effectivetollfreeoriginationratemaster" 
+SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM "tollfreeoriginationratemaster" AS ratesheet
+INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM "tollfreeoriginationratemaster" WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
 ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.BilledPrefix = inaffect.BilledPrefix AND ratesheet.effectivedate = inaffect. EffectiveDate;
 GET DIAGNOSTICS rec_count = ROW_COUNT;
 
-DELETE FROM "SystemSettings_Date" WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE';
-INSERT INTO "SystemSettings_Date" VALUES ('TFORIG_EFFECTIVE_RATE_DATE', CDRDate);
+DELETE FROM "systemsettings_date" WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE';
+INSERT INTO "systemsettings_date" VALUES ('TFORIG_EFFECTIVE_RATE_DATE', CDRDate);
 
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Generation of new rates completed at %', age(EndDateTime,gentime);
 
-INSERT INTO "ProcessHistory" VALUES('Generating TollFree Origination Rate Sheet',gentime,EndDateTime,age(EndDateTime,gentime),rec_count);
+INSERT INTO "processhistory" VALUES('Generating TollFree Origination Rate Sheet',gentime,EndDateTime,age(EndDateTime,gentime),rec_count);
 END IF;
 
 -- create temporary processing table 
@@ -2989,7 +3000,7 @@ RAISE NOTICE 'Gathering new records to rate.'; gentime = TIMEOFDAY();
 
 INSERT INTO cdrtforig (callid, customerid, calltype, calldatetime, duration, billedduration, direction, sourceip, originatingnumber, destinationnumber, billedprefix, retailrate, retailprice, CarrierID, wholesalerate, wholesaleprice) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, null, CarrierID, wholesalerate, wholesaleprice
-FROM "CallRecordMaster_TBR" 
+FROM "callrecordmaster_tbr" 
 WHERE cast(CallDateTime as date) = CDRDate AND CallType = 30
 LIMIT PROCESSING_LIMIT;
 GET DIAGNOSTICS rec_count = ROW_COUNT;
@@ -3008,9 +3019,9 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 --find customerid by ip address.
 RAISE NOTICE 'Retrieving customerID based on IP address.'; gentime = TIMEOFDAY();
-UPDATE cdrtforig SET customerid = "IPAddressMaster".customerid 
-FROM "IPAddressMaster"
-WHERE cdrtforig.sourceip = "IPAddressMaster".ipaddress and cdrtforig.customerid = '';
+UPDATE cdrtforig SET customerid = "ipaddressmaster".customerid 
+FROM "ipaddressmaster"
+WHERE cdrtforig.sourceip = "ipaddressmaster".ipaddress and cdrtforig.customerid = '';
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
@@ -3018,11 +3029,11 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- move all records to HELD that we could not find the customerid for
 RAISE NOTICE 'Moving invalid customerid to HELD table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster_HELD" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
+INSERT INTO "callrecordmaster_held" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, CarrierID, wholesalerate, wholesaleprice, 'Invalid CustomerID.'
-FROM cdrtforig where customerid = '' AND CallID not in (SELECT CallID FROM "CallRecordMaster_HELD");
+FROM cdrtforig where customerid = '' AND CallID not in (SELECT CallID FROM "callrecordmaster_held");
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT CallID FROM cdrtforig where customerid = '');
+DELETE FROM "callrecordmaster_tbr" WHERE CallID in (SELECT CallID FROM cdrtforig where customerid = '');
 
 DELETE FROM cdrtforig where customerid = '';
 EndDateTime = TIMEOFDAY();
@@ -3058,29 +3069,29 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 RAISE NOTICE 'Getting retail rates.'; gentime = TIMEOFDAY();
 
 FOR i IN REVERSE 10..2 LOOP
-UPDATE cdrtforig SET billedprefix = "EffectiveTollFreeOriginationRateMaster".billedprefix, retailrate = "EffectiveTollFreeOriginationRateMaster".retailrate 
-FROM "EffectiveTollFreeOriginationRateMaster"
-WHERE cdrtforig.customerid = "EffectiveTollFreeOriginationRateMaster".customerid and SUBSTRING(cdrtforig.originatingnumber FROM 1 FOR i) = "EffectiveTollFreeOriginationRateMaster".billedprefix and cdrtforig.retailrate is NULL;
+UPDATE cdrtforig SET billedprefix = "effectivetollfreeoriginationratemaster".billedprefix, retailrate = "effectivetollfreeoriginationratemaster".retailrate 
+FROM "effectivetollfreeoriginationratemaster"
+WHERE cdrtforig.customerid = "effectivetollfreeoriginationratemaster".customerid and SUBSTRING(cdrtforig.originatingnumber FROM 1 FOR i) = "effectivetollfreeoriginationratemaster".billedprefix and cdrtforig.retailrate is NULL;
 END LOOP;
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- get default retail rates
 RAISE NOTICE 'Getting default rates.'; gentime = TIMEOFDAY();
-UPDATE cdrtforig SET retailrate = "EffectiveTollFreeOriginationRateMaster".retailrate, billedprefix = '*' 
-FROM "EffectiveTollFreeOriginationRateMaster"
-WHERE  cdrtforig.customerid = "EffectiveTollFreeOriginationRateMaster".customerid AND "EffectiveTollFreeOriginationRateMaster".billedprefix = '*' AND
+UPDATE cdrtforig SET retailrate = "effectivetollfreeoriginationratemaster".retailrate, billedprefix = '*' 
+FROM "effectivetollfreeoriginationratemaster"
+WHERE  cdrtforig.customerid = "effectivetollfreeoriginationratemaster".customerid AND "effectivetollfreeoriginationratemaster".billedprefix = '*' AND
 cdrtforig.retailrate is null;
 EndDateTime = TIMEOFDAY(); 
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- move all records to HELD that we could not find the rate for
 RAISE NOTICE 'Moving unrated records to HELD table.'; gentime = TIMEOFDAY();
-INSERT INTO "CallRecordMaster_HELD" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
+INSERT INTO "callrecordmaster_held" (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, CarrierID, wholesalerate, wholesaleprice, 'No rate found.'
-FROM cdrtforig where RetailRate is null AND CallID not in (SELECT CallID FROM "CallRecordMaster_HELD");
+FROM cdrtforig where RetailRate is null AND CallID not in (SELECT CallID FROM "callrecordmaster_held");
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT CallID FROM cdrtforig WHERE RetailRate is null);
+DELETE FROM "callrecordmaster_tbr" WHERE CallID in (SELECT CallID FROM cdrtforig WHERE RetailRate is null);
 
 DELETE FROM cdrtforig WHERE RetailRate is null;
 EndDateTime = TIMEOFDAY();
@@ -3098,16 +3109,16 @@ INSERT INTO "CallRecordMaster" (CallID, CustomerID, CallType, CallDateTime, Dura
 SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'I', SourceIP, OriginatingNumber, DestinationNumber, null, 0, BilledPrefix, current_timestamp, RetailRate, null, 0, RetailPrice, CarrierID, wholesalerate, wholesaleprice
 FROM cdrtforig; -- WHERE CallID not in (SELECT CallID FROM "CallRecordMaster"); This can go in as a failsafe, but will slow things down
 
-DELETE FROM "CallRecordMaster_TBR" WHERE CallID in (SELECT CallID FROM cdrtforig);
+DELETE FROM "callrecordmaster_tbr" WHERE CallID in (SELECT CallID FROM cdrtforig);
 EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- calculate/display how long the process took
 EndDateTime = TIMEOFDAY();
 
-RAISE NOTICE 'Funtion took %', age(EndDateTime,StartDateTime);
+RAISE NOTICE 'Function took %', age(EndDateTime,StartDateTime);
 
-INSERT INTO "ProcessHistory" VALUES('fnRateTollFreeOriginationCDR', StartDateTime, EndDateTime, age(EndDateTime, StartDateTime), rec_count);
+INSERT INTO "processhistory" VALUES('fnRateTollFreeOriginationCDR', StartDateTime, EndDateTime, age(EndDateTime, StartDateTime), rec_count);
 
 END;
 

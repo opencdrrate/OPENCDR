@@ -22,13 +22,14 @@ $vitelityMap['Seconds'] = 'seconds';
 $vitelityMap['CallerID'] = 'callerid';
 $vitelityMap['Disposition'] = 'disposition';
 $vitelityMap['Cost'] = 'cost';
-
+/*
 $thinktelMap = array();
 $thinktelMap['"Source Number"'] = 'sourcenumber';
 $thinktelMap['"Destination Number"'] = 'destinationnumber';
 $thinktelMap['"Call Date"'] = 'calldate';
 $thinktelMap['"Usage Type"'] = 'usagetype';
 $thinktelMap['"Call Duration (Seconds)"'] = 'rawduration';
+*/
 ?>
 <?php
 include 'lib/TBRLibs.php';
@@ -51,6 +52,12 @@ if(isset($_POST['loadImport'])){
 	}
 	else if($type == 'asterisk'){
 		$content .= ProcessAsterisk($myFile, $connectstring);
+	}
+	else if($type == 'itel'){
+		$content .= ProcessITel($myFile, $connectstring);
+	}
+	else if($type == 'thinktel'){
+		$content .= ProcessThinktel($myFile, $connectstring);
 	}
 	else{
 		$fh = fopen($myFile, 'r');
@@ -145,7 +152,7 @@ else if(isset($_POST['import'])){
 		$moveStatement = "SELECT \"fnMoveVitelityCDRToTBR\"();";
 		$delim = ',';
 		$headerMap = $vitelityMap;
-	}
+	}/*
 	else if($type == 'thinktel'){
 		$toSkipOnZero[] = 'rawduration';
 		$numbersToInternationalize[] = 'sourcenumber';
@@ -160,7 +167,7 @@ else if(isset($_POST['import'])){
 		$moveStatement = 'SELECT "fnMoveThinktelCDRToTBR"();';
 		$delim = ',';
 		$headerMap = $thinktelMap;
-	}
+	}*/
 	
 	$keyedData = TurnCSVIntoAssocArray($theData, $delim, $headerMap);
 	if(count($keyedData == 0)){
@@ -313,11 +320,12 @@ else if(isset($_POST['importVoip'])){
 	
 	$content .= ProcessVOIP($theData, $connectstring);
 }
+/*
 else if(isset($_POST['dirtsimple'])){
 	$theData = $_POST['data'];
 	
 	$content .= ProcessSimple($theData, $connectstring);
-}
+}*/
 
 ?>
 <?php
@@ -341,7 +349,7 @@ else if(isset($_POST['dirtsimple'])){
 	$query = <<< HEREDOC
 	SELECT callid, customerid, calltype, calldatetime, duration, direction, 
        sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
-       ratecenter, carrierid, wholesalerate, wholesaleprice
+       ratecenter, carrierid
 		FROM callrecordmaster_tbr WHERE calltype is not NULL
 HEREDOC;
 	
@@ -437,6 +445,7 @@ HEREDOC;
 					<option value="cisco">Cisco Call Manager 7.1</option>
 					<option value="voip">VOIP Innovations</option>
 					<option value="asterisk">Asterisk</option>
+					<option value="itel">iTel</option>
 				</select>
 				<input name="uploadedFile" type="File" />
 				<input type="submit" value="Import File"/>
