@@ -22,14 +22,6 @@ $vitelityMap['Seconds'] = 'seconds';
 $vitelityMap['CallerID'] = 'callerid';
 $vitelityMap['Disposition'] = 'disposition';
 $vitelityMap['Cost'] = 'cost';
-/*
-$thinktelMap = array();
-$thinktelMap['"Source Number"'] = 'sourcenumber';
-$thinktelMap['"Destination Number"'] = 'destinationnumber';
-$thinktelMap['"Call Date"'] = 'calldate';
-$thinktelMap['"Usage Type"'] = 'usagetype';
-$thinktelMap['"Call Duration (Seconds)"'] = 'rawduration';
-*/
 ?>
 <?php
 include 'lib/TBRLibs.php';
@@ -55,6 +47,9 @@ if(isset($_POST['loadImport'])){
 	}
 	else if($type == 'itel'){
 		$content .= ProcessITel($myFile, $connectstring);
+	}
+	else if($type == 'vitelity'){
+		$content .= ProcessVitelity($myFile, $connectstring);
 	}
 	else if($type == 'thinktel'){
 		$content .= ProcessThinktel($myFile, $connectstring);
@@ -134,7 +129,7 @@ else if(isset($_POST['import'])){
 		$moveStatement = "SELECT \"fnMoveBandwidthCDRToTBR\"();";
 		$delim = '\|';
 		$headerMap = $bandwidthMap;
-	}
+	}/*
 	else if($type == 'vitelity'){
 		$toSkipOnZero[] = 'seconds';
 		$callidFields[] = 'calldatetime';
@@ -152,21 +147,6 @@ else if(isset($_POST['import'])){
 		$moveStatement = "SELECT \"fnMoveVitelityCDRToTBR\"();";
 		$delim = ',';
 		$headerMap = $vitelityMap;
-	}/*
-	else if($type == 'thinktel'){
-		$toSkipOnZero[] = 'rawduration';
-		$numbersToInternationalize[] = 'sourcenumber';
-		$numbersToInternationalize[] = 'destinationnumber';
-		
-		$callidFields[] = 'calldate';
-		$callidFields[] = 'sourcenumber';
-		$callidFields[] = 'destinationnumber';
-		$callidFields[] = 'rawduration';
-		$callidFormat = "calldate || '_' || sourcenumber || '_' || destinationnumber || '_' || rawduration";
-		$table = 'thinktelcdr';
-		$moveStatement = 'SELECT "fnMoveThinktelCDRToTBR"();';
-		$delim = ',';
-		$headerMap = $thinktelMap;
 	}*/
 	
 	$keyedData = TurnCSVIntoAssocArray($theData, $delim, $headerMap);

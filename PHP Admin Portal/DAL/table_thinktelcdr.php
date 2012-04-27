@@ -72,7 +72,7 @@ HEREDOC;
 		$usageType = '';
 		$customerid = '';
 		$direction = '';
-		$calltype = 0;
+		$calltype = null;
 		if(!isset($row['destinationnumber'])){
 			throw new Exception('destinationnumber is a required field');
 		}

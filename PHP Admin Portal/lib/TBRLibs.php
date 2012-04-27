@@ -760,4 +760,44 @@ Raw Duration*/
 	$table->Disconnect();
 	return PrintResults2($table->InsertedCount, $table->SkippedDuplicateCount, $voidedCalls);
 }
+
+function ProcessVitelity($filename, $connectString){
+	include_once './DAL/table_vitelitycdr.php';
+
+	$duplicateRows = 0;
+	$insertedItemCount = 0;
+	$voidedCalls = 0;
+	$handle = fopen($filename, 'r');
+	if($handle == false){
+		#error
+		$error = 'Error';
+		return $error;
+	}
+	$table = new psql_vitelitycdr($connectString);
+	$table->Connect();
+	while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
+/*Date,Source,Destination,Seconds,CallerID,Disposition,Cost*/
+		list($Date, $Source,$Destination,$Seconds,$CallerID, 
+				$Disposition,$Cost) = $data;
+			if($Seconds == 0 or $Seconds == '0'){
+				$voidedCalls++;
+				continue;
+			}
+			$row = array();
+			
+			  $row['calldatetime'] = $Date;
+			  $row['source'] = $Source;
+			  $row['destination'] = $Destination;
+			  $row['seconds'] = $Seconds;
+			  $row['callerid'] = $CallerID;
+			  $row['disposition'] = $Disposition;
+			  $row['cost'] = $Cost;
+									
+			$table->Insert($row);
+	}
+	fclose($handle);
+	$table->MoveToTBR();
+	$table->Disconnect();
+	return PrintResults2($table->InsertedCount, $table->SkippedDuplicateCount, $voidedCalls);
+}
 ?>

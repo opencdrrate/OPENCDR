@@ -99,16 +99,17 @@ HEREDOC;
 	</td>
 </tr>
 </table>
+<form action="showviresult.php?function=showAssignResult" method="POST" name="assignDID">
 <p id="result">Please select a state.</p>
+</form>
 
 <p id="showresults"><button>Show Results</button></p>
-
 <script>
 
 function confirmAddDid(){
 	var agree=confirm("Are you sure you want to purchase these DIDs?");
 	if (agree){
-		$("#assignDID").submit();
+		document.forms["assignDID"].submit();
 		return true;
 	}
 	else{

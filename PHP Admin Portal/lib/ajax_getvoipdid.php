@@ -104,7 +104,6 @@ if(isset($_GET['function'])){
 		$customerTable->Connect();
 		$customers = $customerTable->SelectAll();
 		$table = <<< HEREDOC
-		<form action="showviresult.php?function=showAssignResult" method="POST" name="assignDID">
 		<table>
 		<tr>
 			<td style="width:150px">Enter your E.P.G. : </td>
@@ -116,7 +115,7 @@ if(isset($_GET['function'])){
 			<select name="customerid">
 				<option value="">-- Please Select --</option>
 HEREDOC;
-/*<a href=\"javascript:confirmAddDid()\">Assign DIDs</a>*/
+/*<input type="submit" value="Assign DIDs"/>*/
 		foreach($customers as $customer){
 			$table .= <<< HEREDOC
 			<option value="{$customer['customerid']}">{$customer['customerid']}</option>
@@ -126,7 +125,7 @@ HEREDOC;
 			</select>
 			</td>
 		</tr>
-		<tr><td><input type="submit" value="Assign DIDs"/></td></tr>
+		<tr><td><a href="javascript:confirmAddDid()">Assign DIDs</a></td></tr>
 		</table>
 		
 		<table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
@@ -169,7 +168,7 @@ HEREDOC;
 HEREDOC;
 		$i++;
 		}
-		$table .= '</form></table>';
+		$table .= '</table>';
 		echo $table;
 	}
 	else if($function == 'raw'){

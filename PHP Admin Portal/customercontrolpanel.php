@@ -65,7 +65,7 @@ if(isset($_GET['passwordreset'])){
 	$newPassword = RandomAlphaNum(5);
 	$message .= 'Password reset<br>';
 	ChangePassword($username, '', $newPassword, $connectstring);
-	$message .= 'New Password : '. $newPassword . '<br>';
+	#$message .= 'New Password : '. $newPassword . '<br>';
 	if($email = GetEmail($customerid, $connectstring)){
 		if(SendNewPasswordNotification($username,$email, $newPassword)){
 			$message .= 'Email notification sent to : ' . $email .'<br>';

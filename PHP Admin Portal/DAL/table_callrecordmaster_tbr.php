@@ -72,7 +72,7 @@ HEREDOC;
 	function Insert($row){
 		$callid = '';
 		$customerid = '';
-		$calltype = '';
+		$calltype = null;	
 		$calldatetime = '';
 		$duration = '';
 		$direction = '';
@@ -83,8 +83,8 @@ HEREDOC;
 		$cnamdipped = '';
 		$ratecenter = '';
 		$carrierid = '';
-		$wholesalerate = '0';
-		$wholesaleprice = '0';
+		$wholesalerate = null;
+		$wholesaleprice = null;
 		
 		if(!isset($row['duration'])){
 			throw new Exception('\'duration\' field required for insert.');
@@ -119,8 +119,6 @@ HEREDOC;
 		}
 		if(isset($row['calltype'])){
 			$calltype = $row['calltype'];
-		}else{
-			$calltype = 0;
 		}
 		if(isset($row['direction'])){
 			$direction = $row['direction'];
