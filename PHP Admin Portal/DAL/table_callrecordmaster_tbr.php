@@ -148,7 +148,7 @@ HEREDOC;
 		}
 		
 		if($row['duration'] == 0 || $row['duration'] == '0' ){
-			$this->SkippedCount += 1;
+			$this->SkippedDurationCount += 1;
 			return false;
 		}
 		if($this->DoesExist(array('callid'=>$callid))){
@@ -200,6 +200,98 @@ HEREDOC;
 	}
 	function SelectAll(){
 		throw new Exception('This function is not implemented yet');
+	}
+	
+	function SelectUncat($offset = 0, $limit = 0){
+		$viewQuery = 'SELECT callid, customerid, calldatetime, duration, direction, 
+		   sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
+		   ratecenter, carrierid
+		   FROM callrecordmaster_tbr
+		   where calltype is null';
+		  
+		$limitedQuery = $viewQuery;
+		if($limit > 0){
+			$limitedQuery .= " LIMIT "
+				. $limit
+				. " OFFSET "
+				. $offset	
+				. ";";
+		}
+		$queryResults = pg_query($this->db, $limitedQuery);
+		$allArrayResults = array();
+		
+		while($row = pg_fetch_assoc($queryResults)){
+			$allArrayResults[] = $row;
+		}
+		return $allArrayResults;
+		
+	}
+	
+	function SelectRatingQueue($offset = 0, $limit = 0){
+		
+		$query = <<< HEREDOC
+		SELECT callid, customerid, calltype, calldatetime, duration, direction, 
+		   sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
+		   ratecenter, carrierid
+			FROM {$this->table_name} WHERE calltype is not NULL
+HEREDOC;
+		$limitedQuery = $query;
+		if($limit > 0){
+			$limitedQuery .= " LIMIT "
+				. $limit
+				. " OFFSET "
+				. $offset	
+				. ";";
+		}
+		$queryResults = pg_query($this->db, $limitedQuery);
+		$allArrayResults = array();
+		
+		while($row = pg_fetch_assoc($queryResults)){
+			$callType = $row['calltype'];
+
+			if($callType == '5'){
+				$row['calltype'] = 'Intrastate';
+			}
+			else if($callType == '10'){
+				$row['calltype'] = 'Interstate';
+			}
+			else if($callType == '15'){
+				$row['calltype'] = 'Tiered Origination';
+			}
+			else if($callType == '20'){
+				$row['calltype'] = 'Termination of Indeterminate Jurisdiction';
+			}
+			else if($callType == '25'){
+				$row['calltype'] = 'International';
+			}
+			else if($callType == '30'){
+				$row['calltype'] = 'Toll-free Origination';
+			}
+			else if($callType == '35'){
+				$row['calltype'] = 'Simple Termination';
+			}
+			else{
+				$row['calltype'] = 'Unknown';
+			}
+			$allArrayResults[] = $row;
+		}
+		return $allArrayResults;
+	}
+	
+	function CountRatingQueue(){
+		$queryNumberofRows = 'SELECT count(*) FROM callrecordmaster_tbr WHERE calltype is not NULL;';
+		$numOfRowsResult = pg_query($queryNumberofRows) or die(print pg_last_error());
+		$numberOfRowsArray = pg_fetch_row($numOfRowsResult);
+		$numberOfRows = $numberOfRowsArray[0];
+		return $numberOfRows;
+	}
+	
+	function CountUncat(){
+		$queryNumberofRows = 'SELECT count(*) FROM callrecordmaster_tbr WHERE calltype is NULL;';
+		$numOfRowsResult = pg_query($queryNumberofRows) or die(print pg_last_error());
+		$numberOfRowsArray = pg_fetch_row($numOfRowsResult);
+		$numberOfRows = $numberOfRowsArray[0];
+		return $numberOfRows;
 	}
 }
 ?>

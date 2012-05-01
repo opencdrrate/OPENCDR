@@ -5,19 +5,19 @@
 
 	$db = pg_connect($connectstring);
 
-        $queryHELDCalls = 'SELECT count(*) FROM callrecordmaster_held;';
+    $queryHELDCalls = 'SELECT count(*) FROM callrecordmaster_held;';
 	$queryCalls = 'SELECT count(*) FROM callrecordmaster;';
 	$queryTBRCalls = 'SELECT count(*) FROM callrecordmaster_tbr where calltype is not null;';
-        $queryCustomers = 'SELECT count(*) FROM customermaster;'; 
+    $queryCustomers = 'SELECT count(*) FROM customermaster;'; 
 	$queryProcesses = 'SELECT count(*) FROM processhistory;'; 
 	$queryRateCenters = 'SELECT count(*) FROM tieredoriginationratecentermaster';
-        $queryBillBatches = 'SELECT count(*) FROM billingbatchmaster;';
-        $queryIPAddress = 'SELECT count(*) FROM ipaddressmaster;'; 
+    $queryBillBatches = 'SELECT count(*) FROM billingbatchmaster;';
+    $queryIPAddress = 'SELECT count(*) FROM ipaddressmaster;'; 
 	$queryCustomerTaxSetup = 'SELECT count(*) FROM customertaxsetup;';
 	$queryDIDs = 'SELECT count(*) FROM didmaster;';
 	$queryCDRuncat = 'select count(*) from callrecordmaster_tbr where calltype is null;';
 	$queryNPAmaster = 'select count(*) from npamaster;';
-       $resultHELDCalls = pg_query($queryHELDCalls) or die(print pg_last_error());
+    $resultHELDCalls = pg_query($queryHELDCalls) or die(print pg_last_error());
 	$resultCalls = pg_query($queryCalls) or die(print pg_last_error());
 	$resultTBRCalls = pg_query($queryTBRCalls) or die(print pg_last_error());
 	$resultCustomers = pg_query($queryCustomers) or die(print pg_last_error());
@@ -33,7 +33,7 @@
 	pg_close($db);
 ?>
 
-    <?php echo GetPageHead("System Information")?>
+    <?php echo GetPageHead($sitename);?>
 
 	<div id="body">
         <table id="listing-table" cellpadding="0" cellspacing="0">

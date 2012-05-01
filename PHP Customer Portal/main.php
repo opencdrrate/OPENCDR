@@ -67,7 +67,7 @@ $totalBilled = 0;
 foreach($billingDetailsInfo as $bill){
 	$totalBilled += floatval($bill['lineitemamount']);
 }
-
+$totalBilled = '$'.number_format($totalBilled, 2, '.',',');
 
 $paymentDetails = new psql_paymentmaster($connectstring);
 $paymentDetails->Connect();
@@ -78,6 +78,7 @@ $totalPaid = 0;
 foreach($paymentDetailsInfo as $bill){
 	$totalPaid += floatval($bill['paymentamount']);
 }
+$totalPaid = '$'. number_format($totalPaid, 2,'.',',');
 
 $callrecordmaster = new psql_callrecordmaster($connectstring);
 $callrecordmaster->Connect();

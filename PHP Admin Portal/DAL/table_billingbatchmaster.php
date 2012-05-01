@@ -1,50 +1,36 @@
 <?php
 /*
-CREATE TABLE billingbatchdetails
+CREATE TABLE billingbatchmaster
 (
   billingbatchid character varying(15) NOT NULL,
-  customerid character varying(15) NOT NULL,
-  calltype smallint NOT NULL,
-  lineitemtype smallint NOT NULL,
-  lineitemdesc character varying(100) NOT NULL,
-  lineitemamount numeric(9,2) NOT NULL,
-  lineitemquantity integer NOT NULL,
-  periodstartdate date NOT NULL,
-  periodenddate date NOT NULL
+  billingdate date NOT NULL,
+  duedate date NOT NULL,
+  billingcycleid character varying(15) NOT NULL,
+  usageperiodend date NOT NULL,
+  rowid serial NOT NULL,
+  CONSTRAINT billingbatchmaster_pkey PRIMARY KEY (billingbatchid ),
+  CONSTRAINT billingbatchmaster_rowid_key UNIQUE (rowid )
 )
 */
 /*
-billingbatchid, customerid, calltype, lineitemtype, lineitemdesc, 
-       lineitemamount, lineitemquantity, periodstartdate, periodenddate
+billingbatchid, billingdate, duedate, billingcycleid, usageperiodend
 */
 
-class psql_billingbatchdetails extends SQLTable{
-	public $table_name = 'billingbatchdetails';
+class psql_billingbatchmaster extends SQLTable{
+	public $table_name = 'billingbatchmaster';
 	private $db;
 	private $connectString;
 	
 	private $insertStatement;
 	private $selectStatement;
-	private $batchesStatement;
-	
-	function psql_billingbatchdetails($connectString){
+	function psql_billingbatchmaster($connectString){
 		$this->connectString = $connectString;
 		$this->insertStatement = <<< HEREDOC
-		INSERT INTO {$this->table_name}(billingbatchid, customerid, calltype, 
-									lineitemtype, lineitemdesc,lineitemamount, 
-									lineitemquantity, periodstartdate, periodenddate)
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9);
+		INSERT INTO {$this->table_name}(billingbatchid, billingdate, duedate, billingcycleid, usageperiodend)
+			VALUES ($1,$2,$3,$4,$5);
 HEREDOC;
 		$this->selectStatement = <<< HEREDOC
 		SELECT * FROM {$this->table_name} WHERE customerid = $1;
-HEREDOC;
-		$this->selectCustomerBatchStatement = <<< HEREDOC
-		SELECT * FROM {$this->table_name} WHERE customerid = $1 AND billingbatchid = $2;
-HEREDOC;
-		$this->batchesStatement = <<< HEREDOC
-		SELECT billingbatchid,sum(lineitemamount) as totalamount, count(lineitemamount) as items,
-			max(periodstartdate) as "periodstartdate", max(periodenddate) as "periodenddate"
-		FROM billingbatchdetails where customerid = $1 group by billingbatchid, customerid;
 HEREDOC;
 	}
 	function Connect(){
@@ -53,10 +39,8 @@ HEREDOC;
 			throw new Exception("Error in connection: " . pg_last_error());
 		}
 		set_time_limit(0);
-		pg_prepare($this->db, "insertbillingbatchdetails", $this->insertStatement);
-		pg_prepare($this->db, "selectbillingbatchdetails", $this->selectStatement);
-		pg_prepare($this->db, "selectbatches", $this->batchesStatement);
-		pg_prepare($this->db, "selectcustomerbatch", $this->selectCustomerBatchStatement);
+		pg_prepare($this->db, "insertbillingbatchmaster", $this->insertStatement);
+		pg_prepare($this->db, "selectbillingbatchmaster", $this->selectStatement);
 		/*
 		pg_prepare($this->db, "check", $this->checkStatement);
 		pg_prepare($this->db, "delete", $this->deleteStatement);*/
@@ -110,7 +94,7 @@ HEREDOC;
 		$insertParams = array($billingbatchid,$customerid,$calltype,$lineitemtype,
 		$lineitemdesc,$lineitemamount,$lineitemquantity,$periodstartdate,$periodenddate);
 		
-		$result = pg_execute($this->db, "insertbillingbatchdetails", $insertParams);
+		$result = pg_execute($this->db, "insertbillingbatchmaster", $insertParams);
 		if($result){
 			return true;
 		}
@@ -130,7 +114,7 @@ HEREDOC;
 	}
 	
 	function Select($customerid){
-		$execute_result = pg_execute($this->db, "selectbillingbatchdetails", array($customerid));
+		$execute_result = pg_execute($this->db, "selectbillingbatchmaster", array($customerid));
 		$result = pg_fetch_all($execute_result);
 		if(!$result){
 			return array();
@@ -140,26 +124,5 @@ HEREDOC;
 		}
 	}
 	
-	function SelectCustomerBatch($customerid, $billingbatchid){
-		$execute_result = pg_execute($this->db, "selectcustomerbatch", array($customerid,$billingbatchid));
-		$result = pg_fetch_all($execute_result);
-		if(!$result){
-			return array();
-		}
-		else{
-			return $result;
-		}
-	}
-	
-	function GetBatches($customerid){
-		$execute_result = pg_execute($this->db, "selectbatches", array($customerid));
-		$result = pg_fetch_all($execute_result);
-		if(!$result){
-			return array();
-		}
-		else{
-			return $result;
-		}
-	}
 }
 ?>

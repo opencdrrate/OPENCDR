@@ -42,6 +42,9 @@ if(isset($_POST['loadImport'])){
 		}
 		
 	}
+	else if($type== 'bandwidth'){
+		$content .= ProcessBandwidth($myFile, $connectstring);
+	}
 	else if($type == 'asterisk'){
 		$content .= ProcessAsterisk($myFile, $connectstring);
 	}
@@ -53,6 +56,12 @@ if(isset($_POST['loadImport'])){
 	}
 	else if($type == 'thinktel'){
 		$content .= ProcessThinktel($myFile, $connectstring);
+	}
+	else if($type =='aretta'){
+		$content .= ProcessAretta($myFile, $connectstring);
+	}
+	else if($type =='voip'){
+		$content .= ProcessVOIP($myFile, $connectstring);
 	}
 	else{
 		$fh = fopen($myFile, 'r');
@@ -79,19 +88,19 @@ if(isset($_POST['loadImport'])){
 		}
 		else if($type == 'telepo'){
 			echo '<input type="hidden" name="importTelepo" value="1"/>';
-		}
+		}/*
 		else if($type == 'aretta'){
 			echo '<input type="hidden" name="importAretta" value="1"/>';
-		}
+		}*/
 		else if($type == 'slinger'){
 			echo '<input type="hidden" name="importSlinger" value="1"/>';
 		}
 		else if($type == 'cisco'){
 			echo '<input type="hidden" name="importCisco" value="1"/>';
-		}
+		}/*
 		else if($type == 'voip'){
 			echo '<input type="hidden" name="importVoip" value="1"/>';
-		}
+		}*/
 		
 		else{
 			echo '<input type="hidden" name="import" value="1"/>';
@@ -311,11 +320,11 @@ else if(isset($_POST['dirtsimple'])){
 <?php
 	include 'config.php';
 	include 'lib/SQLQueryFuncs.php';
-	$db = pg_connect($connectstring);
-	$queryNumberofRows = 'SELECT count(*) FROM callrecordmaster_tbr WHERE calltype is not NULL;';
-	$numOfRowsResult = pg_query($queryNumberofRows) or die(print pg_last_error());
-	$numberOfRowsArray = pg_fetch_row($numOfRowsResult);
-	$numberOfRows = $numberOfRowsArray[0];
+	include_once 'DAL/table_callrecordmaster_tbr.php';
+	
+	$table = new psql_callrecordmaster_tbr($connectstring);
+	$table->Connect();
+	$numberOfRows = $table->CountRatingQueue();
 	
 	$offset = 0;
 	if(isset($_POST["offset"])){
@@ -325,57 +334,12 @@ else if(isset($_POST['dirtsimple'])){
 	$limit = 1000;
 	$endoffset = min($offset + $limit, $numberOfRows);
 	$prevoffset = max($offset - $limit, 0);
-		
-	$query = <<< HEREDOC
-	SELECT callid, customerid, calltype, calldatetime, duration, direction, 
-       sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
-       ratecenter, carrierid
-		FROM callrecordmaster_tbr WHERE calltype is not NULL
-HEREDOC;
+	$allArrayResults = $table->SelectRatingQueue($offset, $limit);
 	
-	$limitedQuery = $query
-		. " LIMIT "
-		. $limit
-		. " OFFSET "
-		. $offset	
-		. ";";
-
 	$titlespiped = "CallID,CustomerID,CallType,CallDateTime,Duration,Direction,SourceIP,OriginationNumber,DestinationNumber,LRN,CNAMDipped,RateCenter,CarrierID";
 	$titles = preg_split("/,/",$titlespiped,-1);
-	
-	$queryResults = pg_query($db, $limitedQuery);
-	$allArrayResults = array();
-	
-	while($row = pg_fetch_assoc($queryResults)){
-		$callType = $row['calltype'];
-
-		if($callType == '5'){
-			$row['calltype'] = 'Intrastate';
-		}
-		else if($callType == '10'){
-			$row['calltype'] = 'Interstate';
-		}
-		else if($callType == '15'){
-			$row['calltype'] = 'Tiered Origination';
-		}
-		else if($callType == '20'){
-			$row['calltype'] = 'Termination of Indeterminate Jurisdiction';
-		}
-		else if($callType == '25'){
-			$row['calltype'] = 'International';
-		}
-		else if($callType == '30'){
-			$row['calltype'] = 'Toll-free Origination';
-		}
-		else if($callType == '35'){
-			$row['calltype'] = 'Simple Termination';
-		}
-		else{
-			$row['calltype'] = 'Unknown';
-		}
-		$allArrayResults[] = $row;
-	}
 	$htmltable = AssocArrayToTable($allArrayResults,$titles); 
+	$table->Disconnect();
 ?> 
 
 <?php

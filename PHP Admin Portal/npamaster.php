@@ -136,7 +136,10 @@ NOTE: Do not leave any white space in the header
 <p>
 You can find additional NPAs in excel format at the 
 <a href="http://www.nationalnanpa.com/nas/public/npasInServiceByNumberReport.do?method=displayNpasInServiceByNumberReport">
-NANPA website</a>
+NANPA website</a><br><br>
+
+<p>For some sample NPAs go <a href="http://sourceforge.net/projects/opencdrrate/files/Sample%20Rate%20Sheets/">here</a> </p>
+
 <form enctype="multipart/form-data"  action="npamaster.php" method="POST">
 	<input name="uploadedFile" type="File"/>
 	<input type="hidden" name="import" value="1"/>

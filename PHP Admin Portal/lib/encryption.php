@@ -8,7 +8,6 @@ function hash_password($password, $nonce) {
 
 function ValidateUsernamePassword($username, $password, $connectionString){
 	$db = pg_connect($connectionString) or die('Couldn\'t connect to database');
-	
 	$select_query = "SELECT HashedPassword, Nonce FROM webportalaccess WHERE username = $1";
 	$result = pg_query_params($db, $select_query, array($username));
 	$db_data = pg_fetch_assoc($result);

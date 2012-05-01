@@ -427,35 +427,39 @@ function ProcessTelepo($theData, $connectstring){
 	
 	return $finalResult;
 }
-function ProcessAretta($theData, $connectstring){
-	$delim = ',';
+function ProcessAretta($filename, $connectString){
+	include_once './DAL/table_callrecordmaster_tbr.php';
 	
+	$duplicateRows = 0;
+	$insertedItemCount = 0;
 	$voidedCalls = 0;
-	
-	$allRows = preg_split('/\r\n/', $theData, -1);
-	$keyedData = array();
-	
-	foreach($allRows as $row){
-		$item = preg_split('/'.$delim.'/',$row,-1);
-		if($row == '' or !isset($item[1])){
-			continue;
-		}
+	$handle = fopen($filename, 'r');
+	if($handle == false){
+		#error
+		$error = 'Error';
+		return $error;
+	}
+	$table = new psql_callrecordmaster_tbr($connectString);
+	$table->Connect();
+	while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
+	/*Call Date,Trunk,Call Type,Source (CallerID),Destination,Sec,Disposition,Cost*/
+		list($CallDate,$Trunk,$CallType,$Source,$Destination,$Sec,$Disposition,$Cost) = $data;
 		
 		$assocItem = array();
-		$assocItem['originatingnumber'] = $item[3];
-		$assocItem['destinationnumber'] = $item[4];
+		$assocItem['originatingnumber'] = $Source;
+		$assocItem['destinationnumber'] = $Destination;
 		$assocItem['sourceip'] = '';
-		$assocItem['calldatetime'] = $item[0];
-		$assocItem['duration'] = $item[5];
+		$assocItem['calldatetime'] = $CallDate;
+		$assocItem['duration'] = $Sec;
 		$assocItem['cnamdipped'] = 'f';
 		$assocItem['carrierid'] = 'ARETTA';
-		$assocItem['wholesaleprice'] = $item[7];
+		$assocItem['wholesaleprice'] = $Cost;
 		$assocItem['callid'] = $assocItem['calldatetime'] 
 								. '_' . $assocItem['originatingnumber']
 								. '_' . $assocItem['destinationnumber']
 								. '_' . $assocItem['duration'];
 		
-		if($item[2] == "Outbound"){
+		if($CallType == "Outbound"){
 			$assocItem['direction'] = "O";
 			$assocItem['calltype'] = '35';
 		}
@@ -468,11 +472,11 @@ function ProcessAretta($theData, $connectstring){
 			continue;
 		}
 		$keyedData[] = $assocItem;
+		$table->Insert($assocItem);
 	}
-	$insertResults = InsertDataIntoCallRecordMaster($keyedData,$connectstring);
-	$insertResults['VoidedCalls'] = $voidedCalls;
-	$finalResult = PrintResults($insertResults);
-	return $finalResult;
+	fclose($handle);
+	$table->Disconnect();
+	return PrintResults2($table->InsertedCount, $table->SkippedDuplicateCount, $voidedCalls);
 }
 function ProcessSlinger($theData, $connectstring){
 	$delim = ',';
@@ -552,19 +556,27 @@ function ProcessCisco($theData, $connectString){
 	$finalResult = PrintResults($insertResults);
 	return $finalResult;
 }
-function ProcessVOIP($theData, $connectString){
-	print_debug('Processing VOIP file');
+
+function ProcessVOIP($filename, $connectString){
 	$delim = ';';
-	
+	include_once './DAL/table_callrecordmaster_tbr.php';
+
 	$voidedCalls = 0;
-	
-	$rawKeyedData = TurnCSVIntoAssocArray($theData, $delim, '\n');
-	$keyedData = array();
-	foreach($rawKeyedData as $row){
+	$handle = fopen($filename, 'r');
+	if($handle == false){
+		#error
+		$error = 'Error';
+		return $error;
+	}
+	$table = new psql_callrecordmaster_tbr($connectString);
+	$table->Connect();
+	while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
 	/*CallType,StartTime,StopTime,CallDuration,BillDuration,CallMinimum,CallIncrement,BasePrice,CallPrice,
 	TransactionId,CustomerIP,ANI,ANIState,DNIS,LRN,DNISState,DNISLATA,DNISOCNOrig,Tier*/
+		list($CallType,$StartTime,$StopTime,$CallDuration,$BillDuration,$CallMinimum,$CallIncrement,$BasePrice,$CallPrice,
+	$TransactionId,$CustomerIP,$ANI,$ANIState,$DNIS,$LRN,$DNISState,$DNISLATA,$DNISOCNOrig,$Tier) = $data;
 		$assocItem = array();
-		switch ($row['CallType']){
+		switch ($CallType){
 			case 'TERM_EXT_US_INTER':
 				$assocItem['calltype'] = 25;
 				break;
@@ -584,19 +596,16 @@ function ProcessVOIP($theData, $connectString){
 				$assocItem['calltype'] = 5;
 				break;
 		}
-		if(!array_key_exists('StartTime', $row)){
-			continue;
-		}
-		$assocItem['calldatetime'] = $row['StartTime'];
-		$assocItem['duration'] = intval($row['CallDuration']);
+		$assocItem['calldatetime'] = $StartTime;
+		$assocItem['duration'] = intval($CallDuration);
 		
-		$assocItem['originatingnumber'] = $row['ANI'];
-		$assocItem['destinationnumber'] = $row['DNIS'];
+		$assocItem['originatingnumber'] = $ANI;
+		$assocItem['destinationnumber'] = $DNIS;
 		
-		$assocItem['lrn'] = $row['LRN'];
-		$assocItem['ratecenter'] = $row['Tier'];
+		$assocItem['lrn'] = $LRN;
+		$assocItem['ratecenter'] = $Tier;
 		$assocItem['carrierid'] = 'VI';
-		$assocItem['sourceip'] = $row['CustomerIP'];
+		$assocItem['sourceip'] = $CustomerIP;
 		$assocItem['cnamdipped'] = 'f';
 		$assocItem['callid'] = $assocItem['calldatetime'] 
 								. '_' . $assocItem['originatingnumber']
@@ -606,21 +615,16 @@ function ProcessVOIP($theData, $connectString){
 			$voidedCalls++;
 			continue;
 		}
-		$keyedData[] = $assocItem;
+		$keyedData[] = $assocItem;	
+		$table->Insert($assocItem);
 	}
-	$finalResult = '';
-	$insertResults = InsertDataIntoCallRecordMaster($keyedData, $connectString);
-	
-	$insertResults['VoidedCalls'] = $voidedCalls;
-	$finalResult = PrintResults($insertResults);
-	return $finalResult;
+	fclose($handle);
+	$table->Disconnect();
+	return PrintResults2($table->InsertedCount, $table->SkippedDuplicateCount, $voidedCalls);
 }
-
 function ProcessAsterisk($filename, $connectString){
-	$table = 'callrecordmaster_tbr';
+	include_once './DAL/table_callrecordmaster_tbr.php';
 
-	$duplicateRows = 0;
-	$insertedItemCount = 0;
 	$voidedCalls = 0;
 	$handle = fopen($filename, 'r');
 	if($handle == false){
@@ -628,7 +632,9 @@ function ProcessAsterisk($filename, $connectString){
 		$error = 'Error';
 		return $error;
 	}
-	while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+	$table = new psql_callrecordmaster_tbr($connectString);
+	$table->Connect();
+	while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
     // NOTE: the fields in Master.csv can vary. This should work by default 
 	//on all installations but you may have to edit the next line to match your configuration
     list($accountcode,$src, $dst, $dcontext, $clid, $channel, $dstchannel, $lastapp, $lastdata, $start, $answer, $end, $duration,
@@ -652,26 +658,15 @@ function ProcessAsterisk($filename, $connectString){
 								. '_' . $assocItem['destinationnumber']
 								. '_' . $assocItem['duration'];
 								
-		$result = InsertRowIntoCallRecordMaster($assocItem, $connectString, $table);
-		if($result == 0){
-			$insertedItemCount++;
-		}
-		else if($result ==2){
-			die();
-		}
-		else{
-			$duplicateRows++;
-		}
+		$table->Insert($assocItem);
 	}
 	fclose($handle);
-	
-	return PrintResults2($insertedItemCount, $duplicateRows, $voidedCalls);
+	$table->Disconnect();
+	return PrintResults2($table->InsertedCount, $table->SkippedDuplicateCount, $voidedCalls);
 }
 function ProcessITel($filename, $connectString){
 	include_once './DAL/table_callrecordmaster_tbr.php';
 
-	$duplicateRows = 0;
-	$insertedItemCount = 0;
 	$voidedCalls = 0;
 	$handle = fopen($filename, 'r');
 	if($handle == false){
@@ -716,13 +711,9 @@ function ProcessITel($filename, $connectString){
 	$table->Disconnect();
 	return PrintResults2($table->InsertedCount, $table->SkippedDuplicateCount, $voidedCalls);
 }
-
-
 function ProcessThinktel($filename, $connectString){
 	include_once './DAL/table_thinktelcdr.php';
 
-	$duplicateRows = 0;
-	$insertedItemCount = 0;
 	$voidedCalls = 0;
 	$handle = fopen($filename, 'r');
 	if($handle == false){
@@ -760,12 +751,9 @@ Raw Duration*/
 	$table->Disconnect();
 	return PrintResults2($table->InsertedCount, $table->SkippedDuplicateCount, $voidedCalls);
 }
-
 function ProcessVitelity($filename, $connectString){
 	include_once './DAL/table_vitelitycdr.php';
 
-	$duplicateRows = 0;
-	$insertedItemCount = 0;
 	$voidedCalls = 0;
 	$handle = fopen($filename, 'r');
 	if($handle == false){
@@ -793,6 +781,62 @@ function ProcessVitelity($filename, $connectString){
 			  $row['disposition'] = $Disposition;
 			  $row['cost'] = $Cost;
 									
+			$table->Insert($row);
+	}
+	fclose($handle);
+	$table->MoveToTBR();
+	$table->Disconnect();
+	return PrintResults2($table->InsertedCount, $table->SkippedDuplicateCount, $voidedCalls);
+}
+function ProcessBandwidth($filename, $connectString){
+	include_once './DAL/table_bandwidthcdr.php';
+
+	$voidedCalls = 0;
+	$handle = fopen($filename, 'r');
+	if($handle == false){
+		#error
+		$error = 'Error';
+		return $error;
+	}
+	$table = new psql_bandwidthcdr($connectString);
+	$table->Connect();
+	$count = 1;
+	while (($data = fgetcsv($handle, 1000, '|')) !== FALSE) {
+/*DEBTOR_ID|item.id|computed.billable_minutes|computed.charge_name|computed.trans_rate|AMOUNT|
+TAX_AMOUNT|RECORD_DATE|item.dest|item.src|item.type|item.dest_lata|item.dest_ocn|item.dest_oocn|
+item.dest_rcs|item.src_ocn|item.src_oocn|item.src_rcs|lrn|ipaddress|billedtier|rateddatetime|cdrid*/
+		list($DEBTOR_ID,$itemid,$billable_minutes,$charge_name,$trans_rate,$AMOUNT,
+$TAX_AMOUNT,$RECORD_DATE,$dest,$src,$type,$dest_lata,$dest_ocn,$dest_oocn,
+$dest_rcs,$src_ocn,$src_oocn,$src_rcs,$lrn,$ipaddress,$billedtier,$rateddatetime,$cdrid) = $data;
+			if($count == 1){
+				$count++;
+				continue;
+			}
+			/*
+			$bandwidthMap['DEBTOR_ID'] = 'debtor_id';
+$bandwidthMap['item.id'] = 'itemid';
+$bandwidthMap['computed.billable_minutes'] = 'billable_minutes';
+$bandwidthMap['item.type'] = 'itemtype';
+$bandwidthMap['computed.trans_rate'] = 'trans_rate';
+$bandwidthMap['AMOUNT'] = 'amount';
+$bandwidthMap['RECORD_DATE'] = 'record_date';
+$bandwidthMap['item.src'] = 'src';
+$bandwidthMap['item.dest'] = 'dest';
+$bandwidthMap['item.dst_rcs'] = 'dst_rcs';
+$bandwidthMap['lrn'] = 'lrn';
+			*/
+			$row = array();
+			  $row['debtor_id'] = $DEBTOR_ID;
+			  $row['itemid'] = $itemid;
+			  $row['billable_minutes'] = $billable_minutes;
+			  $row['itemtype'] = $type;
+			  $row['trans_rate'] = $trans_rate;
+			  $row['amount'] = $AMOUNT;
+			  $row['record_date'] = $RECORD_DATE;
+			  $row['src'] = $src;
+			  $row['dest'] = $dest;
+			  $row['dst_rcs'] = $dest_rcs;
+			  $row['lrn'] = $lrn;
 			$table->Insert($row);
 	}
 	fclose($handle);
