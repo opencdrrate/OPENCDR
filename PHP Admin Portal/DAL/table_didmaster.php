@@ -15,7 +15,7 @@ class psql_didmaster extends SQLTable{
 		$this->insertStatement = 
 			"INSERT INTO {$this->table_name} (did, customerid) VALUES ($1, $2)";
 		$this->checkStatement = <<< HEREDOC
-			SELECT 1 FROM {$this->table_name} WHERE did = $1 AND customerid = $2
+			SELECT 1 FROM {$this->table_name} WHERE did = $1
 HEREDOC;
 		$this->deleteStatement = <<< HEREDOC
 		DELETE from {$this->table_name} where rowid = $1
@@ -25,12 +25,12 @@ HEREDOC;
 HEREDOC;
 	}
 	private function E164DID($did){
-		$newDID = $did;
-		if(strlen($did) == 10 and substr($did,0,1) != '+'){
-			$newDID = '+1'.$did;
+		$newDID = trim($did);
+		if(strlen($newDID) == 10 and substr($newDID,0,1) != '+'){
+			$newDID = '+1'.$newDID;
 		}
-		if(strlen($did) == 11 and substr($did,0,1) == '1'){
-			$newDID = '+1'.$did;
+		if(strlen($newDID) == 11 and substr($newDID,0,1) == '1'){
+			$newDID = '+1'.substr($newDID,1);
 		}/*
 		if(substr($did,0,3) == '011'){
 			$did = '+'.substr($did,3,20);
@@ -44,10 +44,10 @@ HEREDOC;
 			throw new Exception("Error in connection: " . pg_last_error());
 		}
 		set_time_limit(0);
-		pg_prepare($this->db, "insert", $this->insertStatement);
-		pg_prepare($this->db, "check", $this->checkStatement);
-		pg_prepare($this->db, "delete", $this->deleteStatement);
-		pg_prepare($this->db, "update", $this->updateStatement);
+		pg_prepare($this->db, 'insertDidMaster', $this->insertStatement);
+		pg_prepare($this->db, 'checkDidMaster', $this->checkStatement);
+		pg_prepare($this->db, 'deleteDidMaster', $this->deleteStatement);
+		pg_prepare($this->db, 'updateDidMaster', $this->updateStatement);
 	}
 	function Disconnect(){
 		pg_close($this->db);
@@ -69,7 +69,7 @@ HEREDOC;
 			throw new Exception('did already exists for customer : ' . $row['customerid']);
 			return false;
 		}
-		$result = pg_execute($this->db, "insert", $insertParams);
+		$result = pg_execute($this->db, 'insertDidMaster', $insertParams);
 		if($result){
 			return true;
 		}
@@ -80,7 +80,7 @@ HEREDOC;
 	function Delete($row){
 		$rowid = $row['rowid'];
 		$deleteParams = array($rowid);
-		$result = pg_execute($this->db, "delete", $deleteParams);
+		$result = pg_execute($this->db, 'deleteDidMaster', $deleteParams);
 		if($result){
 			return true;
 		}
@@ -88,7 +88,7 @@ HEREDOC;
 	}
 	function DoesExist($row){
 		$did = $this->E164DID($row['did']);
-		$result = pg_execute($this->db, "check", array($did, $row['customerid']));
+		$result = pg_execute($this->db, 'checkDidMaster', array($did));
 		$hasEntry = pg_fetch_array($result);
 		if(!$hasEntry){
 			return false;
@@ -103,7 +103,7 @@ HEREDOC;
 		$did = $old['did'];
 		$e164did = $this->E164DID($did);
 		$updateParams = array($newCustomerID, $e164did);
-		$result = pg_execute($this->db, "update", $updateParams);
+		$result = pg_execute($this->db, 'updateDidMaster', $updateParams);
 	}
 	function SelectAll(){
 		throw new Exception('This function is not implemented yet');

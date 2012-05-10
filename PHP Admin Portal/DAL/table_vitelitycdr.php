@@ -200,7 +200,7 @@ HEREDOC;
 			$phoneNumber = '+1'.$phoneNumber;
 		}
 		if(strlen($phoneNumber) == 11 and substr($phoneNumber,0,1) == '1'){
-			$phoneNumber = '+1'.$phoneNumber;
+			$phoneNumber = '+1'.substr($phoneNumber,1);
 		}
 		if(substr($phoneNumber,0,3) == '011'){
 			$phoneNumber = '+'.substr($phoneNumber,3,20);

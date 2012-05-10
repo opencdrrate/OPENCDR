@@ -14,8 +14,12 @@
 	set_error_handler("customError");
 	
 	$result = '';
-	$table = new psql_didmaster($connectstring);
+	$did = '';
+	if(isset($_GET['did'])){
+		$did = $_GET['did'];
+	}
  if (isset($_POST['submit'])) {
+	 $table = new psql_didmaster($connectstring);
      $customerid = pg_escape_string($_POST['customerid']);
      $did = pg_escape_string($_POST['did']);
 	 
@@ -39,7 +43,7 @@
 	<?php echo $errors;?>
 	<?php echo $result;?>
     <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" id="standardform">
-      <label>DID:</label><input type="text" name="did" value="<?php if (isset($_POST['submit'])) { echo $did; } ?>" ><br /> 
+      <label>DID:</label><input type="text" name="did" value="<?php if (isset($did)) { echo $did; } ?>" ><br /> 
       <label>CustomerID:</label><?php echo CreateDropDown($connectstring,'customerid', 'customermaster'); ?><br />  
       <input type="submit" name="submit" value="Save"><br />	
     </form> 

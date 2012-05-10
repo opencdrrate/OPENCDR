@@ -10,12 +10,12 @@ Billed Amount (Dollars),Source Location,Destination Location,Rate (Dollars Per M
 Raw Duration*/
 		list($BillingNumber, $SourceNumber,$DestinationNumber,$CallDate,$Duration, 
 				$Type,$Amount,$SrcLocation,$DestLocation,$Rate, $Label, $RawDuration) = $data;
-			if($Duration == 0 or $Duration == '0'){
+			if($RawDuration == 0 or $RawDuration == '0'){
 				return false;
 			}
 			$assocItem = array();
 			$assocItem['calldate'] = $CallDate;
-			$assocItem['rawduration'] = $Duration;
+			$assocItem['rawduration'] = $RawDuration;
 			$assocItem['sourcenumber'] = $SourceNumber;
 			$assocItem['destinationnumber'] = $DestinationNumber;
 			

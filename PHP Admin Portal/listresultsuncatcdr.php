@@ -2,6 +2,7 @@
 	include 'lib/Page.php';
 	include 'lib/SQLQueryFuncs.php';
 	include 'config.php';
+	include_once 'DAL/table_didmaster.php';
 	include_once 'DAL/table_callrecordmaster_tbr.php';
 	$message = '';
 	$query = 'SELECT * FROM callrecordmaster_tbr where calltype is null';
@@ -37,15 +38,6 @@
 	$prevoffset = max($offset - $limit, 0);
 	$allArrayResults = $table->SelectUncat($offset, $limit);
 	
-	$viewQuery = 'SELECT callid, customerid, calldatetime, duration, direction, 
-       sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
-       ratecenter, carrierid
-	   FROM callrecordmaster_tbr
-	   where calltype is null';
-	   
-	
-	#$queryResult = SQLSelectQuery($connectstring, $viewQuery, ",", "\n");
-	
 	$htmltable = <<< HEREDOC
 	<table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
 	<thead><tr>
@@ -62,14 +54,37 @@
 	<th>CNAMDip</th>
 	<th>RateCenter</th>
 	<th>CarrierID</th>
+	<th>Possible Resolution</th>
 	</tr></thead><tbody>
 HEREDOC;
 	$i = 0;
+	$didTable = new psql_didmaster($connectstring);
+	$didTable->Connect();
 	foreach($allArrayResults as $row){
 	/*callid, customerid, calldatetime, duration, direction, 
        sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
        ratecenter, carrierid
 	*/
+		$catMessage = '';
+		//Check if the originating number and/or destination number exists in the DID table
+		$origNumberExists = $didTable->DoesExist(array('did' => $row['originatingnumber']));
+		$destNumberExists = $didTable->DoesExist(array('did' => $row['destinationnumber']));
+		
+		$origView = $row['originatingnumber'];
+		$destView = $row['destinationnumber'];
+			
+		if(!$origNumberExists and !$destNumberExists){
+			$destView = <<< HEREDOC
+			<a href="adddid.php?did={$row['destinationnumber']}">{$row['destinationnumber']}</a>
+HEREDOC;
+			$origView = <<< HEREDOC
+			<a href="adddid.php?did={$row['originatingnumber']}">{$row['originatingnumber']}</a>
+HEREDOC;
+			$catMessage .= <<< HEREDOC
+			<font color="red">Add did for {$destView} or {$origView}</font>
+HEREDOC;
+		}
+		
 		$htmltable .= <<< HEREDOC
 		<tr>
 			<td><Input type="checkbox" name="cdrList[{$i}]" value="{$row['callid']}"/></td>
@@ -79,12 +94,13 @@ HEREDOC;
 			<td>{$row['duration']}</td>
 			<td>{$row['direction']}</td>
 			<td>{$row['sourceip']}</td>
-			<td>{$row['originatingnumber']}</td>
-			<td>{$row['destinationnumber']}</td>
+			<td>{$origView}</td>
+			<td>{$destView}</td>
 			<td>{$row['lrn']}</td>
 			<td>{$row['cnamdipped']}</td>
 			<td>{$row['ratecenter']}</td>
 			<td>{$row['carrierid']}</td>
+			<td>{$catMessage}</td>
 		</tr>
 HEREDOC;
 		$i++;
@@ -94,12 +110,7 @@ HEREDOC;
 	<td colspan="15"></td>
 	</tr></tfoot></table>
 HEREDOC;
-	/*
-	$titlespiped = "CallID,CustomerID,CallDateTime,Duration,Direction,SourceIP,OriginationNumber,DestinationNumber,LRN,CNAMDip,RateCenter,CarrierID";
-	$titles = preg_split("/,/",$titlespiped,-1);
-	
-	$htmltable = AssocArrayToTable($allArrayResults,$titles); 
-	*/
+
 	$javascripts = <<< HEREDOC
 	<script type="text/javascript">
 function confirmDelete(){
@@ -113,6 +124,7 @@ function confirmDelete(){
 }
 </script>
 HEREDOC;
+	$didTable->Disconnect();
 ?> 
 
 
