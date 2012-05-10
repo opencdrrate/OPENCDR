@@ -1,4 +1,6 @@
-﻿CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCalls"()
+﻿CREATE LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCalls"()
   RETURNS integer AS
 $BODY$
 
@@ -67,8 +69,7 @@ END;
 
 
 $BODY$
-  LANGUAGE plpgsql VOLATILE
-  COST 100;
+  LANGUAGE plpgsql;
 /*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
@@ -382,7 +383,8 @@ END;
 
 
 $BODY$
-  LANGUAGE plpgsql;--======================================================================--
+  LANGUAGE plpgsql;
+  --======================================================================--
 /*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 
@@ -412,12 +414,33 @@ BEGIN
 RAISE NOTICE 'Function started at %', StartDateTime;
 
 
+--cleanup
+delete from callrecordmaster_tbr where Duration <= 0;
+update callrecordmaster_tbr set customerid = replace(customerid, ' ', '');
+
+
 --massages source/dest into E.164
+--NANPA
 update callrecordmaster_tbr set OriginatingNumber = '+1' || OriginatingNumber where char_length(OriginatingNumber) = 10 and substring(OriginatingNumber from 1 for 1) <> '+';
 update callrecordmaster_tbr set OriginatingNumber = '+' || OriginatingNumber where char_length(OriginatingNumber) = 11 and substring(OriginatingNumber from 1 for 1) = '1';
 update callrecordmaster_tbr set DestinationNumber = '+1' || DestinationNumber where char_length(DestinationNumber) = 10 and substring(DestinationNumber from 1 for 1) not in ('+', '0');
 update callrecordmaster_tbr set DestinationNumber = '+' || DestinationNumber where char_length(DestinationNumber) = 11 and substring(DestinationNumber from 1 for 1) = '1';
 update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 4 for 20) where substring(DestinationNumber from 1 for 3) = '011';
+
+--UK
+update callrecordmaster_tbr set OriginatingNumber = '+' || OriginatingNumber where char_length(OriginatingNumber) = 12 and substring(OriginatingNumber from 1 for 2) = '44';
+update callrecordmaster_tbr set DestinationNumber = '+' || DestinationNumber where char_length(DestinationNumber) = 12 and substring(DestinationNumber from 1 for 2) = '44';
+
+
+--UK Geographic
+update callrecordmaster_tbr set DestinationNumber = '+44' || DestinationNumber where char_length(DestinationNumber) = 12 and substring(DestinationNumber from 1 for 3) = '901';
+update callrecordmaster_tbr set DestinationNumber = '+44' || DestinationNumber where char_length(DestinationNumber) = 12 and substring(DestinationNumber from 1 for 3) = '902';
+
+--UK Mobile
+update callrecordmaster_tbr set DestinationNumber = '+44' || DestinationNumber where char_length(DestinationNumber) = 12 and substring(DestinationNumber from 1 for 3) = '907';
+
+--UK Other
+update callrecordmaster_tbr set DestinationNumber = '+44' || DestinationNumber where char_length(DestinationNumber) = 12 and substring(DestinationNumber from 1 for 3) = '908';
 
 
 --try to figure out the customerid/direction by the DID.
@@ -529,7 +552,8 @@ RETURN 00000;
 
 END;
 
-$$ LANGUAGE plpgsql;--======================================================================--
+$$ LANGUAGE plpgsql;
+  --======================================================================--
 /*  OpenCDRRate Rate your call records.
     Copyright (C) 2011  DTH Software, Inc
 

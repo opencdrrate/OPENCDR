@@ -16,6 +16,17 @@ ol, ul, li, form, label
 	padding: 0;
 }
 
+pre
+{
+	height: 20em;
+	font-family: monospace;
+	font-size: 0.9em;
+	padding: 1px 2px;
+	margin: 0 0 1em auto;
+	border: 1px inset #666;
+	background-color: #eee;
+	overflow: auto;
+}
 
 #bg {
     left: 0;
@@ -156,8 +167,25 @@ background: url('../images/footer.jpg') repeat;
 	color: #b61105;
     }
 
-
-
+#progress p
+{
+	display: block;
+	width: 240px;
+	padding: 2px 5px;
+	margin: 2px 0;
+	border: 1px inset #446;
+	border-radius: 5px;
+	background: #eee url("../images/progress.png") 100% 0 repeat-y;
+}
+#progress p.success  
+{  
+    background: #0c0 none 0 0 no-repeat;  
+}  
+#progress p.failed  
+{  
+    background: #c00 none 0 0 no-repeat;  
+}
+  
 #footer {
     background: url('../images/footer.jpg') repeat;
     height: 49px;

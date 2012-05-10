@@ -115,8 +115,8 @@ HEREDOC;
 			$direction = $row['direction'];
 		}
 		
-		$destinationNumber = InternationalizePhoneNumber($row['destination']);
-		$sourceNumber = InternationalizePhoneNumber($row['source']); 
+		$destinationNumber = $this->InternationalizePhoneNumber($row['destination']);
+		$sourceNumber = $this->InternationalizePhoneNumber($row['source']); 
 		/*"calldatetime","source","destination"
 					,"seconds","callerid","disposition","cost","calltype","direction")*/
 		$insertParams = array(  $row['calldatetime'],
@@ -150,8 +150,8 @@ HEREDOC;
 	}
 	function Delete($row){
 	
-		$destinationNumber = InternationalizePhoneNumber($row['destination']);
-		$sourceNumber = InternationalizePhoneNumber($row['source']); 
+		$destinationNumber = $this->InternationalizePhoneNumber($row['destination']);
+		$sourceNumber = $this->InternationalizePhoneNumber($row['source']); 
 		$deleteParams = array($sourceNumber,$destinationNumber,
 							$row['calldatetime'],$row['seconds']);
 		$result = pg_execute($this->db, "deletevitelity", $deleteParams);
@@ -163,8 +163,8 @@ HEREDOC;
 	}
 	function DoesExist($row){
 
-		$destinationNumber = InternationalizePhoneNumber($row['destination']);
-		$sourceNumber = InternationalizePhoneNumber($row['source']); 
+		$destinationNumber = $this->InternationalizePhoneNumber($row['destination']);
+		$sourceNumber = $this->InternationalizePhoneNumber($row['source']); 
 		$selectParams = array($sourceNumber,$destinationNumber,
 							$row['calldatetime'],$row['seconds']);
 		$result = pg_execute($this->db, "checkvitelity", $selectParams);

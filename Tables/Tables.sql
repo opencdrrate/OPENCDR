@@ -15,7 +15,6 @@
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE arettacdr;
 CREATE TABLE arettacdr(
         CallDate timestamp NOT NULL,
         Trunk varchar(100),
@@ -43,7 +42,6 @@ CREATE TABLE arettacdr(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE asteriskcdr;
 CREATE TABLE asteriskcdr(
         accountcode varchar(40) NOT NULL,
         src varchar(80) NOT NULL,
@@ -69,8 +67,6 @@ CREATE TABLE asteriskcdr(
  
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
-
-DROP TABLE bandwidthcdr;
 CREATE TABLE bandwidthcdr(
         DEBTOR_ID varchar(15) NOT NULL,
         itemid varchar(100) NOT NULL,
@@ -105,7 +101,6 @@ CREATE TABLE bandwidthcdr(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE billingbatchdetails;
 CREATE TABLE billingbatchdetails(
 	BillingBatchID varchar(15) NOT NULL,
 	CustomerID varchar(15) NOT NULL,
@@ -134,7 +129,6 @@ CREATE TABLE billingbatchdetails(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE billingbatchmaster;
 CREATE TABLE billingbatchmaster(
 	BillingBatchID varchar(15) PRIMARY KEY,
 	BillingDate date NOT NULL, 
@@ -159,7 +153,6 @@ CREATE TABLE billingbatchmaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE callrecordmaster;
 CREATE TABLE callrecordmaster(
         CallID varchar(100)     PRIMARY KEY,
         CustomerID varchar(15) NOT NULL,
@@ -204,7 +197,6 @@ CREATE TABLE callrecordmaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE callrecordmaster_held;
 CREATE TABLE callrecordmaster_held(
         CallID varchar(100)     PRIMARY KEY,
         CustomerID varchar(15),
@@ -240,7 +232,6 @@ CREATE TABLE callrecordmaster_held(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE callrecordmaster_tbr;
 CREATE TABLE callrecordmaster_tbr(
         CallID varchar(100)     PRIMARY KEY,
         CustomerID varchar(15),
@@ -275,7 +266,6 @@ CREATE TABLE callrecordmaster_tbr(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE concurrentcalls;
 CREATE TABLE concurrentcalls(
         CallDateTime timestamp without time zone NOT NULL PRIMARY KEY,
         ConcurrentCalls integer NOT NULL,
@@ -297,7 +287,6 @@ CREATE TABLE concurrentcalls(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE concurrentcallsdirection;
 CREATE TABLE concurrentcallsdirection(
         CallDateTime timestamp without time zone NOT NULL,
         Direction char(1) NOT NULL,
@@ -321,7 +310,6 @@ CREATE TABLE concurrentcallsdirection(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE concurrentcallsdirectioncarrier;
 CREATE TABLE concurrentcallsdirectioncarrier(
         CallDateTime timestamp without time zone NOT NULL,
         Direction char(1) NOT NULL,
@@ -346,7 +334,6 @@ CREATE TABLE concurrentcallsdirectioncarrier(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE concurrentcallsdirectionratecenter;
 CREATE TABLE concurrentcallsdirectionratecenter(
         CallDateTime timestamp without time zone NOT NULL,
         Direction char(1) NOT NULL,
@@ -371,7 +358,6 @@ CREATE TABLE concurrentcallsdirectionratecenter(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE customerbillingaddressmaster;
 CREATE TABLE customerbillingaddressmaster(
 		CustomerID varchar(15) PRIMARY KEY,
 		Address1 varchar(100) NOT NULL,
@@ -398,7 +384,6 @@ CREATE TABLE customerbillingaddressmaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE customercontactmaster;
 CREATE TABLE customercontactmaster(
 		CustomerID varchar(15) PRIMARY KEY,
 		PrimaryEmailAddress varchar(100) NOT NULL,
@@ -420,7 +405,6 @@ CREATE TABLE customercontactmaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE customermaster;
 CREATE TABLE customermaster(
 		CustomerID varchar(15) PRIMARY KEY,
 		CustomerName varchar(100) NOT NULL,
@@ -446,7 +430,6 @@ CREATE TABLE customermaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE customertaxsetup;
 CREATE TABLE customertaxsetup(
 	CustomerID varchar(15) NOT NULL,
 	CallType smallint NOT NULL,
@@ -471,7 +454,6 @@ CREATE TABLE customertaxsetup(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE didmaster;
 CREATE TABLE didmaster(
 		DID varchar(15) PRIMARY KEY,
 		CustomerID varchar(15) not null,
@@ -493,7 +475,6 @@ CREATE TABLE didmaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE effectiveinternationalratemaster;
 CREATE TABLE effectiveinternationalratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
@@ -516,7 +497,6 @@ CREATE TABLE effectiveinternationalratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE effectiveinterstateratemaster;
 CREATE TABLE effectiveinterstateratemaster(
 		CustomerID varchar(15) NOT NULL,
 		NPANXXX varchar(7) NOT NULL,
@@ -539,7 +519,6 @@ CREATE TABLE effectiveinterstateratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE effectiveintrastateratemaster;
 CREATE TABLE effectiveintrastateratemaster(
 		CustomerID varchar(15) NOT NULL,
 		NPANXXX varchar(7) NOT NULL,
@@ -562,7 +541,6 @@ CREATE TABLE effectiveintrastateratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE effectivesimpleterminationratemaster;
 CREATE TABLE effectivesimpleterminationratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
@@ -585,7 +563,6 @@ CREATE TABLE effectivesimpleterminationratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE effectivetollfreeoriginationratemaster;
 CREATE TABLE effectivetollfreeoriginationratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
@@ -608,7 +585,6 @@ CREATE TABLE effectivetollfreeoriginationratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE internationalratemaster;
 CREATE TABLE internationalratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
@@ -633,7 +609,6 @@ CREATE TABLE internationalratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE interstateratemaster;
 CREATE TABLE interstateratemaster(
         CustomerID varchar(15) NOT NULL,
         EffectiveDate date NOT NULL,
@@ -658,7 +633,6 @@ CREATE TABLE interstateratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE intrastateratemaster;
 CREATE TABLE intrastateratemaster(
         CustomerID varchar(15) NOT NULL,
         EffectiveDate date NOT NULL,
@@ -683,7 +657,6 @@ CREATE TABLE intrastateratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE ipaddressmaster;
 CREATE TABLE ipaddressmaster(
 		IPAddress varchar(15) PRIMARY KEY,
 		CustomerID varchar(15) not null,
@@ -705,7 +678,6 @@ CREATE TABLE ipaddressmaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE npamaster;
 CREATE TABLE npamaster(
 		NPA char(3) PRIMARY KEY,
 		State varchar(50) not null,
@@ -727,7 +699,6 @@ CREATE TABLE npamaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE onetimechargequeue;
 CREATE TABLE onetimechargequeue(
         OneTimeChargeID serial4 UNIQUE NOT NULL PRIMARY KEY,
         CustomerID varchar(15) NOT NULL,
@@ -753,7 +724,6 @@ CREATE TABLE onetimechargequeue(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE passwordresetmaster;
 CREATE TABLE passwordresetmaster(
 		Token varchar(100) NOT NULL PRIMARY KEY,
         username varchar(15) NOT NULL,	
@@ -776,7 +746,6 @@ CREATE TABLE passwordresetmaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE paymentmaster;
 CREATE TABLE paymentmaster(
 		CustomerID varchar(15),
 		PaymentDate timestamp NOT NULL,
@@ -801,7 +770,6 @@ CREATE TABLE paymentmaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE processhistory;
 CREATE TABLE processhistory(
 		ProcessName varchar(100) NOT NULL,
 		StartDateTime timestamp NOT NULL,
@@ -827,7 +795,6 @@ CREATE TABLE processhistory(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE recurringchargemaster;
 CREATE TABLE recurringchargemaster(
         RecurringChargeID serial4 UNIQUE NOT NULL PRIMARY KEY,
         CustomerID varchar(15) NOT NULL,
@@ -853,7 +820,6 @@ CREATE TABLE recurringchargemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE simpleterminationratemaster;
 CREATE TABLE simpleterminationratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
@@ -878,7 +844,6 @@ CREATE TABLE simpleterminationratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE systemsettings_date;
 CREATE TABLE systemsettings_date(
 		SettingName varchar(50) PRIMARY KEY,
 		SettingValue date
@@ -899,7 +864,6 @@ CREATE TABLE systemsettings_date(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE thinktelcdr;
 CREATE TABLE thinktelcdr(
         SourceNumber varchar(50) NOT NULL,
         DestinationNumber varchar(50) NOT NULL,
@@ -927,7 +891,6 @@ CREATE TABLE thinktelcdr(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE tieredoriginationratecentermaster;
 CREATE TABLE tieredoriginationratecentermaster(
         RateCenter varchar(50) PRIMARY KEY,
 		Tier smallint NOT NULL,
@@ -949,7 +912,6 @@ CREATE TABLE tieredoriginationratecentermaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE tieredoriginationratemaster;
 CREATE TABLE tieredoriginationratemaster(
         CustomerID varchar(15) NOT NULL,
 		Tier smallint NOT NULL,
@@ -974,7 +936,6 @@ CREATE TABLE tieredoriginationratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE tollfreeoriginationratemaster;
 CREATE TABLE tollfreeoriginationratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
@@ -999,7 +960,6 @@ CREATE TABLE tollfreeoriginationratemaster(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE vitelitycdr;
 CREATE TABLE vitelitycdr(
         CallDateTime timestamp without time zone NOT NULL,
         Source varchar(50) NOT NULL,
@@ -1029,7 +989,6 @@ CREATE TABLE vitelitycdr(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE voipinnovationscdr;
 CREATE TABLE voipinnovationscdr(
 		CallType varchar(100) NOT NULL,
         StartTime timestamp NOT NULL,
@@ -1057,7 +1016,6 @@ CREATE TABLE voipinnovationscdr(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE webportalaccess;
 CREATE TABLE webportalaccess(
         Username varchar(100)     PRIMARY KEY,
         Nonce char(10) NOT NULL,
@@ -1080,7 +1038,6 @@ CREATE TABLE webportalaccess(
     See <http://www.gnu.org/licenses/>.                                 */
 --======================================================================-- 
 
-DROP TABLE webportalaccesstokens;
 CREATE TABLE webportalaccesstokens(
 		Token varchar(100) NOT NULL PRIMARY KEY,
         CustomerID varchar(15) NOT NULL,	

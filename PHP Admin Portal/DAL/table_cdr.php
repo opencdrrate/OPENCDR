@@ -72,6 +72,18 @@ class mysql_cdr extends SQLTable{
 			WHERE uniqueid={$oldCallid};
 HEREDOC;
 		$res = $this->connection->query($updateString);
+		
+		$verifyString = <<< HEREDOC
+		SELECT * from {$this->table_name}
+		WHERE uniqueid = {$oldCallid} and amaflags = {$newAmaflag};
+HEREDOC;
+		$verifyResult = $this->connection->query($verifyString);
+		if ($verifyResult->num_rows > 0){
+			return true;
+		}
+		else{
+			return false;
+		}
 		if (!$res) {
 			throw new Exception("Could not successfully run query (".$sqlQuery .") from DB: " . mysql_error());
 		}
@@ -97,6 +109,17 @@ HEREDOC;
 		
 		return $assoc_array;
 	}
+	
+	function ResetAmaflags(){
+        $sqlStatement = <<< HEREDOC
+            UPDATE {$this->table_name} SET amaflags = 0 WHERE amaflags = 100
+HEREDOC;
+        $res = $this->connection->query($sqlStatement);
+        if (!$res){
+                throw new Exception("Could not succesfully run query " . $sqlStatement . " : " . mysql_error());
+        }
+    }
+
 	
 }
 ?>

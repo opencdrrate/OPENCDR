@@ -1,327 +1,10 @@
-
-<?php
-include 'lib/Page.php';
-$bandwidthMap = array();
-$bandwidthMap['DEBTOR_ID'] = 'debtor_id';
-$bandwidthMap['item.id'] = 'itemid';
-$bandwidthMap['computed.billable_minutes'] = 'billable_minutes';
-$bandwidthMap['item.type'] = 'itemtype';
-$bandwidthMap['computed.trans_rate'] = 'trans_rate';
-$bandwidthMap['AMOUNT'] = 'amount';
-$bandwidthMap['RECORD_DATE'] = 'record_date';
-$bandwidthMap['item.src'] = 'src';
-$bandwidthMap['item.dest'] = 'dest';
-$bandwidthMap['item.dst_rcs'] = 'dst_rcs';
-$bandwidthMap['lrn'] = 'lrn';
-
-$vitelityMap = array();
-$vitelityMap['Date'] = 'calldatetime';
-$vitelityMap['Source'] = 'source';
-$vitelityMap['Destination'] = 'destination';
-$vitelityMap['Seconds'] = 'seconds';
-$vitelityMap['CallerID'] = 'callerid';
-$vitelityMap['Disposition'] = 'disposition';
-$vitelityMap['Cost'] = 'cost';
-?>
-<?php
-include 'lib/TBRLibs.php';
-include 'config.php';
-
-$content = '';
-if(isset($_POST['loadImport'])){
-	
-	$myFile = $_FILES['uploadedFile']['tmp_name'];
-	
-	$type = $_POST['type'];
-	if($myFile == ""){
-		if($_FILES['uploadedFile']['error'] == 1){
-			$content .= "<font color=\"red\">Error importing file</font><br>";
-		}
-		else{
-			$content .= "<font color=\"red\">Please choose a file.</font><br>";
-		}
-		
-	}
-	else if($type== 'bandwidth'){
-		$content .= ProcessBandwidth($myFile, $connectstring);
-	}
-	else if($type == 'asterisk'){
-		$content .= ProcessAsterisk($myFile, $connectstring);
-	}
-	else if($type == 'itel'){
-		$content .= ProcessITel($myFile, $connectstring);
-	}
-	else if($type == 'vitelity'){
-		$content .= ProcessVitelity($myFile, $connectstring);
-	}
-	else if($type == 'thinktel'){
-		$content .= ProcessThinktel($myFile, $connectstring);
-	}
-	else if($type =='aretta'){
-		$content .= ProcessAretta($myFile, $connectstring);
-	}
-	else if($type =='voip'){
-		$content .= ProcessVOIP($myFile, $connectstring);
-	}
-	else{
-		$fh = fopen($myFile, 'r');
-		$theData = fread($fh, filesize($myFile));
-		fclose($fh);
-		
-		echo "Please wait <br>";
-		echo '<blink>Working</blink>';
-		
-		echo '<form name="myForm" enctype="multipart/form-data" action="listresultstbr.php" method="POST">';
-		echo '<input type="hidden" name="type" value="'.$type.'"/>';
-		#echo '<input type="hidden" name="file" value="'.$myFile.'">';
-		if($type == 'telastic'){
-			echo '<input type="hidden" name="importTelastic" value="1"/>';
-		}
-		else if($type == 'sansay'){
-			echo '<input type="hidden" name="importSansay" value="1"/>';
-		}
-		else if($type == 'nextone'){
-			echo '<input type="hidden" name="importNextone" value="1"/>';
-		}
-		else if($type == 'netsapiens'){
-			echo '<input type="hidden" name="importNetSapiens" value="1"/>';
-		}
-		else if($type == 'telepo'){
-			echo '<input type="hidden" name="importTelepo" value="1"/>';
-		}/*
-		else if($type == 'aretta'){
-			echo '<input type="hidden" name="importAretta" value="1"/>';
-		}*/
-		else if($type == 'slinger'){
-			echo '<input type="hidden" name="importSlinger" value="1"/>';
-		}
-		else if($type == 'cisco'){
-			echo '<input type="hidden" name="importCisco" value="1"/>';
-		}/*
-		else if($type == 'voip'){
-			echo '<input type="hidden" name="importVoip" value="1"/>';
-		}*/
-		
-		else{
-			echo '<input type="hidden" name="import" value="1"/>';
-		}
-		echo '<input type="hidden" name="data" value="'.htmlspecialchars($theData).'"/>';
-		echo '</form>';
-		
-		echo '<script type="text/javascript">';
-		echo '	document.myForm.submit();';
-		echo '</script>';
-		echo '<!--';
-		
-	}
-	
-}
-else if(isset($_POST['import'])){
-	include 'config.php';
-	$theData = $_POST['data'];
-	$delete = false;
-	$primKeys = array();
-	$headerMap = array();
-	$type = $_POST['type'];
-	$delim = '/,/';
-	$table = '';
-	$vitelityException = False;
-	$callidFields = array();
-	$numbersToInternationalize = array();
-	$toSkipOnZero = array();
-	$fieldsToSkip = array();
-	
-	if($type == 'bandwidth'){
-		$callidFields[] = 'itemid';
-		$callidFormat = "itemid";
-		$table = 'bandwidthcdr';
-		$moveStatement = "SELECT \"fnMoveBandwidthCDRToTBR\"();";
-		$delim = '\|';
-		$headerMap = $bandwidthMap;
-	}/*
-	else if($type == 'vitelity'){
-		$toSkipOnZero[] = 'seconds';
-		$callidFields[] = 'calldatetime';
-		$callidFields[] = 'source';
-		$callidFields[] = 'destination';
-		$callidFields[] = 'seconds';
-		
-		$callidFormat = "calldatetime || '_' || source || '_' || destination || '_' || seconds";
-		
-		$numbersToInternationalize[] = 'source';
-		$numbersToInternationalize[] = 'destination';
-		
-		$fieldsToSkip[] = 'cost';
-		$table = 'vitelitycdr';
-		$moveStatement = "SELECT \"fnMoveVitelityCDRToTBR\"();";
-		$delim = ',';
-		$headerMap = $vitelityMap;
-	}*/
-	
-	$keyedData = TurnCSVIntoAssocArray($theData, $delim, $headerMap);
-	if(count($keyedData == 0)){
-		
-	}
-	#begin connecting to the database
-	$db = pg_connect($connectstring);
-	set_time_limit(0);
-	
-	#initialize statistics we're going to keep track of
-	$lineCount = 2;
-	$duplicateRows = array();
-	$insertedItemCount = 0;
-	$voidedCalls = 0;
-	foreach($keyedData as $row){
-		$values = array();
-		
-		#skip any rows that are missed or unconnected calls
-		foreach($toSkipOnZero as $fieldToCheck){
-			if($row[$fieldToCheck] == 0){
-				$voidedCalls++;
-				continue 2;
-			}
-		}
-		
-		#some data contain phone numbers that need to have + or 1 or +1 added to them
-		foreach($numbersToInternationalize as $number){
-			$row[$number] = InternationalizePhoneNumber($row[$number]);
-		}
-		
-		#build an array that contains "$col = $value" strings to add to various queries later
-		$columnEqualValue = array();
-		foreach($row as $key =>$val){
-			$values[] = "'".$val."'";
-			foreach($fieldsToSkip as $field){
-				if($key == $field){
-					continue 2;
-				}
-			}
-			$columnEqualValue[] = $key .= " = " ."'".$val."'";
-		}
-		
-		$rowNames = array_keys($row);
-		
-		#insertquery
-		$insertStatement = 
-		"INSERT 
-		INTO 	".$table."(".implode($rowNames,',').")
-		SELECT	".implode($values,",")."
-		WHERE NOT EXISTS
-		(SELECT 1 FROM ".$table." 
-		WHERE 
-		".implode($columnEqualValue,' AND ')."
-		)
-		RETURNING ".$callidFormat." as callid;";
-		
-		$insertResults = pg_query($insertStatement);
-		$callidArray = pg_fetch_all($insertResults);
-		
-		if(count($callidArray[0]) > 0){
-			$callid =  $callidArray[0]['callid'];
-		}
-		else{
-			$duplicateRows[] = $lineCount;
-			$lineCount++;
-			continue;
-		}
-		#check to see if the record already exists in the callrecordmaster
-		$checkTBRStatement = "SELECT callid FROM callrecordmaster_tbr WHERE callid = '" .$callid. "';";
-		$checkResult = pg_query($checkTBRStatement);
-		$checkArray = pg_fetch_all($checkResult);
-		if(count($checkArray[0]) == 1){
-			#delete statement
-			$deleteStatement = "DELETE FROM ".$table." WHERE ".implode($columnEqualValue,' AND ').";";
-			#delete any instance of the row in the company database (not master)
-			pg_query($deleteStatement);
-			$duplicateRows[] = $lineCount;
-			$lineCount++;
-			continue;
-		}
-		$insertedItemCount++;
-		$lineCount++;
-	}
-	
-	if(isset($moveStatement)){
-		pg_query($moveStatement);
-	}
-	
-	$content = '';
-	$duplicateRowCount = count($duplicateRows);
-	if(count($duplicateRows) > 0){
-		$content .= <<<HEREDOC
-		WARNING : {$duplicateRowCount} duplicate entries found on lines :
-HEREDOC;
-		$content .= implode($duplicateRows, ', ');
-		$content .= '<p>';
-	}
-	if($voidedCalls >0){
-		$content .= $voidedCalls . " rows skipped for zero duration.<br>";
-	}
-	$content .= $insertedItemCount . " items inserted.<br>";
-	$content .= <<<HEREDOC
-	<a href="main.php"><--Back</a>
-	<br/>
-	<br/>
-HEREDOC;
-	echo $content;
-	echo '<!--';
-	pg_close($db);
-	
-}
-else if(isset($_POST['importTelastic'])){
-	$theData = $_POST['data'];
-	$content .= ProcessTelastic($theData, $connectstring);
-}
-else if(isset($_POST['importSansay'])){
-	$theData = $_POST['data'];
-	$content .= ProcessSansay($theData, $connectstring);
-}
-else if(isset($_POST['importNextone'])){
-	$theData = $_POST['data'];
-	$content .= ProcessNextOne($theData, $connectstring);
-}
-else if(isset($_POST['importNetSapiens'])){
-	$theData = $_POST['data'];
-	
-	$content .= ProcessNetSapiens($theData, $connectstring);
-}
-else if(isset($_POST['importTelepo'])){
-	$theData = $_POST['data'];
-	
-	$content .= ProcessTelepo($theData, $connectstring);
-}
-else if(isset($_POST['importAretta'])){
-	$theData = $_POST['data'];
-	$content .= ProcessAretta($theData, $connectstring);
-}
-else if(isset($_POST['importSlinger'])){
-	$theData = $_POST['data'];
-	
-	$content .= ProcessSlinger($theData, $connectstring);
-}
-else if(isset($_POST['importCisco'])){
-	$theData = $_POST['data'];
-	
-	$content .= ProcessCisco($theData, $connectstring);
-}
-else if(isset($_POST['importVoip'])){
-	$theData = $_POST['data'];
-	
-	$content .= ProcessVOIP($theData, $connectstring);
-}
-/*
-else if(isset($_POST['dirtsimple'])){
-	$theData = $_POST['data'];
-	
-	$content .= ProcessSimple($theData, $connectstring);
-}*/
-
-?>
 <?php
 	include 'config.php';
 	include 'lib/SQLQueryFuncs.php';
 	include_once 'DAL/table_callrecordmaster_tbr.php';
+	include 'lib/Page.php';
 	
+	$content = '';
 	$table = new psql_callrecordmaster_tbr($connectstring);
 	$table->Connect();
 	$numberOfRows = $table->CountRatingQueue();
@@ -362,7 +45,7 @@ HEREDOC;
 		<?php echo GetPageHead("List Results TBR", "main.php", $javaScripts);?>
 		
 		<div id="body">
-			<?php echo $content;?>
+			
 			<br>
 			<form action="javascript:confirmRateCalls()" method="post">
 				<input type="submit" class="btn blue add-customer" value="Rate Calls">
@@ -373,9 +56,8 @@ HEREDOC;
 				<input type="hidden" name="filename" value="TBRExport.csv">
 			</form>
 			<br>
-			<form enctype="multipart/form-data" action="listresultstbr.php" method="post">
-				<input type="hidden" name="loadImport" value="1"/>
-				<select name="type">
+			<form action="lib/TBRLibs.php" method="post" id="action">
+				<select name="type" id="type">
 					<option value="bandwidth">Bandwidth</option>
 					<option value="vitelity">Vitelity</option>
 					<option value="thinktel">Thinktel</option>
@@ -391,10 +73,13 @@ HEREDOC;
 					<option value="asterisk">Asterisk</option>
 					<option value="itel">iTel</option>
 				</select>
-				<input name="uploadedFile" type="File" />
-				<input type="submit" value="Import File"/>
+				<input name="uploadedFile" type="File" id="fileselect" />
 			</form>
+			<button id="uploadbutton" type="submit">Import File </button>
 			<br>
+			<div id="progress"></div>
+
+			<div id="messages"></div>
 			<?php
 			$limitOptions = <<< HEREDOC
 		Showing rows : {$offset} to {$endoffset} <br>
@@ -421,4 +106,139 @@ HEREDOC;
 	
 		</div>
 	
+<script>
+
+/*
+"messages"
+"fileselect"
+"progress"
+"action"
+"uploadbutton"
+*/
+(function() {
+
+	// getElementById
+	function $id(id) {
+		return document.getElementById(id);
+	}
+
+	// output information
+	function Output(msg) {
+		var m = $id("messages");
+		m.innerHTML = msg;
+	}
+
+	// file selection
+	function FileSelectHandler(e) {
+		var fileselect = $id("fileselect");
+		var file = fileselect.files[0];
+
+		ParseFile(file);
+	}
+	
+	function UploadHandler(e) {
+		var fileselect = $id("fileselect");
+		var file = fileselect.files[0];
+		//alert(file.name);
+		//UploadFileByLine(file);
+		UploadFile(file);
+	}
+
+	// output file information
+	function ParseFile(file) {
+		// display text
+		//if (file.type.indexOf("text") == 0) {
+
+				var reader = new FileReader();
+				reader.onload = function(e) {
+				Output(
+					"<p>File information: <strong>" + file.name +
+					"</strong> type: <strong>" + file.type +
+					"</strong> size: <strong>" + file.size +
+					"</strong> bytes</p>" +
+					"<pre>" +
+					e.target.result.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+					"</pre>"
+				);
+			}
+			reader.readAsText(file);
+		//}
+	}
+	
+	function UploadFileByLine(file){
+		var myFileSysObj = new ActiveXObject("Scripting.FileSystemObject");
+		var myInputTextStream = myFileSysObj.OpenTextFile(file.name, 1, true);
+		
+		while(!myInputTextStream.AtEndOfStream){
+			var line = myInputTextStream.ReadLine();
+			alert(line);
+		}
+		
+		myInputTextStream.Close();
+	}
+
+	// upload JPEG files
+	function UploadFile(file) {
+		var total = file.size;
+		var xhr = new XMLHttpRequest();
+			// create progress bar
+			
+			var o = $id("progress");
+			var progress = o.appendChild(document.createElement("p"));
+			progress.appendChild(document.createTextNode("upload " + file.name));
+
+			// progress bar
+			xhr.addEventListener("progress", function(e) {
+				if (e.lengthComputable) { 
+					var pc = (e.loaded / e.total * 100);
+					progress.style.backgroundPosition = parseInt(100 - pc) + "% 0";
+					Output('Progress : ' + Math.round(pc*100)/100 + '%');
+				}
+				else{
+					var pc = e.loaded / total * 100;
+					Output('Progress : ' + Math.round(pc*100)/100  + '%');
+				}
+			}, false);
+
+			// file received/failed
+			xhr.onreadystatechange = function(e) {
+				if (xhr.readyState == 4) {
+					if(xhr.status == 200){
+						Output("Done");
+					}
+					else{
+						Output("Error code : " + xhr.status);
+					}
+					progress.className = (xhr.status == 200 ? "success" : "failure");
+				}
+				else{
+					Output("<blink>Please wait...</blink>");
+				}
+			};
+
+			// start upload
+			xhr.open("POST", $id("action").action, true);
+			xhr.setRequestHeader("X_FILESIZE", file.size);
+			xhr.setRequestHeader("X_FILENAME", file.name);
+			xhr.setRequestHeader("TYPE", $id("type").value);
+			xhr.send(file);
+	}
+
+	// initialize
+	function Init() {
+
+		var fileselect = $id("fileselect"),
+			uploadbutton = $id("uploadbutton");
+
+		// file select
+		//fileselect.addEventListener("change", FileSelectHandler, false);
+		uploadbutton.addEventListener("click", UploadHandler, false);
+	}
+
+	// call initialization file
+	if (window.File && window.FileList && window.FileReader) {
+		Init();
+	}
+})();
+</script>
 	<?php echo GetPageFoot();?>

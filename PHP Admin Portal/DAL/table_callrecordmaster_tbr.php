@@ -203,11 +203,14 @@ HEREDOC;
 	}
 	
 	function SelectUncat($offset = 0, $limit = 0){
-		$viewQuery = 'SELECT callid, customerid, calldatetime, duration, direction, 
+		$viewQuery = <<< HEREDOC
+		SELECT callid, customerid, calldatetime, duration, direction, 
 		   sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
 		   ratecenter, carrierid
-		   FROM callrecordmaster_tbr
-		   where calltype is null';
+		   FROM {$this->table_name}
+		   where calltype is null
+		   order by calldatetime
+HEREDOC;
 		  
 		$limitedQuery = $viewQuery;
 		if($limit > 0){
@@ -234,6 +237,7 @@ HEREDOC;
 		   sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
 		   ratecenter, carrierid
 			FROM {$this->table_name} WHERE calltype is not NULL
+			order by calldatetime
 HEREDOC;
 		$limitedQuery = $query;
 		if($limit > 0){

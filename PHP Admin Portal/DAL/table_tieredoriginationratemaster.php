@@ -1,4 +1,5 @@
 <?php
+include 'SQLTable.php';
 /*
 CREATE TABLE tieredoriginationratemaster
 (
@@ -20,9 +21,6 @@ class psql_tieredoriginationratemaster extends SQLTable{
 	private $insertStatement;
 	private $deleteStatement;
 	private $checkExistsStatement;
-	
-	public $rowsAdded = 0;
-	public $rowsDeleted = 0;
 	
 	function psql_tieredoriginationratemaster($connectString){
 		$this->connectString = $connectString;

@@ -17,9 +17,6 @@ class psql_interstateratemaster extends SQLTable{
 	private $deleteStatement;
 	private $checkExistsStatement;
 	
-	public $rowsAdded = 0;
-	public $rowsDeleted = 0;
-	
 	function psql_interstateratemaster($connectString){
 		$this->connectString = $connectString;
 		$this->insertStatement  = <<< HEREDOC
@@ -83,16 +80,6 @@ HEREDOC;
 		}
 		else{
 			return true;
-		}
-	}
-	function Update($old, $new){
-		if($this->DoesExist($old)){
-			if($this->Delete($old)){
-				return $this->Insert($new);
-			}
-		}
-		else{
-			return $this->Insert($new);
 		}
 	}
 	

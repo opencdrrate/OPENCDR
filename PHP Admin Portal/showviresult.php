@@ -35,10 +35,6 @@ if(isset($_GET['function'])){
 			$error = 'Error : customerid not set';
 			$fail = true;
 		}
-		else if( !isset($tnArray) ){
-			$error = 'Error : No dids selected';
-			$fail = true;
-		}
 		if(!$fail){
 			$client = new VI_Client($vi_user,$vi_pass);
 			$resultList = $client->assignDIDs($tnArray, $epg);

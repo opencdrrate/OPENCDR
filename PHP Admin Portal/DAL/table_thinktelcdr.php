@@ -98,8 +98,8 @@ HEREDOC;
 			$calltype = $row['calltype'];
 		}
 		
-		$destinationNumber = InternationalizePhoneNumber($row['destinationnumber']);
-		$sourceNumber = InternationalizePhoneNumber($row['sourcenumber']); 
+		$destinationNumber = $this->InternationalizePhoneNumber($row['destinationnumber']);
+		$sourceNumber = $this->InternationalizePhoneNumber($row['sourcenumber']); 
 		$insertParams = array($sourceNumber,$destinationNumber,$row['calldate'],
 						$usageType,$row['rawduration'],$customerid,
 						$direction,$calltype);
@@ -124,8 +124,8 @@ HEREDOC;
 		return $result;
 	}
 	function Delete($row){
-		$destinationNumber = InternationalizePhoneNumber($row['destinationnumber']);
-		$sourceNumber = InternationalizePhoneNumber($row['sourcenumber']); 
+		$destinationNumber = $this->InternationalizePhoneNumber($row['destinationnumber']);
+		$sourceNumber = $this->InternationalizePhoneNumber($row['sourcenumber']); 
 		$deleteParams = array($sourceNumber,$destinationNumber,
 							$row['calldate'],$row['rawduration']);
 		$result = pg_execute($this->db, "deleteThinktel", $deleteParams);
@@ -136,8 +136,8 @@ HEREDOC;
 		return $result;
 	}
 	function DoesExist($row){
-		$destinationNumber = InternationalizePhoneNumber($row['destinationnumber']);
-		$sourceNumber = InternationalizePhoneNumber($row['sourcenumber']); 
+		$destinationNumber = $this->InternationalizePhoneNumber($row['destinationnumber']);
+		$sourceNumber = $this->InternationalizePhoneNumber($row['sourcenumber']); 
 		$selectParams = array($sourceNumber,$destinationNumber,
 							$row['calldate'],$row['rawduration']);
 		$result = pg_execute($this->db, "checkThinktel", $selectParams);

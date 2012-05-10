@@ -38,9 +38,15 @@ foreach($cdrs as $cdr){
 	$originatingnumber = $cdr['src'];
 	$destinationnumber = $cdr['dst'];
 	$carrierid = $cdr['dstchannel'];
+	
+	if(!$cdr_table->Update(array('uniqueid'=>$callid), array('amaflags' => 100))){
+		$failedRows[] = $cdr;
+		#update failed
+		continue;
+	}
+	
 	if($duration == 0){
 		$zeroDuration++;
-		$cdr_table->Update(array('uniqueid'=>$callid), array('amaflags' => 100));
 		continue;
 	}
 	$tbrRow = array('callid' => $callid,'customerid' => $customerid,
@@ -53,8 +59,6 @@ foreach($cdrs as $cdr){
 		$failedRows[] = $cdr;
 		continue;
 	}
-	#update mysql cdr table
-	$cdr_table->Update(array('uniqueid'=>$callid), array('amaflags' => 100));
 	#if fail : 
 	#	$failedRows[] = $cdr
 }
@@ -67,4 +71,9 @@ $callmaster_table->Disconnect();
 echo "Processed ". $callmaster_table->InsertedCount . " CDR<br>";
 echo "Zero duration count : " . $zeroDuration . "<br>";
 echo "Duplicate count : " . $callmaster_table->SkippedDuplicateCount . "<br>";
+
+echo "These rows failed to update : <br>";
+foreach($failedRows as $failedRow){
+	echo "unique id : " . $failedRow['uniqueid'] . "<br>";
+}
 ?>

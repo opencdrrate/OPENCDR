@@ -19,7 +19,7 @@ HEREDOC;
       
 	$db = pg_connect($connectstring);
 
-	$query = 'SELECT * FROM "didmaster";';
+	$query = 'SELECT * FROM "didmaster" order by did;';
 
 	$csv_output = "";
 	$csv_hdr = "DID|CustomerID";

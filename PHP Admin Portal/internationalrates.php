@@ -18,45 +18,6 @@
 	
 	$table = new psql_internationalratemaster($connectstring);
 	$table->Connect();
-	if(isset($_POST["import"])){
-	
-		$myFile = $_FILES['uploadedFile']['tmp_name'];
-		if($myFile == ""){
-			trigger_error("Please choose a file");
-		}
-		else{
-			$handle = fopen($myFile, 'r');
-			$j = 1;
-			while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-				foreach($data as $word){
-					str_replace('"',"",$word);
-				}
-				list($effectivedate,$billedprefix,$retailrate) = $data;
-				$oldParams = array('customerid'=>$customerid,
-									'effectivedate'=>$effectivedate,
-									'billedprefix'=>$billedprefix);
-				$newParams = array('customerid'=>$customerid, 
-									'effectivedate'=>$effectivedate,
-									'billedprefix'=>$billedprefix, 
-									'retailrate'=>$retailrate);
-				try{
-					$table->Update($oldParams, $newParams);
-				}
-				catch(Exception $e){
-					trigger_error($e->getMessage() . ' on line ' . $j);
-				}
-				$j++;
-			}
-			fclose($handle);
-			$itemsInserted = $table->rowsAdded - $table->rowsDeleted;
-			$itemsReplaced = $table->rowsDeleted;
-			$content .= <<< HEREDOC
-			{$itemsInserted} rates inserted<br>
-			{$itemsReplaced} rates updated<br>
-HEREDOC;
-		}
-	}
-	
 	$numberOfRows = $table->CountRows($customerid);
 	
 	$offset = 0;
@@ -82,15 +43,13 @@ HEREDOC;
 	</form>
 	
 	<!-- THE IMPORT BUTTON -->
-	<form enctype="multipart/form-data" action="internationalrates.php?customerid={$customerid}" method="POST">
-	<input type="hidden" name="import" value="1"/>
-	Choose a file to import: <input name="uploadedFile" type="File" />
-	<input type="submit" value="import File" />
+	<form id="action" action="controllers/ajax_internationalrate_controller.php?customerid={$customerid}" method="POST">
+	Choose a file to import: <input name="uploadedFile" type="File" id="fileselect" />
 	</form>
-
+	<button id="uploadbutton" type="submit">Import File </button><br>
 	Showing rows : {$offset} to {$endoffset} <br>
 	Total number of rows : {$numberOfRows}
-	<br>'
+	<br>
 HEREDOC;
 		
 	if($offset > 0){
@@ -124,6 +83,10 @@ HEREDOC;
 	echo 'Max file size ' . $max_upload . 'mb <br>';
 	echo 'Memory limit ' . $memory_limit . 'mb <br>';
 	?>
+	<br>
+	<div id="progress"></div>
+	<div id="messages"></div>
 	<?php echo $content;?>
 	</div>
+	<script src="lib/jUpload.js"></script>
 	<?php echo GetPageFoot();?>
