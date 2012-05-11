@@ -39,6 +39,7 @@ update callrecordmaster_tbr set OriginatingNumber = '+1' || OriginatingNumber wh
 update callrecordmaster_tbr set OriginatingNumber = '+' || OriginatingNumber where char_length(OriginatingNumber) = 11 and substring(OriginatingNumber from 1 for 1) = '1';
 update callrecordmaster_tbr set DestinationNumber = '+1' || DestinationNumber where char_length(DestinationNumber) = 10 and substring(DestinationNumber from 1 for 1) not in ('+', '0');
 update callrecordmaster_tbr set DestinationNumber = '+' || DestinationNumber where char_length(DestinationNumber) = 11 and substring(DestinationNumber from 1 for 1) = '1';
+update callrecordmaster_tbr set LRN = '+' || LRN where char_length(LRN) = 11 and substring(LRN from 1 for 1) = '1';
 update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 4 for 20) where substring(DestinationNumber from 1 for 3) = '011';
 
 --UK
@@ -107,6 +108,10 @@ EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 
+
+--toll-free orig
+update callrecordmaster_tbr set CallType = 30 where Direction = 'I' and CallType is null 
+    and substring(DestinationNumber from 1 for 4) = '+1877' and coalesce(CustomerID, '') <> '';
 
 
 --Attempting to determine whether domestic calls are inter/intra.

@@ -76,7 +76,7 @@ HEREDOC;
 		}
 $htmltable .= <<<HEREDOC
 <tr>
-<td>{$myrow['callid']}</td>
+<td nowrap="nowrap">{$myrow['callid']}</td>
 <td>{$myrow['customerid']}</td>
 <td>{$myrow['calltype']}</td>
 <td>{$myrow['calldatetime']}</td>

@@ -72,7 +72,22 @@ $callType = $myrow['calltype'];
 			$myrow['calltype'] = 'Unknown';
 		}
            $htmltable .= <<<HEREDOC
-<tr><td>{$myrow['callid']}</td><td>{$myrow['customerid']}</td><td>{$myrow['calltype']}</td><td>{$myrow['calldatetime']}</td><td>{$myrow['duration']}</td><td>{$myrow['direction']}</td><td>{$myrow['sourceip']}</td><td>{$myrow['originatingnumber']}</td><td>{$myrow['destinationnumber']}</td><td>{$myrow['lrn']}</td><td>{$myrow['cnamdipped']}</td><td>{$myrow['ratecenter']}</td><td>{$myrow['carrierid']}</td><td>{$myrow['errormessage']}</td></tr>\n
+<tr>
+	<td nowrap="nowrap">{$myrow['callid']}</td>
+	<td>{$myrow['customerid']}</td>
+	<td>{$myrow['calltype']}</td>
+	<td>{$myrow['calldatetime']}</td>
+	<td>{$myrow['duration']}</td>
+	<td>{$myrow['direction']}</td>
+	<td>{$myrow['sourceip']}</td>
+	<td>{$myrow['originatingnumber']}</td>
+	<td>{$myrow['destinationnumber']}</td>
+	<td>{$myrow['lrn']}</td>
+	<td>{$myrow['cnamdipped']}</td>
+	<td>{$myrow['ratecenter']}</td>
+	<td>{$myrow['carrierid']}</td>
+	<td>{$myrow['errormessage']}</td>
+</tr>\n
 HEREDOC;
 
 	$csv_output .= $myrow['callid']. '|'. $myrow['customerid']. "|". $myrow['calltype']. "|". $myrow['calldatetime']. "|". $myrow['duration']. "|". $myrow['direction']. "|". $myrow['sourceip']. "|". $myrow['originatingnumber']. "|". $myrow['destinationnumber']. "|". $myrow['lrn']. "|". $myrow['cnamdipped']. "|". $myrow['ratecenter']. "|". $myrow['carrierid']. "|". $myrow['errormessage']. "\n";     
@@ -89,6 +104,7 @@ HEREDOC;
 
 <?php echo GetPageHead("Rating Errors","main.php");?>
 <div id="body">
+	<a href="https://sourceforge.net/p/opencdrrate/home/Rating%20Errors/" target="_blank">HELP</a><p>
 	<form name="export" action="exportpipe.php" method="post">
    	<input type="submit" class="btn orange export" value="Export table to CSV">
     	<input type="hidden" value="<? echo $csv_hdr; ?>" name="csv_hdr">

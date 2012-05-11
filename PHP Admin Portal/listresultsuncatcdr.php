@@ -88,7 +88,7 @@ HEREDOC;
 		$htmltable .= <<< HEREDOC
 		<tr>
 			<td><Input type="checkbox" name="cdrList[{$i}]" value="{$row['callid']}"/></td>
-			<td>{$row['callid']}</td>
+			<td nowrap="nowrap">{$row['callid']}</td>
 			<td>{$row['customerid']}</td>
 			<td>{$row['calldatetime']}</td>
 			<td>{$row['duration']}</td>
@@ -100,7 +100,7 @@ HEREDOC;
 			<td>{$row['cnamdipped']}</td>
 			<td>{$row['ratecenter']}</td>
 			<td>{$row['carrierid']}</td>
-			<td>{$catMessage}</td>
+			<td nowrap="nowrap" >{$catMessage}</td>
 		</tr>
 HEREDOC;
 		$i++;
