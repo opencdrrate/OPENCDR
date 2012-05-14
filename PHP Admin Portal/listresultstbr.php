@@ -121,6 +121,15 @@ HEREDOC;
 		m.innerHTML = msg;
 	}
 	
+	function EnableProgress(value, max){
+		var p = $id("progress");
+		p.innerHTML = '<progress value="'+value+'" max="'+max+'"/>';
+	}
+	function HideProgress(){
+		var p = $id("progress");
+		p.innerHTML = '';
+	}
+	
 	function UploadHandler(e) {
 		var fileselect = $id("fileselect");
 		var file = fileselect.files[0];
@@ -134,33 +143,31 @@ HEREDOC;
 		var total = file.size;
 		var xhr = new XMLHttpRequest();
 			// create progress bar
-			var o = $id("progress");
-			var progress = o.appendChild(document.createElement("p"));
-			progress.appendChild(document.createTextNode("upload " + file.name));
+			EnableProgress(0,100);
 
 			// progress bar
 			xhr.addEventListener("progress", function(e) {
+				var pc = 100;
 				if (e.lengthComputable) { 
-					var pc = (e.loaded / e.total * 100);
-					progress.style.backgroundPosition = parseInt(100 - pc) + "% 0";
-					Output('Progress : ' + Math.round(pc*100)/100 + '%');
+					pc = (e.loaded / e.total * 100);
 				}
 				else{
-					var pc = e.loaded / total * 100;
-					Output('Progress : ' + Math.round(pc*100)/100  + '%');
+					pc = e.loaded / total * 100;
 				}
+					Output('Progress : ' + Math.round(pc*100)/100 + '%');
+				EnableProgress(pc,100);
 			}, false);
 
 			// file received/failed
 			xhr.onreadystatechange = function(e) {
 				if (xhr.readyState == 4) {
 					if(xhr.status == 200){
-						Output("Done");
+						HideProgress();
+						Output("Done : <A HREF=\"javascript:location.reload(true)\">Refresh</a><br>");
 					}
 					else{
 						Output("Error code : " + xhr.status);
 					}
-					progress.className = (xhr.status == 200 ? "success" : "failure");
 				}
 				else{
 					Output("<blink>Please wait...</blink>");
@@ -178,37 +185,31 @@ HEREDOC;
 		var agree=confirm("This will rate 1 day worth of CDR for each call type. This may take several minutes to run.");
 		if (agree){
 			// create progress bar
-			var o = $id("progress");
-			var progress = o.appendChild(document.createElement("p"));
-			progress.appendChild(document.createTextNode("Rating Progress"));
-			CategorizeCDR(progress);
+			EnableProgress(0,8);
+			CategorizeCDR();
 		}
 		else{
 		}
 	}
-	/*
-	"fnCategorizeCDR"()';
-	"fnRateIndeterminateJurisdictionCDR"()';
-	"fnRateInternationalCDR"()';
-	"fnRateInterstateCDR"()';
-	"fnRateIntrastateCDR"()';
-	"fnRateSimpleTerminationCDR"()';
-	"fnRateTieredOriginationCDR"()';
-	"fnRateTollFreeOriginationCDR"()';
-	*/
-	function CategorizeCDR(progress){
+	function CategorizeCDR(){
+		Output('<blink>Categorizing CDR. <br>Please wait...</blink>');
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function(e) {
 			if (xhr.readyState == 4){
 				if(xhr.status == 200){
-					var pc = (1 / 8 * 100);
-					progress.style.backgroundPosition = parseInt(100 - pc) + "% 0";
-					Output("CategorizeCDR Done<br>");
-					RateIndeterminateJurisdictionCDR(progress);
+					if(!xhr.responseText){
+						EnableProgress(1,8);
+						Output("CategorizeCDR Done<br>");
+						RateIndeterminateJurisdictionCDR();
+					}
+					else{
+						Output(!xhr.responseText);
+						HideProgress();
+					}
 				}
 				else{
 					Output("Error code : " + xhr.status);
-					progress.className = "failure";
+					HideProgress();
 				}
 			}
 		};
@@ -216,20 +217,25 @@ HEREDOC;
 		xhr.setRequestHeader("X_SPNAME", 'fnCategorizeCDR');
 		xhr.send();
 	}
-	function RateIndeterminateJurisdictionCDR(progress){
-		Output('Starting RateIndeterminateJurisdictionCDR');
+	function RateIndeterminateJurisdictionCDR(){
+		Output('<blink>Rating Indeterminate CDR. <br>Please wait...</blink>');
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function(e) {
 			if (xhr.readyState == 4){
 				if(xhr.status == 200){
-					var pc = (2 / 8 * 100);
-					progress.style.backgroundPosition = parseInt(100 - pc) + "% 0";
-					Output("RateIndeterminateJurisdictionCDR Done<br>");
-					RateInternationalCDR(progress);
+					if(!xhr.responseText){
+						EnableProgress(2,8);
+						Output("RateIndeterminateJurisdictionCDR Done<br>");
+						RateInternationalCDR();
+					}
+					else{
+						Output(xhr.responseText);
+						HideProgress();
+					}
 				}
 				else{
 					Output("Error code : " + xhr.status);
-					progress.className = "failure";
+					HideProgress();
 				}
 			}
 		};
@@ -237,19 +243,25 @@ HEREDOC;
 		xhr.setRequestHeader("X_SPNAME", 'fnRateIndeterminateJurisdictionCDR');
 		xhr.send();
 	}
-	function RateInternationalCDR(progress){
+	function RateInternationalCDR(){
+		Output('<blink>Rating International CDR. <br>Please wait...</blink>');
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function(e) {
 			if (xhr.readyState == 4){
 				if(xhr.status == 200){
-					var pc = (3 / 8 * 100);
-					progress.style.backgroundPosition = parseInt(100 - pc) + "% 0";
-					Output("RateIndeterminateJurisdictionCDR Done<br>");
-					RateInterstateCDR(progress);
+					if(!xhr.responseText){
+						EnableProgress(3,8);
+						Output("RateIndeterminateJurisdictionCDR Done<br>");
+						RateInterstateCDR();
+					}
+					else{
+						Output(xhr.responseText);
+						HideProgress();
+					}
 				}
 				else{
 					Output("Error code : " + xhr.status);
-					progress.className = "failure";
+					HideProgress();
 				}
 			}
 		};
@@ -257,19 +269,25 @@ HEREDOC;
 		xhr.setRequestHeader("X_SPNAME", 'fnRateIndeterminateJurisdictionCDR');
 		xhr.send();
 	}
-	function RateInterstateCDR(progress){
+	function RateInterstateCDR(){
+		Output('<blink>Rating Interstate CDR. <br>Please wait...</blink>');
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function(e) {
 			if (xhr.readyState == 4){
 				if(xhr.status == 200){
-					var pc = (4 / 8 * 100);
-					progress.style.backgroundPosition = parseInt(100 - pc) + "% 0";
-					Output("RateInterstateCDR Done<br>");
-					RateIntrastateCDR(progress);
+					if(!xhr.responseText){
+						EnableProgress(4,8);
+						Output("RateInterstateCDR Done<br>");
+						RateIntrastateCDR();
+					}
+					else{
+						Output(xhr.responseText);
+						HideProgress();
+					}
 				}
 				else{
 					Output("Error code : " + xhr.status);
-					progress.className = "failure";
+					HideProgress();
 				}
 			}
 		};
@@ -277,19 +295,25 @@ HEREDOC;
 		xhr.setRequestHeader("X_SPNAME", 'fnRateInterstateCDR');
 		xhr.send();
 	}
-	function RateIntrastateCDR(progress){
+	function RateIntrastateCDR(){
+		Output('<blink>Rating Intrastate CDR. <br>Please wait...</blink>');
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function(e) {
 			if (xhr.readyState == 4){
 				if(xhr.status == 200){
-					var pc = (5 / 8 * 100);
-					progress.style.backgroundPosition = parseInt(100 - pc) + "% 0";
-					Output("RateIntrastateCDR Done<br>");
-					RateSimpleTerminationCDR(progress);
+					if(!xhr.responseText){
+						EnableProgress(5,8);
+						Output("RateIntrastateCDR Done<br>");
+						RateSimpleTerminationCDR();
+					}
+					else{
+						Output(xhr.responseText);
+						HideProgress();
+					}
 				}
 				else{
 					Output("Error code : " + xhr.status);
-					progress.className = "failure";
+					HideProgress();
 				}
 			}
 		};
@@ -297,19 +321,25 @@ HEREDOC;
 		xhr.setRequestHeader("X_SPNAME", 'fnRateIntrastateCDR');
 		xhr.send();
 	}
-	function RateSimpleTerminationCDR(progress){
+	function RateSimpleTerminationCDR(){
+		Output('<blink>Rating Simple Termination CDR. <br>Please wait...</blink>');
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function(e) {
 			if (xhr.readyState == 4){
 				if(xhr.status == 200){
-					var pc = (6 / 8 * 100);
-					progress.style.backgroundPosition = parseInt(100 - pc) + "% 0";
-					Output("RateSimpleTerminationCDR Done<br>");
-					RateTieredOriginationCDR(progress);
+					if(!xhr.responseText){
+						EnableProgress(6,8);
+						Output("RateSimpleTerminationCDR Done<br>");
+						RateTieredOriginationCDR();
+					}
+					else{
+						Output(xhr.responseText);
+						HideProgress();
+					}
 				}
 				else{
 					Output("Error code : " + xhr.status);
-					progress.className = "failure";
+					HideProgress();
 				}
 			}
 		};
@@ -317,19 +347,25 @@ HEREDOC;
 		xhr.setRequestHeader("X_SPNAME", 'fnRateSimpleTerminationCDR');
 		xhr.send();
 	}
-	function RateTieredOriginationCDR(progress){
+	function RateTieredOriginationCDR(){
+		Output('<blink>Rating Tiered Origination CDR. <br>Please wait...</blink>');
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function(e) {
 			if (xhr.readyState == 4){
 				if(xhr.status == 200){
-					var pc = (7 / 8 * 100);
-					progress.style.backgroundPosition = parseInt(100 - pc) + "% 0";
-					Output("RateTieredOriginationCDR Done<br>");
-					RateTollFreeOriginationCDR(progress);
+					EnableProgress(7,8);
+					if(!xhr.responseText){
+						Output("RateTieredOriginationCDR Done<br>");
+						RateTollFreeOriginationCDR();
+					}
+					else{
+						Output(xhr.responseText);
+						HideProgress();
+					}
 				}
 				else{
 					Output("Error code : " + xhr.status);
-					progress.className = "failure";
+					HideProgress();
 				}
 			}
 		};
@@ -337,18 +373,24 @@ HEREDOC;
 		xhr.setRequestHeader("X_SPNAME", 'fnRateTieredOriginationCDR');
 		xhr.send();
 	}
-	function RateTollFreeOriginationCDR(progress){
+	function RateTollFreeOriginationCDR(){
+		Output('<blink>Rating Toll Free Origination CDR. <br>Please wait...</blink>');
 		var xhr = new XMLHttpRequest();
 		xhr.onreadystatechange = function(e) {
 			if (xhr.readyState == 4){
 				if(xhr.status == 200){
-					progress.style.backgroundPosition = 0 + "% 0";
-					Output(xhr.responseText + " All Done<br>");
-					progress.className = "success";
+					if(!xhr.responseText){
+						HideProgress();
+						Output(" All Done<br>");
+					}
+					else{
+						Output(xhr.responseText);
+						HideProgress();
+					}
 				}
 				else{
 					Output("Error code : " + xhr.status);
-					progress.className = "failure";
+					HideProgress();
 				}
 			}
 		};

@@ -3,6 +3,10 @@
 include 'lib/Page.php';
 include 'config.php'; 
 
+$helpPage = <<< HEREDOC
+	https://sourceforge.net/p/opencdrrate/home/Rating%20Errors/
+HEREDOC;
+
 if(isset($_GET['move'])){
 	$db = pg_connect($connectstring);
 	
@@ -11,6 +15,7 @@ if(isset($_GET['move'])){
 	
 	pg_close($db);
 }
+
 $htmltable = <<<HEREDOC
 <table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
 <tr><thead>
@@ -86,7 +91,7 @@ $callType = $myrow['calltype'];
 	<td>{$myrow['cnamdipped']}</td>
 	<td>{$myrow['ratecenter']}</td>
 	<td>{$myrow['carrierid']}</td>
-	<td>{$myrow['errormessage']}</td>
+	<td><a href="{$helpPage}" target="blank">{$myrow['errormessage']}</a></td>
 </tr>\n
 HEREDOC;
 
@@ -104,7 +109,6 @@ HEREDOC;
 
 <?php echo GetPageHead("Rating Errors","main.php");?>
 <div id="body">
-	<a href="https://sourceforge.net/p/opencdrrate/home/Rating%20Errors/" target="_blank">HELP</a><p>
 	<form name="export" action="exportpipe.php" method="post">
    	<input type="submit" class="btn orange export" value="Export table to CSV">
     	<input type="hidden" value="<? echo $csv_hdr; ?>" name="csv_hdr">
@@ -113,6 +117,9 @@ HEREDOC;
 	</form>
 	<form action="listresultsheld.php?move=1" method="post">
    	<input type="submit" class="btn blue add-customer" value="Move to Rating Queue"/>
+	</form>
+	<form action="<?php echo $helpPage;?>" method="post" target="_blank">
+   	<input type="submit" class="btn orange export" value="HELP"/>
 	</form>
 	<?php echo $htmltable; ?>
 </div>

@@ -4,6 +4,8 @@
 	include 'config.php';
 	include_once 'DAL/table_didmaster.php';
 	include_once 'DAL/table_callrecordmaster_tbr.php';
+	include_once 'DAL/table_ipaddressmaster.php';
+	
 	$message = '';
 	$query = 'SELECT * FROM callrecordmaster_tbr where calltype is null';
 	
@@ -58,6 +60,9 @@
 	</tr></thead><tbody>
 HEREDOC;
 	$i = 0;
+	$ipTable = new psql_ipaddressmaster($connectstring);
+	$ipTable->Connect();
+	
 	$didTable = new psql_didmaster($connectstring);
 	$didTable->Connect();
 	foreach($allArrayResults as $row){
@@ -65,24 +70,43 @@ HEREDOC;
        sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
        ratecenter, carrierid
 	*/
-		$catMessage = '';
+		$resolutionMessage = '';
 		//Check if the originating number and/or destination number exists in the DID table
 		$origNumberExists = $didTable->DoesExist(array('did' => $row['originatingnumber']));
 		$destNumberExists = $didTable->DoesExist(array('did' => $row['destinationnumber']));
 		
+		//Check if sourceip exists in ipaddressmaster
+		$ipAddressExists = false;
+		if(empty($row['sourceip'])){
+			$ipAddressExists = true;
+		}
+		else{
+			$ipAddressExists = $ipTable->DoesExist(array('ipaddress' => $row['sourceip']));
+		}
+		
+		$ipAddressView = $row['sourceip'];
 		$origView = $row['originatingnumber'];
 		$destView = $row['destinationnumber'];
-			
-		if(!$origNumberExists and !$destNumberExists){
-			$destView = <<< HEREDOC
-			<a href="adddid.php?did={$row['destinationnumber']}">{$row['destinationnumber']}</a>
+		if((!$origNumberExists and !$destNumberExists) or !$ipAddressExists){
+			if(!$origNumberExists and !$destNumberExists){
+				$destView = <<< HEREDOC
+				<a href="adddid.php?did={$row['destinationnumber']}">{$row['destinationnumber']}</a>
 HEREDOC;
-			$origView = <<< HEREDOC
-			<a href="adddid.php?did={$row['originatingnumber']}">{$row['originatingnumber']}</a>
+				$origView = <<< HEREDOC
+				<a href="adddid.php?did={$row['originatingnumber']}">{$row['originatingnumber']}</a>
 HEREDOC;
-			$catMessage .= <<< HEREDOC
-			<font color="red">Add did for {$destView} or {$origView}</font>
+				$resolutionMessage .= <<< HEREDOC
+				<font color="red">Add did for {$destView} or {$origView}</font><br>
 HEREDOC;
+			}
+			if(!$ipAddressExists){
+				$ipAddressView = <<< HEREDOC
+			<a href="addipaddress.php?ipaddress={$row['sourceip']}">{$row['sourceip']}</a>
+HEREDOC;
+				$resolutionMessage .= <<< HEREDOC
+				<font color="red">Add ip adress for {$ipAddressView}</font><br>
+HEREDOC;
+			}
 		}
 		
 		$htmltable .= <<< HEREDOC
@@ -93,14 +117,14 @@ HEREDOC;
 			<td>{$row['calldatetime']}</td>
 			<td>{$row['duration']}</td>
 			<td>{$row['direction']}</td>
-			<td>{$row['sourceip']}</td>
+			<td>{$ipAddressView}</td>
 			<td>{$origView}</td>
 			<td>{$destView}</td>
 			<td>{$row['lrn']}</td>
 			<td>{$row['cnamdipped']}</td>
 			<td>{$row['ratecenter']}</td>
 			<td>{$row['carrierid']}</td>
-			<td nowrap="nowrap" >{$catMessage}</td>
+			<td nowrap="nowrap" >{$resolutionMessage}</td>
 		</tr>
 HEREDOC;
 		$i++;

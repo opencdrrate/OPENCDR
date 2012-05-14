@@ -99,7 +99,50 @@ update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType
 update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
     and substring(DestinationNumber from 1 for 2) = '00';
 
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+3' and char_length(destinationnumber) = 12;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+4' and char_length(destinationnumber) = 11;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+4' and char_length(destinationnumber) = 12;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+4' and char_length(destinationnumber) = 13;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+4' and char_length(destinationnumber) = 14;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+5' and char_length(destinationnumber) = 11;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+5' and char_length(destinationnumber) = 12;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+5' and char_length(destinationnumber) = 13;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+5' and char_length(destinationnumber) = 14;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+5' and char_length(destinationnumber) = 15;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+6' and char_length(destinationnumber) = 11;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+6' and char_length(destinationnumber) = 12;
+
+update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+6' and char_length(destinationnumber) = 13;
+
+
 /*south africa*/
+update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 3 for 10) where CallType = 25
+    and substring(DestinationNumber from 1 for 2) = '00' and char_length(DestinationNumber) = 12;
+
 update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 3 for 12) where CallType = 25
     and substring(DestinationNumber from 1 for 2) = '00' and char_length(DestinationNumber) = 14;
     
@@ -109,9 +152,29 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 
 
+
+
 --toll-free orig
 update callrecordmaster_tbr set CallType = 30 where Direction = 'I' and CallType is null 
-    and substring(DestinationNumber from 1 for 4) = '+1877' and coalesce(CustomerID, '') <> '';
+    and substring(DestinationNumber from 1 for 5) = '+1877' and coalesce(CustomerID, '') <> '';
+
+update callrecordmaster_tbr set CallType = 30 where Direction = 'I' and CallType is null 
+    and substring(DestinationNumber from 1 for 5) = '+1800' and coalesce(CustomerID, '') <> '';
+
+update callrecordmaster_tbr set CallType = 30 where Direction = 'I' and CallType is null 
+    and substring(DestinationNumber from 1 for 5) = '+1855' and coalesce(CustomerID, '') <> '';
+
+update callrecordmaster_tbr set CallType = 30 where Direction = 'I' and CallType is null 
+    and substring(DestinationNumber from 1 for 5) = '+1866' and coalesce(CustomerID, '') <> '';
+
+update callrecordmaster_tbr set CallType = 30 where Direction = 'I' and CallType is null 
+    and substring(DestinationNumber from 1 for 5) = '+1888' and coalesce(CustomerID, '') <> '';
+
+
+--tiered orig
+update callrecordmaster_tbr set CallType = 15 where Direction = 'I' and CallType is null 
+    and coalesce(CustomerID, '') <> '';
+
 
 
 --Attempting to determine whether domestic calls are inter/intra.
@@ -156,6 +219,11 @@ update callrecordmaster_tbr set CallType = 10 where CallID in (select CallID fro
 
 /*south africa*/
 update callrecordmaster_tbr set CallType = 35 where CallType is null and Direction = 'O' and char_length(DestinationNumber) in (10, 11) and substring(DestinationNumber from 1 for 1) = '0';
+
+
+--any NANPA calls that were not international can go to simple term.
+update callrecordmaster_tbr set CallType = 35 where Direction = 'O' and CallType is null 
+    and substring(DestinationNumber from 1 for 2) = '+1' and char_length(destinationnumber) = 12;
 
 
 EndDateTime = TIMEOFDAY();

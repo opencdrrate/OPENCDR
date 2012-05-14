@@ -12,7 +12,16 @@
 	function $id(id) {
 		return document.getElementById(id);
 	}
-
+	
+	function EnableProgress(value, max){
+		var p = $id("progress");
+		p.innerHTML = '<progress value="'+value+'" max="'+max+'"/>';
+	}
+	function HideProgress(){
+		var p = $id("progress");
+		p.innerHTML = '';
+	}
+	
 	// output information
 	function Output(msg) {
 		var m = $id("messages");
@@ -73,34 +82,31 @@
 		var total = file.size;
 		var xhr = new XMLHttpRequest();
 			// create progress bar
-			
-			var o = $id("progress");
-			var progress = o.appendChild(document.createElement("p"));
-			progress.appendChild(document.createTextNode("upload " + file.name));
+			EnableProgress(0,100);
 
 			// progress bar
 			xhr.addEventListener("progress", function(e) {
+				var pc = 0;
 				if (e.lengthComputable) { 
-					var pc = (e.loaded / e.total * 100);
-					progress.style.backgroundPosition = parseInt(100 - pc) + "% 0";
-					Output('Progress : ' + Math.round(pc*100)/100 + '%');
+					pc = (e.loaded / e.total * 100);
 				}
 				else{
-					var pc = e.loaded / total * 100;
-					Output('Progress : ' + Math.round(pc*100)/100  + '%');
+					pc = e.loaded / total * 100;
 				}
+				Output('Progress : ' + Math.round(pc*100)/100  + '%');
+				EnableProgress(pc,100);
 			}, false);
 
 			// file received/failed
 			xhr.onreadystatechange = function(e) {
 				if (xhr.readyState == 4) {
 					if(xhr.status == 200){
-						Output("<A HREF=\"javascript:history.go(0)\">Done</a><br>");
+						Output("Done : <A HREF=\"javascript:location.reload(true)\">Refresh</a><br>");
 					}
 					else{
 						Output("Error code : " + xhr.status);
 					}
-					progress.className = (xhr.status == 200 ? "success" : "failure");
+					HideProgress();
 				}
 				else{
 					Output("<blink>Please wait...</blink>");

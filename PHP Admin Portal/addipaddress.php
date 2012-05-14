@@ -64,6 +64,10 @@ return $dropdown;
      pg_close($db);
 	 }
  }
+
+	if (isset($_GET['ipaddress'])){
+		$defaultIPValue = $_GET['ipaddress'];
+	}
  ?> 
 	<?php echo GetPageHead("Add IP Address", "listipaddresses.php");?>
 	<div id="body">
