@@ -35,21 +35,29 @@ $htmltable = <<<HEREDOC
 <th>ErrorMessage</th>
 </thead></tr>
 HEREDOC;
-      
 	include 'config.php';
-
-	$db = pg_connect($connectstring);
-
+	include_once 'DAL/table_callrecordmaster_held.php';
 	$query = 'SELECT * FROM callrecordmaster_held;';
-	#$result = pg_query_params($db,'SELECT * FROM "callrecordmaster_held" where cast(calldatetime as date) between $1 and $2', array($start, $end));
-
-	$result = pg_query($query);
+	$table = new psql_callrecordmaster_held($connectstring);
+	$table->Connect();
+	$numberOfRows = $table->CountResults();
+	
+	$offset = 0;
+	if(isset($_GET["offset"])){
+		$offset = $_GET["offset"];
+	}
+	$limit = 1000;
+	$endoffset = min($offset + $limit, $numberOfRows);
+	$prevoffset = max($offset - $limit, 0);
+	
+	$results = $table->SelectSubset($offset, $limit);
+	$table->Disconnect();
 
 	$csv_output = "";
 	$csv_hdr = "CallID|CustomerID|IndeterminateCallType|CallDateTime|Duration|Direction|SourceIP|OriginationNumber|DestinationNumber|LRN|CNAMDipRate|RateCenter|CarrierID|ErrorMessage";
 	$csv_hdr .= "\n";
 
-	        while($myrow = pg_fetch_assoc($result)) { 
+	        foreach($results as $myrow) { 
 $callType = $myrow['calltype'];
 
 		if($callType == '5'){
@@ -105,6 +113,21 @@ HEREDOC;
 	    </tfoot>
 		</table>';
 
+		$limitOptions = <<< HEREDOC
+			Showing rows : {$offset} to {$endoffset} <br>
+			Total number of rows : {$numberOfRows}
+			<br>
+HEREDOC;
+		if($offset > 0){
+		$limitOptions .= <<< HEREDOC
+		<a href="listresultsheld.php?offset={$prevoffset}"><<< View prev {$limit} results    </a>
+HEREDOC;
+		}
+		if($endoffset < $numberOfRows){
+		$limitOptions .= <<< HEREDOC
+		<a href="listresultsheld.php?offset={$endoffset}">View next {$limit} results >>></a>
+HEREDOC;
+		}
 ?>
 
 <?php echo GetPageHead("Rating Errors","main.php");?>
@@ -121,6 +144,7 @@ HEREDOC;
 	<form action="<?php echo $helpPage;?>" method="post" target="_blank">
    	<input type="submit" class="btn orange export" value="HELP"/>
 	</form>
+	<?php echo $limitOptions;?>
 	<?php echo $htmltable; ?>
 </div>
 	<?php echo GetPageFoot();?>

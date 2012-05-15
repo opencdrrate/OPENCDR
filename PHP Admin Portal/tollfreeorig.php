@@ -45,7 +45,7 @@
 	</form>
 	
 	<!-- THE IMPORT BUTTON -->
-	<form 	="action" action="controllers/ajax_tollfreeoriginationratemaster_controller.php?customerid={$customerid}" method="POST">
+	<form id="action" action="controllers/ajax_tollfreeorigination_controller.php?customerid={$customerid}" method="POST">
 	Choose a file to import: <input name="uploadedFile" type="File" id="fileselect"/>
 	</form>
 	<button id="uploadbutton" type="submit">Import File </button><br>

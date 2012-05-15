@@ -78,7 +78,6 @@ HEREDOC;
 		//Check if sourceip exists in ipaddressmaster
 		$ipAddressExists = false;
 		if(empty($row['sourceip'])){
-			$ipAddressExists = true;
 		}
 		else{
 			$ipAddressExists = $ipTable->DoesExist(array('ipaddress' => $row['sourceip']));
@@ -87,7 +86,7 @@ HEREDOC;
 		$ipAddressView = $row['sourceip'];
 		$origView = $row['originatingnumber'];
 		$destView = $row['destinationnumber'];
-		if((!$origNumberExists and !$destNumberExists) or !$ipAddressExists){
+		if(!$origNumberExists and !$destNumberExists and (!$ipAddressExists or empty($row['sourceip']))){
 			if(!$origNumberExists and !$destNumberExists){
 				$destView = <<< HEREDOC
 				<a href="adddid.php?did={$row['destinationnumber']}">{$row['destinationnumber']}</a>

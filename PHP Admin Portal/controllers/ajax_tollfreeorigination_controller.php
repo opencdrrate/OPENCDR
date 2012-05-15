@@ -2,7 +2,7 @@
 #$path = $_SERVER["DOCUMENT_ROOT"].'/PHP Admin Portal';
 $path = '..';
 include_once $path . '/lib/FileUtils/TollfreeoriginationRateFileImporter.php';
-include_once $path . '/DAL/table_tallfreeoriginationratemaster.php';
+include_once $path . '/DAL/table_tollfreeoriginationratemaster.php';
 include_once $path . '/config.php';
 $customerid = $_GET['customerid'];
 

@@ -8,16 +8,16 @@
 	$table = new psql_callrecordmaster_tbr($connectstring);
 	$table->Connect();
 	$numberOfRows = $table->CountRatingQueue();
-	
-	$offset = 0;
-	if(isset($_POST["offset"])){
-		$offset = $_POST["offset"];
-	}
 	$query = <<< HEREDOC
 		SELECT *
 			FROM callrecordmaster_tbr WHERE calltype is not NULL
 			order by calldatetime
 HEREDOC;
+	
+	$offset = 0;
+	if(isset($_GET["offset"])){
+		$offset = $_GET["offset"];
+	}
 	$limit = 1000;
 	$endoffset = min($offset + $limit, $numberOfRows);
 	$prevoffset = max($offset - $limit, 0);
@@ -79,19 +79,16 @@ HEREDOC;
 		Total number of rows : {$numberOfRows}
 		<br>
 HEREDOC;
+
 		if($offset > 0){
-			$limitOptions .= '
-			<form action="listresultstbr.php" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
-			<input type="hidden" name="offset" value="'.$prevoffset.'">
-			<input type="submit" value="View prev '.$limit.' results"/>
-			</form>';
+			$limitOptions .= <<< HEREDOC
+			<a href="listresultstbr.php?offset={$prevoffset}"><<< View prev {$limit} results</a>
+HEREDOC;
 		}
 		if($endoffset < $numberOfRows){
-		$limitOptions .= '
-		<form action="listresultstbr.php" method="post" style=\'margin: 0; padding: 0; display:inline;\'>
-		<input type="hidden" name="offset" value="'.$endoffset.'">
-		<input type="submit" value="View next '.$limit.' results"/>
-		</form>';
+			$limitOptions .= <<< HEREDOC
+			| <a href="listresultstbr.php?offset={$endoffset}">View next {$limit} results >>></a>
+HEREDOC;
 		}
 		echo $limitOptions;
 			?>
@@ -381,7 +378,7 @@ HEREDOC;
 				if(xhr.status == 200){
 					if(!xhr.responseText){
 						HideProgress();
-						Output(" All Done<br>");
+						Output("Done : <A HREF=\"javascript:location.reload(true)\">Refresh</a><br>");
 					}
 					else{
 						Output(xhr.responseText);
