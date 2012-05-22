@@ -1,6 +1,9 @@
 
 <?php
-include 'config.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'conf/ConfigurationManager.php';
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
 	
 	$categorizeDoneMsg = 'Categorization done.  Result: ';
 	$fnRateIndeterminateJurisdictionCDRDoneMsg = 'RateIndeterminate done.  Result:';

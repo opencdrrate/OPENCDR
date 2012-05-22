@@ -1,8 +1,18 @@
 <?php
 /*viewlineitems.php*/
-include '/lib/Page.php';
-include 'config.php';
-$db = pg_connect($connectstring);
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+include_once $path . 'lib/localizer.php';
+include_once $path . 'conf/ConfigurationManager.php';
+include_once $path . 'DAL/table_billingbatchdetails.php';
+
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
+$locale = $manager->GetSetting('region');
+$region = new localizer($locale);
+
+$detailsTable = new psql_billingbatchdetails($connectstring);
+$detailsTable->Connect();
 ?>
 <?php
 $javaScripts = <<< HEREDOC
@@ -26,16 +36,11 @@ if(isset($_GET['modify'])){
 	$modify = $_GET['modify'];
 	$description = $_POST['description'];
 	$amount = $_POST['amount'];
-	$modifyStatement = "UPDATE billingbatchdetails 
-						SET lineitemdesc='".$description."', lineitemamount='".$amount."'
-						WHERE rowid = ".$modify.";";
-	pg_query($modifyStatement);
+	$detailsTable->Update(array('rowid' => $modify),array('lineitemdesc'=> $description, 'lineitemamount'=>$amount));
 }
 else if(isset($_GET['delete'])){
 	$delete = $_GET['delete'];
-	$deleteStatement = "DELETE from billingbatchdetails
-						WHERE rowid = ".$delete.";";
-	pg_query($deleteStatement);
+	$detailsTable->Delete(array('rowid' => $delete));
 }
 $customerid = $_GET['customerid'];
 $billingbatchid = $_GET['batchid'];
@@ -53,57 +58,39 @@ $table = <<< HEREDOC
 </thead>
 <tbody>
 HEREDOC;
-$allItems = array();
-	$lineItemQuery = "SELECT lineitemdesc as \"description\", 
-			lineitemamount as \"amount\",
-			periodstartdate,
-			periodenddate,
-			rowid
-			FROM billingbatchdetails
-			WHERE customerid = '".$customerid."'
-			AND billingbatchid = '".$billingbatchid."';";
-	$lineItemQueryResults = pg_query($lineItemQuery);
-	while($lineItem = pg_fetch_assoc($lineItemQueryResults)){
-		$item = array("Date" => $lineItem['periodenddate']
-					,"Billing Period" => $lineItem['periodstartdate'] ." to ". $lineItem['periodenddate']
-					,"Description" => $lineItem['description']
-					,"Amount" => $lineItem['amount']
-					,"RowID" => $lineItem['rowid']
-				);
-		$allItems[] = $item;
-	}
+$allItems = $detailsTable->SelectCustomerBatch($customerid,$billingbatchid);
 	foreach($allItems as $item){
-$edit = '';	
-if(isset($_GET['edit'])){
-	$edit = $_GET['edit'];
-}
+		$edit = '';	
+		if(isset($_GET['edit'])){
+			$edit = $_GET['edit'];
+		}
 
-if($item['RowID'] == $edit){
-$table .= <<<HEREDOC
-<tr>
-<form action="viewlineitems.php?batchid={$billingbatchid}&customerid={$customerid}&modify={$item['RowID']}" method="POST">
-<td><input type='text' value='{$item['Description']}' name='description'></td>
-<td><input type='text' value={$item['Amount']} name='amount'/></td>
-<td>{$item['Date']}</td>
-<td class="actions" align="left">
-<input type=Submit value=Submit />
-</td>
-<td></td>
-</form>
-</tr>\n
+		if($item['rowid'] == $edit){
+		$table .= <<<HEREDOC
+		<tr>
+		<form action="viewlineitems.php?batchid={$billingbatchid}&customerid={$customerid}&modify={$item['rowid']}" method="POST">
+		<td><input type='text' value='{$item['lineitemdesc']}' name='description'></td>
+		<td><input type='text' value={$item['lineitemamount']} name='amount'/></td>
+		<td>{$region->FormatDate($item['periodstartdate'])}</td>
+		<td class="actions" align="left">
+		<input type=Submit value=Submit />
+		</td>
+		<td></td>
+		</form>
+		</tr>\n
 HEREDOC;
-}
-else{
-$table .= <<<HEREDOC
-<tr>
-<td>{$item['Description']}</td>
-<td>{$item['Amount']}</td>
-<td>{$item['Date']}</td>
-<td class="actions" align="center"><a href=viewlineitems.php?batchid={$billingbatchid}&customerid={$customerid}&edit={$item['RowID']} class="italic payment">Edit</a></td>
-<td class="actions" align="center"><a href=javascript:confirmDelete("{$billingbatchid}","{$customerid}","{$item['RowID']}") class="italic payment">Delete</a></td>
-</tr>\n
+		}
+		else{
+		$table .= <<<HEREDOC
+		<tr>
+		<td>{$item['lineitemdesc']}</td>
+		<td>{$region->FormatCurrency($item['lineitemamount'])}</td>
+		<td>{$region->FormatDate($item['periodstartdate'])}</td>
+		<td class="actions" align="center"><a href=viewlineitems.php?batchid={$billingbatchid}&customerid={$customerid}&edit={$item['rowid']} class="italic payment">Edit</a></td>
+		<td class="actions" align="center"><a href=javascript:confirmDelete("{$billingbatchid}","{$customerid}","{$item['rowid']}") class="italic payment">Delete</a></td>
+		</tr>\n
 HEREDOC;
-}
+		}
 	}
 	
 	$table .= '
@@ -114,7 +101,7 @@ HEREDOC;
 	    	</tr>
 	    </tfoot>
 		</table>';
-pg_close($db);
+$detailsTable->Disconnect();
 ?>
 
 <?php echo GetPageHead("View Line Items", "viewbillbatchdetails.php?batchid=".$_GET['batchid'],$javaScripts);?>

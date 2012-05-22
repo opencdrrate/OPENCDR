@@ -1,8 +1,18 @@
 <?php
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 
-include 'lib/Page.php';
-include 'config.php';
-include 'lib/SQLQueryFuncs.php';
+include_once $path . 'DAL/table_billingbatchmaster.php';
+include_once $path . 'lib/Page.php';
+include_once $path . 'lib/SQLQueryFuncs.php';
+include_once $path . 'conf/ConfigurationManager.php';
+include_once $path . 'lib/localizer.php';
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
+$locale = $manager->GetSetting('region');
+$region = new localizer($locale);
+
+$table = new psql_billingbatchmaster($connectstring);
+$table->Connect();
 
 function CreateViewButton($batchid){
 	$button = 
@@ -13,8 +23,18 @@ function CreateViewButton($batchid){
 	return $button;
 }
 
-function BuildTable($queryResult){
-	$table = <<<HEREDOC
+if(isset($_GET['deleteid'])){
+	$id = $_GET['deleteid'];
+
+	#$db = pg_connect($connectstring);
+	
+	#$deleteStatement = "select \"fnDeleteBillingBatch\"('$id');";
+	#pg_query($deleteStatement);
+	$table->Delete(array('billingbatchid' => $id));
+}
+$allRows = $table->SelectAll();
+$table->Disconnect();
+	$htmlTable = <<<HEREDOC
 	<table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
 	<thead>
 	<tr>
@@ -29,58 +49,27 @@ function BuildTable($queryResult){
 	<tbody>
 HEREDOC;
 
-	$rows = preg_split('/\n/', $queryResult);
-	$i = 1;
-	foreach($rows as $row){
-		$table .= "<tr>";
-		$entries = preg_split('/,/', $row);
-		
-		$batchid = 0;
-		$j = 1;
-		if($i == 1){
-			$i++;
-			continue;
-		}
-		foreach($entries as $entry){
-			if($j == 1){
-				$batchid = $entry;
-			}
-			$table .= "<td>";
-			$table .= $entry;
-			$table .= "</td>";
-			$j++;
-		}
-		$table .= "<td>";
-		$table .= CreateViewButton($batchid);
-		$table .= "</td>";
-
-		$table .= "<td class='actions'>";
-		$table .= "<a href=javascript:confirmDelete('{$batchid}') class=\"btn-action delete\">Delete</a>";
-		$table .= "</td>";
-
-		$table .= "</tr>";
-		$i++;
-	}
-	$table .= <<<HEREDOC
+foreach($allRows as $row){
+	$viewButton = CreateViewButton($row['billingbatchid']);
+	$deleteButton = <<< HEREDOC
+	<br><a href=javascript:confirmDelete('{$row['billingbatchid']}') class="btn-action delete">Delete</a>'
+HEREDOC;
+	$htmlTable .= <<<HEREDOC
+	<tr>
+		<td>{$row['billingbatchid']}</td>
+		<td>{$region->FormatDate($row['billingdate'])}</td>
+		<td>{$row['billingcycleid']}</td>
+		<td>{$region->FormatDate($row['usageperiodend'])}</td>
+		<td>{$viewButton}</td>
+		<td>{$deleteButton}</td>
+	</tr>
+HEREDOC;
+}
+$htmlTable .= <<<HEREDOC
 			</tbody><tfoot><tr>
 			<td colspan="6"></td>
 			</tr></tfoot></table>
 HEREDOC;
-	return $table;
-}
-
-if(isset($_GET['deleteid'])){
-	$id = $_GET['deleteid'];
-
-	$db = pg_connect($connectstring);
-	
-	$deleteStatement = "select \"fnDeleteBillingBatch\"('$id');";
-	pg_query($deleteStatement);
-}
-
-$fullQuery = 'SELECT billingbatchid, billingdate, billingcycleid, usageperiodend FROM billingbatchmaster;';
-$queryResult = SQLSelectQuery($connectstring, $fullQuery, ",", "\n");
-$table = BuildTable($queryResult);
 
 if(isset($_POST["export"])){
 	$filepath = $_POST["filename"];
@@ -119,7 +108,7 @@ HEREDOC;
 <form action="generatebillingbatch.php">
 	<input type="submit" class="btn blue add-customer" value="Generate Billing Batch"/>
 </form>
-<?php echo $table; ?>
+<?php echo $htmlTable; ?>
 <br/>
 <br/>
 </div>

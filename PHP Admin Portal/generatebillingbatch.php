@@ -1,11 +1,15 @@
 <?php
-include 'config.php';
-include 'lib/Page.php'; 
-date_default_timezone_set('America/New_York');
-function CreateDropDown($connectString){
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'conf/ConfigurationManager.php';
+include_once $path.'lib/calendar/classes/tc_calendar.php';
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();	
+include_once $path . 'lib/Page.php'; 
+
+function CreateDropDown($connectstring){
 
 $query = 'select distinct(billingcycle) from customermaster order by billingcycle;';
-$db = pg_connect($connectString);
+$db = pg_connect($connectstring);
 $result = pg_query($db, $query);
 if (!$result) {
 	echo pg_last_error();
@@ -24,7 +28,7 @@ $dropdown .= '</select>';
 return $dropdown;
 }
 if(isset($_POST["submit"])){
-	$connectString = $_POST["connectString"];
+	$connectstring = $_POST["connectstring"];
 	$batchid = $_POST["batchid"];
 	$billingduedate = isset($_REQUEST["billingduedate"]) ? $_REQUEST["billingduedate"] : "";
 	$billingdate = isset($_REQUEST["billingdate"]) ? $_REQUEST["billingdate"] : "";
@@ -32,10 +36,10 @@ if(isset($_POST["submit"])){
 	$usageperiodend = isset($_REQUEST["usagedateend"]) ? $_REQUEST["usagedateend"] : "";
 	$recurringfeestart = isset($_REQUEST["recurrstart"]) ? $_REQUEST["recurrstart"] : "";
 	$recurringfeeend = isset($_REQUEST["recurrend"]) ? $_REQUEST["recurrend"] : "";
-
+	
 	$sqlStatement = "select \"fnGenerateBillingBatch\"('$batchid', '$billingdate', '$billingduedate', '$billingcycleid',  '$usageperiodend', '$recurringfeestart', '$recurringfeeend');"; 
 
-	$db = pg_connect($connectString);
+	$db = pg_connect($connectstring);
 	$result = pg_query($db, $sqlStatement);
 	if (!$result) {
 		echo pg_last_error();
@@ -56,13 +60,14 @@ if(isset($_POST["submit"])){
 <label>
 	  <?php
 		
-		echo ('<script language="javascript" src="lib/calendar/calendar.js"></script>');
-		require_once('lib/calendar/classes/tc_calendar.php');
+		echo ('<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>');
+		
 
 		$myCalendar = new tc_calendar("billingdate", true, false);
-	  	$myCalendar->setIcon("calendar/images/iconcalendar.gif");
+	  	$image = $path."lib/calendar/images/iconCalendar.gif";
+	  	$myCalendar->setIcon($image);
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
-	  	$myCalendar->setPath("lib/calendar/");
+	  	$myCalendar->setPath("/Shared/lib/calendar/");
 	  	$myCalendar->setYearInterval(2010, 2020);
 	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
 	  	$myCalendar->setDateFormat('j F Y');
@@ -75,13 +80,13 @@ if(isset($_POST["submit"])){
 <label>
 	  <?php
 		
-		echo ('<script language="javascript" src="lib/calendar/calendar.js"></script>');
-		require_once('lib/calendar/classes/tc_calendar.php');
+		echo ('<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>');
 
 		$myCalendar = new tc_calendar("billingduedate", true, false);
-	  	$myCalendar->setIcon("calendar/images/iconcalendar.gif");
+	  	$image = $path."lib/calendar/images/iconCalendar.gif";
+	  	$myCalendar->setIcon($image);	
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
-	  	$myCalendar->setPath("lib/calendar/");
+	  	$myCalendar->setPath("/Shared/lib/calendar/");
 	  	$myCalendar->setYearInterval(2010, 2020);
 	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
 	  	$myCalendar->setDateFormat('j F Y');
@@ -95,13 +100,13 @@ if(isset($_POST["submit"])){
 <label>
 	  <?php
 		
-		echo ('<script language="javascript" src="lib/calendar/calendar.js"></script>');
-		require_once('lib/calendar/classes/tc_calendar.php');
+		echo ('<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>');
 
 		$myCalendar = new tc_calendar("usagedateend", true, false);
-	  	$myCalendar->setIcon("calendar/images/iconcalendar.gif");
+	  	$image = $path."lib/calendar/images/iconCalendar.gif";
+	  	$myCalendar->setIcon($image);
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
-	  	$myCalendar->setPath("lib/calendar/");
+	  	$myCalendar->setPath("/Shared/lib/calendar/");
 	  	$myCalendar->setYearInterval(2010, 2020);
 	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
 	  	$myCalendar->setDateFormat('j F Y');
@@ -114,13 +119,13 @@ if(isset($_POST["submit"])){
 <label>
 	  <?php
 		
-		echo ('<script language="javascript" src="lib/calendar/calendar.js"></script>');
-		require_once('lib/calendar/classes/tc_calendar.php');
+		echo ('<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>');
 
 		$myCalendar = new tc_calendar("recurrstart", true, false);
-	  	$myCalendar->setIcon("calendar/images/iconcalendar.gif");
+	  	$image = $path."lib/calendar/images/iconCalendar.gif";
+	  	$myCalendar->setIcon($image);
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
-	  	$myCalendar->setPath("lib/calendar/");
+	  	$myCalendar->setPath("/Shared/lib/calendar/");
 	  	$myCalendar->setYearInterval(2010, 2020);
 	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
 	  	$myCalendar->setDateFormat('j F Y');
@@ -134,13 +139,13 @@ if(isset($_POST["submit"])){
 <label>
 	<?php
 		
-		echo ('<script language="javascript" src="lib/calendar/calendar.js"></script>');
-		require_once('lib/calendar/classes/tc_calendar.php');
+		echo ('<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>');
 
 		$myCalendar = new tc_calendar("recurrend", true, false);
-	  	$myCalendar->setIcon("calendar/images/iconcalendar.gif");
+		$image = $path."lib/calendar/images/iconCalendar.gif";
+	  	$myCalendar->setIcon($image);
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
-	  	$myCalendar->setPath("lib/calendar/");
+	  	$myCalendar->setPath("/Shared/lib/calendar/");
 	  	$myCalendar->setYearInterval(2010, 2020);
 	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
 	  	$myCalendar->setDateFormat('j F Y');
@@ -150,7 +155,7 @@ if(isset($_POST["submit"])){
 	?>
 </label><br/><br/>
 	<input name="generate" type="hidden" type="hidden"/>
-	<input name="connectString" type="hidden" type="hidden" value="<?php echo $connectstring;?>"/>
+	<input name="connectstring" type="hidden" type="hidden" value="<?php echo $connectstring;?>"/>
 	<input type="submit" name="submit" value="Generate Billing Batch"/>
 </form>
     </div>

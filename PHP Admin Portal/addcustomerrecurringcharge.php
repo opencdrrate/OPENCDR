@@ -1,7 +1,11 @@
 <?php
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 
-	include 'config.php';
-	include 'lib/Page.php';
+	include_once $path . 'lib/calendar/classes/tc_calendar.php';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
 
 	define('ROOT_PATH',$_SERVER['DOCUMENT_ROOT']);
 
@@ -103,7 +107,6 @@ else {
 	  <?php
 		
 		echo ('<script language="javascript" src="lib/calendar/calendar.js"></script>');
-		require_once('lib/calendar/classes/tc_calendar.php');
 
 		$myCalendar = new tc_calendar("date5", true, false);
 	  	$myCalendar->setIcon("calendar/images/iconcalendar.gif");

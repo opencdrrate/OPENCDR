@@ -10,7 +10,10 @@ document.export.submit();
 
  
 <?php 
-	include 'config.php';
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
 
 
 	$db = pg_connect($connectstring);

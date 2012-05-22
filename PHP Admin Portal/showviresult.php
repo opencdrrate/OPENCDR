@@ -1,9 +1,12 @@
 <?php
-include_once 'lib/Page.php';
-include_once 'lib/vi_did.php';
-include_once 'vars/voip_login_info.php';
-include_once 'DAL/table_didmaster.php';
-include_once 'config.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+include_once $path . 'lib/vi_did.php';
+include_once $path . 'vars/voip_login_info.php';
+include_once $path . 'DAL/table_didmaster.php';
+include_once $path . 'conf/ConfigurationManager.php';
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
 $content = '';
 $error = '';
 

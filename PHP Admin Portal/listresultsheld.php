@@ -1,7 +1,14 @@
 <?php
 
-include 'lib/Page.php';
-include 'config.php'; 
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+include_once $path . 'DAL/table_callrecordmaster_held.php';
+include_once $path . 'conf/ConfigurationManager.php';
+include_once $path . 'lib/localizer.php';
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
+$locale = $manager->GetSetting('region');
+$region = new localizer($locale);
 
 $helpPage = <<< HEREDOC
 	https://sourceforge.net/p/opencdrrate/home/Rating%20Errors/
@@ -35,8 +42,6 @@ $htmltable = <<<HEREDOC
 <th>ErrorMessage</th>
 </thead></tr>
 HEREDOC;
-	include 'config.php';
-	include_once 'DAL/table_callrecordmaster_held.php';
 	$query = 'SELECT * FROM callrecordmaster_held;';
 	$table = new psql_callrecordmaster_held($connectstring);
 	$table->Connect();
@@ -89,7 +94,7 @@ $callType = $myrow['calltype'];
 	<td nowrap="nowrap">{$myrow['callid']}</td>
 	<td>{$myrow['customerid']}</td>
 	<td>{$myrow['calltype']}</td>
-	<td>{$myrow['calldatetime']}</td>
+	<td>{$region->FormatDateTime($myrow['calldatetime'])}</td>
 	<td>{$myrow['duration']}</td>
 	<td>{$myrow['direction']}</td>
 	<td>{$myrow['sourceip']}</td>

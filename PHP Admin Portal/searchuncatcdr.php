@@ -1,7 +1,10 @@
 <?php 
 
-	include 'lib/Page.php'; 
-	date_default_timezone_set('America/Los_Angeles');
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'lib/Page.php'; 
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	
 	$today = date("Y-m-d");
 	$beginningOfMonth = date("Y-m-d", mktime(0,0,0,date("m"), 1, date("Y")));
 ?>

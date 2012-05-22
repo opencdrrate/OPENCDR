@@ -1,14 +1,22 @@
 <?php
-include_once 'lib/Page.php';
-include_once 'lib/session.php';
-include_once 'vars/config.php';
-include_once 'DAL/table_customerbillingaddressmaster.php';
-include_once 'DAL/table_customermaster.php';
-include_once 'DAL/table_webportalaccesstokens.php';
-include_once 'DAL/table_webportalaccess.php';
-include_once 'DAL/table_billingbatchdetails.php';
-include_once 'DAL/table_paymentmaster.php';
-include_once 'DAL/table_callrecordmaster.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+include_once $path . 'lib/session.php';
+include_once $path . 'DAL/table_customerbillingaddressmaster.php';
+include_once $path . 'DAL/table_customermaster.php';
+include_once $path . 'DAL/table_webportalaccesstokens.php';
+include_once $path . 'DAL/table_webportalaccess.php';
+include_once $path . 'DAL/table_billingbatchdetails.php';
+include_once $path . 'DAL/table_paymentmaster.php';
+include_once $path . 'DAL/table_callrecordmaster.php';
+include_once $path . 'conf/ConfigurationManager.php';
+include_once $path . 'lib/localizer.php';
+
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
+$region = $manager->GetSetting('region');
+
+$locale = new localizer($region);
 
 if(!isset($_GET['token'])){
 	#You need to be logged in to view this page
@@ -56,18 +64,18 @@ $customermaster->Disconnect();
 
 $name = 'No Name!';
 if(count($customermasterInfo) > 0){
-	$name = $customermasterInfo[0]['customername'];
+	$name = $customermasterInfo['customername'];
 }
 $billingDetails = new psql_billingbatchdetails($connectstring);
 $billingDetails->Connect();
-$billingDetailsInfo = $billingDetails->Select($customerid);
+$billingDetailsInfo = $billingDetails->GetBatches($customerid);
 $billingDetails->Disconnect();
 
-$totalBilled = 0;
-foreach($billingDetailsInfo as $bill){
-	$totalBilled += floatval($bill['lineitemamount']);
+$total = 0;
+foreach($billingDetailsInfo as $detail){
+	$total += $detail['totalamount'];
 }
-$totalBilled = '$'.number_format($totalBilled, 2, '.',',');
+$totalBilled = $locale->FormatCurrency($total);
 
 $paymentDetails = new psql_paymentmaster($connectstring);
 $paymentDetails->Connect();
@@ -78,8 +86,7 @@ $totalPaid = 0;
 foreach($paymentDetailsInfo as $bill){
 	$totalPaid += floatval($bill['paymentamount']);
 }
-$totalPaid = '$'. number_format($totalPaid, 2,'.',',');
-
+$totalPaid = $locale->FormatCurrency($totalPaid);
 $callrecordmaster = new psql_callrecordmaster($connectstring);
 $callrecordmaster->Connect();
 $callrecordmasterInfo = $callrecordmaster->Select($customerid);

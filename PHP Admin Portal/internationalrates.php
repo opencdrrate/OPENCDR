@@ -1,8 +1,15 @@
 <?php
-	include 'lib/Page.php';
-	include 'config.php';
-	include 'lib/SQLQueryFuncs.php';
-	include 'DAL/table_internationalratemaster.php';
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'lib/SQLQueryFuncs.php';
+	include_once $path . 'DAL/table_internationalratemaster.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'lib/localizer.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	$locale = $manager->GetSetting('region');
+	$region = new localizer($locale);
+	
 	$errors = '';
 	function customError($errno, $errstr)
 	{
@@ -34,7 +41,11 @@
 			. " WHERE customerid = '" . $customerid . "'"
 			. " ORDER BY effectivedate,billedprefix";
 	$content .= <<<HEREDOC
-		
+	<!-- Sample rate sheets -->
+	<form action="https://sourceforge.net/projects/opencdrrate/files/Sample%20Rate%20Sheets/" method="post" target="_blank">
+	<input type="submit" class="btn blue add-customer" value="Sample rate sheets">
+	</form>
+	
 	<!-- THE EXPORT BUTTON -->
 	<form name="export" action="exportpipe.php" method="post">
    	<input type="submit" class="btn orange export" value="Export table to CSV">
@@ -43,7 +54,7 @@
 	</form>
 	
 	<!-- THE IMPORT BUTTON -->
-	<form id="action" action="controllers/ajax_internationalrate_controller.php?customerid={$customerid}" method="POST">
+	<form id="action" action="/Shared/controllers/ajax_internationalrate_controller.php?customerid={$customerid}" method="POST">
 	Choose a file to import: <input name="uploadedFile" type="File" id="fileselect" />
 	</form>
 	<button id="uploadbutton" type="submit">Import File </button><br>
@@ -68,8 +79,35 @@ HEREDOC;
 	</form>';
 	}
 	
-	$content .= AssocArrayToTable($assocArray, array('effectivedate','billedprefix','retailrate'));
-	
+	$htmltable = <<<HEREDOC
+<table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
+<thead>
+<tr>
+<th>effectivedate</th>
+<th>billedprefix</th>
+<th>retailrate</th>
+</tr>
+</thead>
+<tbody>
+HEREDOC;
+foreach($assocArray as $row){
+	$htmltable .= <<< HEREDOC
+	<tr>
+	<td>{$region->FormatDate($row['effectivedate'])}</td>
+	<td>{$row['billedprefix']}</td>
+	<td>{$row['retailrate']}</td>
+	</tr>
+HEREDOC;
+}
+	$htmltable .= <<< HEREDOC
+	</tbody>
+	    <tfoot>
+	    	<tr>
+		    <td colspan="3"></td>
+	    	</tr>
+	    </tfoot>
+		</table>
+HEREDOC;
 	$table->Disconnect();
 ?>
 
@@ -86,7 +124,9 @@ HEREDOC;
 	<br>
 	<div id="progress"></div>
 	<div id="messages"></div>
+	
 	<?php echo $content;?>
+	<?php echo $htmltable;?>
 	</div>
-	<script src="lib/jUpload.js"></script>
+	<script src="/Shared/lib/jUpload.js"></script>
 	<?php echo GetPageFoot();?>

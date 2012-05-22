@@ -1,6 +1,9 @@
 <?php
-include 'config.php';
-include 'lib/TBRLibs.php';
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/TBRLibs.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
 $keys = array();
 
 $keys[] = 'callid';

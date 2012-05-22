@@ -1,7 +1,11 @@
 <?php
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 
-     include 'config.php'; 
-	 include 'DAL/table_didmaster.php';
+    include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	
+	 include_once $path . 'DAL/table_didmaster.php';
      $rowid = $_GET['rowid'];
 	 
 	 $table = new psql_didmaster($connectstring);

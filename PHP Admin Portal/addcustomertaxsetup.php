@@ -1,7 +1,10 @@
  <?php
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 
-	include 'config.php';
-	include 'lib/Page.php';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
 
 function CreateDropDown($connectString){
 $query = 'select customerid from customermaster order by customerid;';

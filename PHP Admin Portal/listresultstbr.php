@@ -1,8 +1,14 @@
 <?php
-	include 'config.php';
-	include 'lib/SQLQueryFuncs.php';
-	include_once 'DAL/table_callrecordmaster_tbr.php';
-	include 'lib/Page.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'lib/SQLQueryFuncs.php';
+	include_once $path . 'DAL/table_callrecordmaster_tbr.php';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'lib/localizer.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	$locale = $manager->GetSetting('region');
+	$region = new localizer($locale);
 	
 	$content = '';
 	$table = new psql_callrecordmaster_tbr($connectstring);
@@ -26,6 +32,50 @@ HEREDOC;
 	$titlespiped = "CallID,CustomerID,CallType,CallDateTime,Duration,Direction,SourceIP,OriginationNumber,DestinationNumber,LRN,CNAMDipped,RateCenter,CarrierID";
 	$titles = preg_split("/,/",$titlespiped,-1);
 	$htmltable = AssocArrayToTable($allArrayResults,$titles); 
+	/*"CallID,CustomerID,CallType,CallDateTime,Duration,Direction,SourceIP,OriginationNumber,DestinationNumber,
+	LRN,CNAMDipped,RateCenter,CarrierID";*/
+	$htmltable = <<< HEREDOC
+	<table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
+	<thead><tr>
+	<th>CallID</th>
+	<th>CustomerID</th>
+	<th>CallType</th>
+	<th>CallDateTime</th>
+	<th>Duration</th>
+	<th>Direction</th>
+	<th>SourceIP</th>
+	<th>OriginationNumber</th>
+	<th>DestinationNumber</th>
+	<th>LRN</th>
+	<th>CNAMDipped</th>
+	<th>RateCenter</th>
+	<th>CarrierID</th>
+	</tr></thead><tbody>
+HEREDOC;
+	foreach($allArrayResults as $row){
+		$htmltable .= <<< HEREDOC
+		<tr>
+		<td>{$row['callid']}</td>
+		<td>{$row['customerid']}</td>
+		<td>{$row['calltype']}</td>
+		<td>{$region->FormatDateTime($row['calldatetime'])}</td>
+		<td>{$row['duration']}</td>
+		<td>{$row['direction']}</td>
+		<td>{$row['sourceip']}</td>
+		<td>{$row['originatingnumber']}</td>
+		<td>{$row['destinationnumber']}</td>
+		<td>{$row['lrn']}</td>
+		<td>{$row['cnamdipped']}</td>
+		<td>{$row['ratecenter']}</td>
+		<td>{$row['carrierid']}</td>
+		</tr>
+HEREDOC;
+	}
+	$htmltable .= <<< HEREDOC
+	</tbody><tfoot><tr>
+	<td colspan="15"></td>
+	</tr></tfoot></table>
+HEREDOC;
 	$table->Disconnect();
 ?> 
 
@@ -50,7 +100,7 @@ HEREDOC;
 				<input type="hidden" name="filename" value="TBRExport.csv">
 			</form>
 			<br>
-			<form action="lib/TBRLibs.php" method="post" id="action">
+			<form action="/Shared/lib/TBRLibs.php" method="post" id="action">
 				<select name="type" id="type">
 					<option value="bandwidth">Bandwidth</option>
 					<option value="vitelity">Vitelity</option>
@@ -200,7 +250,7 @@ HEREDOC;
 						RateIndeterminateJurisdictionCDR();
 					}
 					else{
-						Output(!xhr.responseText);
+						Output(xhr.responseText);
 						HideProgress();
 					}
 				}
@@ -210,7 +260,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "lib/RunSP.php", true);
+		xhr.open("POST", "/Shared/lib/RunSP.php", true);
 		xhr.setRequestHeader("X_SPNAME", 'fnCategorizeCDR');
 		xhr.send();
 	}
@@ -236,7 +286,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "lib/RunSP.php", true);
+		xhr.open("POST", "/Shared/lib/RunSP.php", true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateIndeterminateJurisdictionCDR');
 		xhr.send();
 	}
@@ -262,7 +312,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "lib/RunSP.php", true);
+		xhr.open("POST", "/Shared/lib/RunSP.php", true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateIndeterminateJurisdictionCDR');
 		xhr.send();
 	}
@@ -288,7 +338,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "lib/RunSP.php", true);
+		xhr.open("POST", "/Shared/lib/RunSP.php", true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateInterstateCDR');
 		xhr.send();
 	}
@@ -314,7 +364,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "lib/RunSP.php", true);
+		xhr.open("POST", "/Shared/lib/RunSP.php", true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateIntrastateCDR');
 		xhr.send();
 	}
@@ -340,7 +390,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "lib/RunSP.php", true);
+		xhr.open("POST", "/Shared/lib/RunSP.php", true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateSimpleTerminationCDR');
 		xhr.send();
 	}
@@ -366,7 +416,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "lib/RunSP.php", true);
+		xhr.open("POST", "/Shared/lib/RunSP.php", true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateTieredOriginationCDR');
 		xhr.send();
 	}
@@ -391,7 +441,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "lib/RunSP.php", true);
+		xhr.open("POST", "/Shared/lib/RunSP.php", true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateTollFreeOriginationCDR');
 		xhr.send();
 	}

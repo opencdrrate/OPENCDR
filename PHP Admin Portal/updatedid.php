@@ -1,9 +1,12 @@
 <?php
 
-	include 'config.php';
-	include 'lib/Page.php';
-	include 'lib/SQLQueryFuncs.php';
-	include 'DAL/table_didmaster.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'lib/SQLQueryFuncs.php';
+	include_once $path . 'DAL/table_didmaster.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
 	
 	$result = '';
 	$table = new psql_didmaster($connectstring);

@@ -1,8 +1,11 @@
 <?php
-include 'lib/Page.php';
-include 'lib/SQLQueryFuncs.php';
-include 'config.php';
-include 'lib/SQLImport.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+include_once $path . 'lib/SQLQueryFuncs.php';
+include_once $path . 'lib/SQLImport.php';
+include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
 
 function edit($connectstring, $npa, $newStateValue){
 	$updateString = "UPDATE \"public\".\"npamaster\" SET "

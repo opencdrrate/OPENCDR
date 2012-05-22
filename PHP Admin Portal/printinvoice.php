@@ -1,6 +1,19 @@
 <?php
-	include 'config.php';
-	include 'vars/CompanyInfo.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'lib/localizer.php';
+	
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	$locale = $manager->GetSetting('region');
+	$companyName = $manager->GetSetting('company_name');
+	$companyAddress1 = $manager->GetSetting('company_address1');
+	$companyAddress2 = $manager->GetSetting('company_address2');
+	$companyCountry = $manager->GetSetting('company_country');
+	$logopath = $manager->GetSetting('logo');
+	
+	$region = new localizer($locale);
+	
 	#page config
 	$maxTableHeight = 30;
 	$pageWidth = 900;
@@ -12,12 +25,6 @@
 	$accountNumber = $customerid;
 	$invoiceNumber = $billingbatchid.'-'.$customerid;
 	
-	#Company info - Found in vars/CompanyInfo.php
-	$companyName = $CompanyName;
-	$companyAddress1 = $CompanyAddress1;
-	$companyAddress2 = $CompanyAddress2;
-	$companyCountry = $CompanyCountry;
-	$logopath = $Logopath;
 	
 	$db = pg_connect($connectstring);
 	#Customer Master : 
@@ -50,8 +57,8 @@
 						group by customerid order by customerid;';
 	$periodQueryResult = pg_query($periodQuery);
 	$periodData = pg_fetch_assoc($periodQueryResult);
-	$startPeriod = $periodData['periodstartdate'];
-	$endPeriod = $periodData['periodenddate'];
+	$startPeriod = $region->FormatDate($periodData['periodstartdate']);
+	$endPeriod = $region->FormatDate($periodData['periodenddate']);
 	$servicePeriod = $startPeriod . ' to ' . $endPeriod;
 	
 	#billingbatchmaster
@@ -59,8 +66,8 @@
 			FROM billingbatchmaster WHERE billingbatchid = '".$billingbatchid."';";
 	$batchMasterQueryResult = pg_query($batchMasterQuery);
 	$batchMasterData = pg_fetch_assoc($batchMasterQueryResult);
-	$invoiceDate = $batchMasterData['billingdate'];
-	$dueDate = $batchMasterData['duedate'];	
+	$invoiceDate = $region->FormatDate($batchMasterData['billingdate']);
+	$dueDate = $region->FormatDate($batchMasterData['duedate']);	
 	
 	#line items from billingbatchdetails
 	$allItems = array();
@@ -77,7 +84,8 @@
 	while($lineItem = pg_fetch_assoc($lineItemQueryResults)){
 		$item = array("Date" => $lineItem['periodenddate']
 					,"Quantity" => $lineItem['quantity']
-					,"Billing Period" => $lineItem['periodstartdate'] ." to ". $lineItem['periodenddate']
+					,"Billing Period" => $region->FormatDate($lineItem['periodstartdate']) 
+					." to ". $region->FormatDate($lineItem['periodenddate'])
 					,"Description" => $lineItem['description']
 					,"Amount" => $lineItem['amount']
 				);
@@ -178,7 +186,7 @@ foreach($allItems as $item){
 	echo '<td align="center">'. $item["Quantity"] .'</td>';
 	echo '<td align="center">'. $item["Billing Period"] .'</td>';
 	echo '<td>'. $item["Description"] .'</td>';
-	echo '<td align="right">'. '$'.sprintf("%01.2f",$item["Amount"]).'</td>';
+	echo '<td align="right">'. $region->FormatCurrency($item["Amount"]).'</td>';
 	echo '</tr>';
 	
 	$subtotal += $item["Amount"];
@@ -192,7 +200,7 @@ for($i = 0 ; $i < $numberOfBlankSpaces ; $i++){
 }
 ?>
 <tr class="middle">
-	<td></td><td></td><td></td><td>Subtotal</td><td align="right"><?php echo '$'.sprintf("%01.2f",$subtotal);?></td>
+	<td></td><td></td><td></td><td>Subtotal</td><td align="right"><?php echo $region->FormatCurrency($subtotal);?></td>
 </tr>
 <?php 
 foreach($taxItems as $item){
@@ -208,7 +216,7 @@ foreach($taxItems as $item){
 $total += $subtotal;
 ?>
 <tr class="top">
-	<td></td><td></td><td></td><td>Total</td><td align="right"><?php echo '$'.sprintf("%01.2f",$total);?></td>
+	<td></td><td></td><td></td><td>Total</td><td align="right"><?php echo $region->FormatCurrency($total);?></td>
 </tr>
 </table>
 

@@ -1,10 +1,16 @@
 <?php
-	include 'lib/Page.php';
-	include 'lib/SQLQueryFuncs.php';
-	include 'config.php';
-	include_once 'DAL/table_didmaster.php';
-	include_once 'DAL/table_callrecordmaster_tbr.php';
-	include_once 'DAL/table_ipaddressmaster.php';
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'lib/SQLQueryFuncs.php';
+	include_once $path . 'DAL/table_didmaster.php';
+	include_once $path . 'DAL/table_callrecordmaster_tbr.php';
+	include_once $path . 'DAL/table_ipaddressmaster.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'lib/localizer.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	$locale = $manager->GetSetting('region');
+	$region = new localizer($locale);
 	
 	$message = '';
 	$query = 'SELECT * FROM callrecordmaster_tbr where calltype is null';
@@ -98,7 +104,7 @@ HEREDOC;
 				<font color="red">Add did for {$destView} or {$origView}</font><br>
 HEREDOC;
 			}
-			if(!$ipAddressExists){
+			if(!$ipAddressExists and !empty($row['sourceip'])){
 				$ipAddressView = <<< HEREDOC
 			<a href="addipaddress.php?ipaddress={$row['sourceip']}">{$row['sourceip']}</a>
 HEREDOC;
@@ -113,7 +119,7 @@ HEREDOC;
 			<td><Input type="checkbox" name="cdrList[{$i}]" value="{$row['callid']}"/></td>
 			<td nowrap="nowrap">{$row['callid']}</td>
 			<td>{$row['customerid']}</td>
-			<td>{$row['calldatetime']}</td>
+			<td>{$region->FormatDateTime($row['calldatetime'])}</td>
 			<td>{$row['duration']}</td>
 			<td>{$row['direction']}</td>
 			<td>{$ipAddressView}</td>

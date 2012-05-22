@@ -1,5 +1,17 @@
 <?php
-include 'lib/Page.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+include_once $path . 'conf/ConfigurationManager.php';
+include_once $path . 'DAL/table_paymentmaster.php';
+include_once $path . 'lib/localizer.php';
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
+$locale = $manager->GetSetting('region');
+$region = new localizer($locale);
+
+$paymentTable = new psql_paymentmaster($connectstring);
+$paymentTable->Connect();
+
 function CreateDeleteButton($rowid, $customerid){
 	$deleteButton = '<form action="listpayments.php?customerid='.$customerid.'" method="post">';
 	$deleteButton .=	'<input type="hidden" name="function" value="delete"/>';
@@ -9,29 +21,18 @@ function CreateDeleteButton($rowid, $customerid){
 	$deleteButton .= '</form>';
 	return $deleteButton;
 }
-
-include 'config.php';
-
 if(isset($_POST['function'])){
 	$function = $_POST['function'];
 	if($function == "delete"){
 		$customerid = $_POST['customerid'];
 		$rowid = $_POST['rowid'];
-		$connect = pg_connect($connectstring);
-		$deleteStatement = "DELETE FROM paymentmaster WHERE customerid = '"
-				.$customerid."' AND rowid = '".$rowid."';";
-		pg_query($deleteStatement);
-		pg_close($connect);
-		echo 'row deleted<br>';
+		$paymentTable->Delete(array('customerid'=>$customerid, 'rowid'=>$rowid));
 	}
 }
 
 $customerid = $_GET['customerid'];
-$queryString = 'SELECT customerid, paymentdate, paymentamount, paymenttype, paymentnote, rowid
-FROM paymentmaster WHERE customerid = \''.$customerid.'\';';
-$db = pg_connect($connectstring);
-$queryResults = pg_query($queryString);
-$dataArray = pg_fetch_all($queryResults);
+
+$dataArray = $paymentTable->Select($customerid);
 
 $content = <<<HEREDOC
 <form action="addpayment.php?customerid={$customerid}" method="post">
@@ -51,6 +52,7 @@ HEREDOC;
 		<th>Payment Amount</th>
 		<th>Payment Type</th>
 		<th>Payment Note</th>
+		<th></th>
 	</tr>
 	</thead>
 	<tbody>
@@ -60,8 +62,8 @@ HEREDOC;
 			$content.="
 			<tr>
 					<td>".$row['customerid']."</td>
-					<td>".$row['paymentdate']."</td>
-					<td>".$row['paymentamount']."</td>
+					<td>".$region->FormatDate($row['paymentdate'])."</td>
+					<td>".$region->FormatCurrency($row['paymentamount'])."</td>
 					<td>".$row['paymenttype']."</td>
 					<td>".$row['paymentnote']."</td>
 					<td>".CreateDeleteButton($row['rowid'], $row['customerid'])."</td>
@@ -70,8 +72,11 @@ HEREDOC;
 		}
 	}
 	$content .= '</tbody>
+	<tfoot><tr>
+	<td colspan="6"></td>
+	</tr></tfoot>
 	</table>';
-pg_close($db);
+$paymentTable->Disconnect();
 ?>
 
 <?php echo GetPageHead("List Payments");?>

@@ -1,14 +1,17 @@
 <?php
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 
-	include 'config.php';
-	include 'lib/Page.php';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'lib/calendar/classes/tc_calendar.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
 
-date_default_timezone_set('America/Los_Angeles');
 function GenerateCustomerIDDropDown($connectstring){
 	$dropDown = '';
 	$dropDown .= "Customer ID :"; 
 	$dropDown .= '<select name="customerid">';
-	$dropDown .=	'<option value="">Choose a Customer</option>';
+	$dropDown .= '<option value="">Choose a Customer</option>';
 		$db = pg_connect($connectstring);
 
 		$customerIDQuery = "select CustomerID from customermaster order by customerid;";
@@ -89,7 +92,6 @@ $customerid = $_GET['customerid'];
 	<div style="float: left;"><label>Payment Date:</label>  	</div>
 <?php
 //get class into the page
-require_once('lib/calendar/classes/tc_calendar.php');
 
 	  $myCalendar = new tc_calendar("date",true,true);
 	  if(strlen($date) == 0){

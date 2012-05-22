@@ -1,9 +1,13 @@
  <?php 
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 	$defaultIPValue = '';
 	$errors = '';
 	$content = '';
-	include 'lib/Page.php';
-	include 'config.php'; 
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	
 function customError($errno, $errstr){
 	global $errors;
 	$errors .= <<<HEREDOC

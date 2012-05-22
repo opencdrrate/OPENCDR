@@ -1,12 +1,19 @@
 <?php
-include 'lib/SQLQueryFuncs.php';
-include 'config.php';
-include 'lib/Page.php';
-include 'lib/IIFFile.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/localizer.php';
+include_once $path . 'lib/SQLQueryFuncs.php';
+include_once $path . 'lib/Page.php';
+include_once $path . 'lib/IIFFile.php';
+include_once $path . 'conf/ConfigurationManager.php';
+include_once $path . 'DAL/table_billingbatchdetails.php';
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
+$locale = $manager->GetSetting('region');
 $batchid = $_GET["batchid"];
+$region = new localizer($locale);
 
 function GetInvoiceIIF($billingbatchid, $customerid){
-	include 'config.php';
+	include_once $path . 'config.php';
 	#build IIF file and redirect to it
 	$iifFile = new iifFile();
 	
@@ -160,37 +167,26 @@ $htmltable = <<<HEREDOC
 <tbody>
 HEREDOC;
 
-	$db = pg_connect($connectstring);
+	$billingDetailsTable = new psql_billingbatchdetails($connectstring);
+	$billingDetailsTable->Connect();
+	$batches = $billingDetailsTable->GetCustomers($batchid);
+	
+	foreach($batches as $myrow) {
 
-	#$tempstring = "printinvoice.php?batchid=".$batchid."&customerid=";
-	$query = 'SELECT customerid, sum(lineitemamount) as "amount",
-			count(*) as "items", max(periodstartdate) as "periodstartdate", max(periodenddate) as "periodenddate"
-			FROM billingbatchdetails WHERE billingbatchid = \''.$batchid.'\' group by customerid order by customerid;';
-
-
-	$result = pg_query($query); 
-        if (!$result) { 
-            echo "Problem with query " . $query . "<br/>"; 
-            echo pg_last_error(); 
-            exit(); 
-        } 
-
-	while($myrow = pg_fetch_assoc($result)) {
-
-$htmltable .= <<<HEREDOC
-<tr>
-<td>{$myrow['customerid']}</td>
-<td>{$myrow['amount']}</td>
-<td>{$myrow['items']}</td>
-<td>{$myrow['periodstartdate']}</td>
-<td>{$myrow['periodenddate']}</td>
-<td class="actions" align="center">
-<a href=printinvoice.php?batchid={$batchid}&customerid={$myrow['customerid']} class="italic payment">Invoice</a>
-</td><td class="actions" align="center">
-<a href=viewbillbatchdetails.php?batchid={$batchid}&customerid={$myrow['customerid']}&qb=y class="italic payment">Quickbooks</a>
-</td><td class="actions" align="center">
-<a href=viewlineitems.php?batchid={$batchid}&customerid={$myrow['customerid']}&qb=y class="italic payment">View/Edit Details</a>
-</td></tr>
+		$htmltable .= <<<HEREDOC
+		<tr>
+		<td>{$myrow['customerid']}</td>
+		<td>{$region->FormatCurrency($myrow['amount'])}</td>
+		<td>{$myrow['items']}</td>
+		<td>{$region->FormatDate($myrow['periodstartdate'])}</td>
+		<td>{$region->FormatDate($myrow['periodenddate'])}</td>
+		<td class="actions" align="center">
+		<a href=printinvoice.php?batchid={$batchid}&customerid={$myrow['customerid']} class="italic payment">Invoice</a>
+		</td><td class="actions" align="center">
+		<a href=viewbillbatchdetails.php?batchid={$batchid}&customerid={$myrow['customerid']}&qb=y class="italic payment">Quickbooks</a>
+		</td><td class="actions" align="center">
+		<a href=viewlineitems.php?batchid={$batchid}&customerid={$myrow['customerid']}&qb=y class="italic payment">View/Edit Details</a>
+		</td></tr>
 HEREDOC;
 
 	}

@@ -1,9 +1,12 @@
 <?php
-include_once 'vars/config.php';
-include_once 'lib/Page.php';
-include_once 'lib/session.php';
-include_once 'lib/passwordrecovery.php';
-include_once 'lib/encryption.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+include_once $path . 'lib/session.php';
+include_once $path . 'lib/passwordrecovery.php';
+include_once $path . 'lib/encryption.php';
+include_once $path . 'conf/ConfigurationManager.php';
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
 
 $errors = '';
 $content = '';

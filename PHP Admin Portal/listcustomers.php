@@ -1,8 +1,15 @@
 <?php
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 
-include 'lib/Page.php';
-include 'config.php';
-include 'lib/SQLQueryFuncs.php';
+include_once $path . 'lib/Page.php';
+include_once $path . 'lib/SQLQueryFuncs.php';
+include_once $path . 'conf/ConfigurationManager.php';
+include_once $path . 'lib/localizer.php';
+
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
+$locale = $manager->GetSetting('region');
+$region = new localizer($locale);
 
 $db = pg_connect($connectstring);
 
@@ -73,10 +80,10 @@ $htmltable .= <<<HEREDOC
 <td>{$myrow['cnamdiprate']}</td>
 <td>{$myrow['CallTypeDesc']}</td>
 <td>{$myrow['billingcycle']}</td>
-<td>{$myrow['TotalCharges']}</td>
+<td>{$region->FormatCurrency($myrow['TotalCharges'])}</td>
 <td class="actions" align="center">
-<a href=listpayments.php?customerid={$myrow['customerid']} class="italic payment">{$totalPayments}</a>
-</td><td>{$balance}</td>
+<a href=listpayments.php?customerid={$myrow['customerid']} class="italic payment">{$region->FormatCurrency($totalPayments)}</a>
+</td><td>{$region->FormatCurrency($balance)}</td>
 <td class="actions">
 <a href=updatecustomer.php?rowid={$myrow['rowid']} class="btn-action update">Update</a></td>
 <td class="actions">

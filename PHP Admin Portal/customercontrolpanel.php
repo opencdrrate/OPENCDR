@@ -19,8 +19,8 @@ HEREDOC;
 }
 
 function SendNewPasswordNotification($username, $email, $newPassword){
-	include 'lib/mail.php';
-	include 'vars/AdminInfo.php';
+	include_once $path . 'lib/mail.php';
+	include_once $path . 'vars/AdminInfo.php';
 	$body = <<< HEREDOC
 You are receiving this notification because an administrator from {$Website} has reset your password.<p>
 
@@ -52,9 +52,13 @@ function confirmDelete(deleteid,customerid){
 HEREDOC;
  ?>
 <?php
-include 'lib/Page.php';
-include 'lib/encryption.php';
-include 'config.php';
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+include_once $path . 'lib/encryption.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	
 $customerid = $_GET['customerid'];
 
 $message = '';

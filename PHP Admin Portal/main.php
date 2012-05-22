@@ -1,8 +1,21 @@
 
 <?php 
-	include 'lib/Page.php';
-	include 'config.php'; 
-
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'lib/Page.php';		
+	include_once $path . 'lib/psql_connection.php';
+	
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	
+	$testConnection = new psql_connection();
+	$isValid = $testConnection->TestConnectstring($connectstring);
+	if(!$isValid){
+		header('location: configurationpage.php');
+		exit();
+	}
+	
+	$sitename = $manager->GetSetting('sitename');
 	$db = pg_connect($connectstring);
 
     $queryHELDCalls = 'SELECT count(*) FROM callrecordmaster_held;';
@@ -189,6 +202,12 @@
                    <a href="http://www.opencdrrate.org/" target="_blank">http://www.opencdrrate.org/</a>
                 </td>
             </tr>
+			<tr>
+				<td></td>
+				<td>
+					<a href="configurationpage.php">Configuration</a>
+				</td>
+			</tr>
         </table>
 	<br/>
 	<br/>

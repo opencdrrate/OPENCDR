@@ -1,6 +1,10 @@
 <?php
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 
-     include 'config.php'; 
+     include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	
      $db = pg_connect($connectstring);
      if (!$db) {
      die("Error in connection: " . pg_last_error());

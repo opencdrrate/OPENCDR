@@ -1,8 +1,11 @@
 
 <?php
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 
-	include 'config.php';
-	include 'lib/Page.php';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
 
 $htmltable = <<<HEREDOC
 <table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">

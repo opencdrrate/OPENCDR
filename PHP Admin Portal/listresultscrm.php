@@ -1,6 +1,12 @@
 <?php
-include 'lib/Page.php';
-include 'config.php'; 
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+include_once $path . 'conf/ConfigurationManager.php';
+include_once $path . 'lib/localizer.php';
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
+$locale = $manager->GetSetting('region');
+$region = new localizer($locale);
 
 $htmltable = <<<HEREDOC
 <table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
@@ -48,7 +54,7 @@ HEREDOC;
 	$result = pg_query_params($db,'SELECT * FROM "callrecordmaster" where cast(calldatetime as date) between $1 and $2', array($start, $end));
 
 	while($myrow = pg_fetch_assoc($result)) {
- $callType = $myrow['calltype'];
+	$callType = $myrow['calltype'];
 
 		if($callType == '5'){
 			$myrow['calltype'] = 'Intrastate';
@@ -79,7 +85,7 @@ $htmltable .= <<<HEREDOC
 <td nowrap="nowrap">{$myrow['callid']}</td>
 <td>{$myrow['customerid']}</td>
 <td>{$myrow['calltype']}</td>
-<td>{$myrow['calldatetime']}</td>
+<td>{$region->FormatDateTime($myrow['calldatetime'])}</td>
 <td>{$myrow['duration']}</td>
 <td>{$myrow['billedduration']}</td>
 <td>{$myrow['direction']}</td>

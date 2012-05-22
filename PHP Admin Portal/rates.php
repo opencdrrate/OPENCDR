@@ -1,12 +1,10 @@
 
 <?php
-include 'lib/Page.php';
-$interstateconfpage="vars/RateConfPages/interstateconfig.php";
-$intrastateconfpage="vars/RateConfPages/intrastateconfig.php";
-$internationalconfpage="vars/RateConfPages/internationalconfig.php";
-$tieredorigconfpage="vars/RateConfPages/tierorigconfig.php";
-$tollfreeconfpage="vars/RateConfPages/tollfreeconfig.php";
-$simpletermconfpage="vars/RateConfPages/simpletermconfig.php";
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+include_once $path . 'conf/ConfigurationManager.php';
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
 
 $htmltable = <<<HEREDOC
 <table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
@@ -25,8 +23,6 @@ $htmltable = <<<HEREDOC
 </thead>
 <tbody>
 HEREDOC;
-
-        include 'config.php';
 
 	$db = pg_connect($connectstring);
 

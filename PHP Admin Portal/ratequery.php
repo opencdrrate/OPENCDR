@@ -1,6 +1,10 @@
 <?php
-	include 'lib/Page.php';
-	include 'config.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	
 	$content = '';
 	$db = pg_connect($connectstring);
 	if(isset($_GET["load"])){
@@ -37,7 +41,7 @@
 		$content .= '</script>';
 	}
 	else if(isset($_POST["export"])){
-		include 'lib/SQLQueryFuncs.php';
+		include_once $path . 'lib/SQLQueryFuncs.php';
 		$query = $_POST["queryString"];
 		$customerid = $_POST["customerid"];
 		$filepath = "files/".$customerid.".csv";
@@ -79,8 +83,8 @@
 		$content .= '</script>';
 	}
 	else if(isset($_POST["import"])){
-		include 'config.php';
-		include 'lib/SQLImport.php';
+		include_once $path . 'config.php';
+		include_once $path . 'lib/SQLImport.php';
 		include $_POST["configPage"];
 		
 		$customerNumberField = 'customerid';
@@ -162,8 +166,8 @@
 		$content .= '<a href="javascript:history.go(-3)">Back to query</a>';
 	}
 	else if(isset($_POST["query"])){
-		include 'lib/SQLQueryFuncs.php';
-		include 'config.php';
+		include_once $path . 'lib/SQLQueryFuncs.php';
+		include_once $path . 'config.php';
 		include $_POST["configPage"];
 		
 		$customerNumberField = 'customerid';

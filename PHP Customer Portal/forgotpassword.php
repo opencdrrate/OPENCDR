@@ -1,4 +1,7 @@
 <?php
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
+
 $errors = '';
 function customError($errno, $errstr)
 {
@@ -7,7 +10,6 @@ function customError($errno, $errstr)
 }
 set_error_handler("customError");
 
-include_once 'lib/Page.php';
 
 	$content = <<< HEREDOC
 	Please type in your e-mail address and we'll send you a notification to confirm your new password.
@@ -16,10 +18,10 @@ HEREDOC;
 if(isset($_GET['email'])){
 	$email = $_GET['email'];
 	$username = $_GET['username'];
-	include_once 'vars/config.php';
-	include_once 'lib/emailcontact.php';
-	include_once 'lib/encryption.php';
-	include_once 'lib/passwordrecovery.php';
+	include_once $path . 'vars/config.php';
+	include_once $path . 'lib/emailcontact.php';
+	include_once $path . 'lib/encryption.php';
+	include_once $path . 'lib/passwordrecovery.php';
 	
 	$hasEmail = EmailExists($email, $connectstring);
 	$hasUsername = GetCustomerID($username, $connectstring);

@@ -1,8 +1,15 @@
 <?php
 
-	include 'lib/Page.php';
-	include 'config.php';
-
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'lib/localizer.php';
+	
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
+	$locale = $manager->GetSetting('region');
+	$region = new localizer($locale);
+	
 $htmltable = <<<HEREDOC
 <table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
 <thead>
@@ -34,7 +41,7 @@ HEREDOC;
 
 $htmltable .= <<<HEREDOC
 <tr>
-<td>{$myrow['Date']}</td>
+<td>{$region->FormatDate($myrow['Date'])}</td>
 <td>{$myrow['RateCenter']}</td>
 <td>{$myrow['Direction']}</td>
 <td>{$myrow['Peak']}</td>

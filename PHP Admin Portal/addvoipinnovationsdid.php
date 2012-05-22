@@ -1,9 +1,11 @@
 <?php
-	include 'lib/Page.php';
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'lib/Page.php';
+	$voipdidpath = '/Shared/lib/ajax_getvoipdid.php?state=';
 	$scripts = '';
 	
 	$scripts = <<< HEREDOC
-	<script type="text/javascript" src="lib/jquery-1.7.2.js"></script>
+	<script type="text/javascript" src="/Shared/lib/jquery-1.7.2.js"></script>
 HEREDOC;
 ?>
 
@@ -104,7 +106,8 @@ HEREDOC;
 </form>
 
 <p id="showresults"><button>Show Results</button></p>
-<script>
+<script type="text/javascript">
+
 
 function confirmAddDid(){
 	var agree=confirm("Are you sure you want to purchase these DIDs?");
@@ -123,6 +126,7 @@ function ResetMenus(){
 	$("#showresults").hide();
 }
 function PopulateMenus(state,ratecenter,tier,lata){
+	var voip_url = '<?php echo $voipdidpath;?>';
 	$("#showresults").hide();
 	if(state == ""){
 		$("#result").html('<em>No results</em>');
@@ -133,7 +137,7 @@ function PopulateMenus(state,ratecenter,tier,lata){
 		
 		$.ajax({
 			type: "GET",
-			url: "lib/ajax_getvoipdid.php?state=" + state
+			url: voip_url + state
 						+ "&ratecenter="+ratecenter
 						+ "&tier="+tier
 						+ "&lata="+lata
@@ -155,7 +159,7 @@ function PopulateMenus(state,ratecenter,tier,lata){
 		//Populate Rate Center menu
 		$.ajax({
 			type: "GET",
-			url: "lib/ajax_getvoipdid.php?state=" + state
+			url: voip_url + state
 						+ "&ratecenter="+ratecenter
 						+ "&tier="+tier
 						+ "&lata="+lata
@@ -169,7 +173,7 @@ function PopulateMenus(state,ratecenter,tier,lata){
 		//Populate tier menu
 		$.ajax({
 			type: "GET",
-			url: "lib/ajax_getvoipdid.php?state=" + state
+			url: voip_url + state
 						+ "&ratecenter="+ratecenter
 						+ "&tier="+tier
 						+ "&lata="+lata
@@ -183,7 +187,7 @@ function PopulateMenus(state,ratecenter,tier,lata){
 		//Populate LATA menu
 		$.ajax({
 			type: "GET",
-			url: "lib/ajax_getvoipdid.php?state=" + state
+			url: voip_url + state
 						+ "&ratecenter="+ratecenter
 						+ "&tier="+tier
 						+ "&lata="+lata
@@ -197,12 +201,13 @@ function PopulateMenus(state,ratecenter,tier,lata){
 	}
 }
 function DisplayResults(state,ratecenter,tier,lata){
+	var voip_url = '<?php echo $voipdidpath;?>';
 	$("#showresults").hide();
 	$("#result").html('<blink>Retrieving data...</blink>');
 	
 	$.ajax({
 			type: "GET",
-			url: "lib/ajax_getvoipdid.php?state=" + state
+			url: voip_url + state
 						+ "&ratecenter="+ratecenter
 						+ "&tier="+tier
 						+ "&lata="+lata
@@ -218,8 +223,7 @@ function DisplayResults(state,ratecenter,tier,lata){
 			}
 		});
 }
-
-$(document).ready(function(){
+function OnReady(){
 	$("#showresults").hide();
 	$("#state").change( function(){
 		ResetMenus();
@@ -256,8 +260,9 @@ $(document).ready(function(){
 	});
 	
 	$("#assignDIDLink").hide();
-});
+}
 
+$(document).ready(OnReady);
 </script>
 </div>
 <?php echo GetPageFoot();?>

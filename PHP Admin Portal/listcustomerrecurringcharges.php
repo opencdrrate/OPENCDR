@@ -1,8 +1,15 @@
 <?php
+	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 
-include 'lib/Page.php';
-include 'config.php';
-include 'lib/SQLQueryFuncs.php'; 
+include_once $path . 'lib/Page.php';
+include_once $path . 'lib/SQLQueryFuncs.php'; 
+include_once $path . 'conf/ConfigurationManager.php';
+include_once $path . 'lib/localizer.php';
+
+$manager = new ConfigurationManager();
+$connectstring = $manager->BuildConnectionString();
+$locale = $manager->GetSetting('region');
+$region = new localizer($locale);
 
 $db = pg_connect($connectstring);
 
@@ -51,9 +58,9 @@ $htmltable .= <<<HEREDOC
 <tr>
 <td>{$myrow['recurringchargeid']}</td>
 <td>{$myrow['customerid']}</td>
-<td>{$myrow['activationdate']}</td>
-<td>{$myrow['deactivationdate']}</td>
-<td>{$myrow['unitamount']}</td>
+<td>{$region->FormatDate($myrow['activationdate'])}</td>
+<td>{$region->FormatDate($myrow['deactivationdate'])}</td>
+<td>{$region->FormatCurrency($myrow['unitamount'])}</td>
 <td>{$myrow['quantity']}</td>
 <td>{$myrow['chargedesc']}</td>
 <td class="actions">

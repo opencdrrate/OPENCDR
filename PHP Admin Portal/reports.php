@@ -1,6 +1,7 @@
 <?php 
 
-include 'lib/Page.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once $path . 'lib/Page.php';
 echo GetPageHead("Reports", "main.php");
 ?>
 

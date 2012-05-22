@@ -1,10 +1,16 @@
 <?php
 
-	include 'lib/Page.php';
-	include 'config.php';
+$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once $path . 'lib/Page.php';
+	include_once $path . 'conf/ConfigurationManager.php';
+	$manager = new ConfigurationManager();
+	$connectstring = $manager->BuildConnectionString();
  
 function CreateDropDown($connectString){
-$rowid = $_GET['rowid'];
+$rowid;
+if(isset($_GET['rowid'])){
+	$rowid = $_GET['rowid'];
+}
 $query = 'select customerid from customermaster order by customerid;';
 $db = pg_connect($connectString);
 $result = pg_query($db, $query);
@@ -12,11 +18,12 @@ if (!$result) {
 	echo pg_last_error();
 	exit();
 }
-
-$queryIPowner = "SELECT customerid from ipaddressmaster where rowid = '$rowid';";
-$resultIPowner = pg_query($queryIPowner) or die(print pg_last_error());
-$selectedcustomer = pg_fetch_result($resultIPowner, 0, 0);
-
+$selectedcustomer = '';
+if(isset($rowid)){
+	$queryIPowner = "SELECT customerid from ipaddressmaster where rowid = '".$rowid."';";
+	$resultIPowner = pg_query($queryIPowner) or die(print pg_last_error());
+	$selectedcustomer = pg_fetch_result($resultIPowner, 0, 0);
+}
 $dropdown = '<select name="customerid">';
 
 
