@@ -37,8 +37,6 @@ abstract class SQLTable{
 			return false;
 		}
 	}
-}
-	
 	abstract function GetTitles();
 	abstract function GetRowView($row);
 	
@@ -53,4 +51,6 @@ abstract class SQLTable{
 		}
 		return $htmlTable;
 	}
+}
+	
 ?>
