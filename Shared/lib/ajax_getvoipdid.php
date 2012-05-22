@@ -1,5 +1,5 @@
 <?php
-$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+$path = '../';
 include_once $path . 'conf/ConfigurationManager.php';
 include_once 'vi_did.php';
 include_once $path . 'DAL/table_customermaster.php';

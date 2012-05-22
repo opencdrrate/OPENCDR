@@ -1,5 +1,5 @@
 <?php
-	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once 'config.php';
 	include_once $path . 'lib/Page.php';
 	include_once $path . 'lib/SQLQueryFuncs.php';
 	include_once $path . 'lib/FileUtils/IntrastateRateFileImporter.php';
@@ -130,5 +130,5 @@ HEREDOC;
 	<?php echo $content;?>
 	<?php echo $htmltable;?>
 	</div>
-	<script src="/Shared/lib/jUpload.js"></script>
+	<script src="<?php echo $sharedFolder;?></script>
 	<?php echo GetPageFoot();?>

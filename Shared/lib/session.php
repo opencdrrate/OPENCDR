@@ -1,5 +1,5 @@
 <?php
-include 'debug.php';
+include_once 'debug.php';
 
 function BeginSession($username, $connectstring){
 	print_debug( 'Attempting to begin session');

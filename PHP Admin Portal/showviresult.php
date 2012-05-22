@@ -1,12 +1,14 @@
 <?php
-$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once 'config.php';
 include_once $path . 'lib/Page.php';
 include_once $path . 'lib/vi_did.php';
-include_once $path . 'vars/voip_login_info.php';
+#include_once $path . 'vars/voip_login_info.php';
 include_once $path . 'DAL/table_didmaster.php';
 include_once $path . 'conf/ConfigurationManager.php';
 $manager = new ConfigurationManager();
 $connectstring = $manager->BuildConnectionString();
+$vi_user = $manager->GetSetting('voip_user');
+$vi_pass = $manager->GetSetting('voip_pass');
 $content = '';
 $error = '';
 

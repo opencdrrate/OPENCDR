@@ -1,5 +1,5 @@
 <?php
-$path = $_SERVER["DOCUMENT_ROOT"].'/Shared/';
+$path = '../';
 include_once $path . 'lib/FileUtils/InternationalRateFileImporter.php';
 include_once $path . 'DAL/table_internationalratemaster.php';
 include_once $path . 'conf/ConfigurationManager.php';

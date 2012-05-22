@@ -1,5 +1,5 @@
 <?php
-$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+$path = '../';
 include_once $path . 'DAL/table_callrecordmaster_tbr.php';
 include_once $path . 'DAL/table_thinktelcdr.php';	
 include_once $path . 'DAL/table_vitelitycdr.php';

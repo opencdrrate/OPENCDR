@@ -1,5 +1,5 @@
 <?php
-$path = $_SERVER["DOCUMENT_ROOT"].'/Shared/';
+$path = '../';
 include_once $path . 'lib/FileUtils/TollfreeoriginationRateFileImporter.php';
 include_once $path . 'DAL/table_tollfreeoriginationratemaster.php';
 include_once $path . 'conf/ConfigurationManager.php';

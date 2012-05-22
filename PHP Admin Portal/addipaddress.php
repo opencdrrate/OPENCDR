@@ -1,5 +1,5 @@
  <?php 
-	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once 'config.php';
 	$defaultIPValue = '';
 	$errors = '';
 	$content = '';

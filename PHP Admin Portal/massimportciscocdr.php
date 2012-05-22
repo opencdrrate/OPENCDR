@@ -1,5 +1,5 @@
 <?php
-$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once 'config.php';
 include_once $path . 'vars/ciscoconfig.php';
 include_once $path . 'lib/TBRLibs.php';
 include_once $path . 'conf/ConfigurationManager.php';

@@ -2,7 +2,7 @@
 /*listrate centers.php
 
 allows the user to view, delete, update, add entries to the tieredoriginationratecentermaster table*/
-$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once 'config.php';
 include_once $path . 'lib/Page.php';
 include_once $path . 'conf/ConfigurationManager.php';
 $manager = new ConfigurationManager();

@@ -5,7 +5,7 @@ function confirmation() {
 	var answer = confirm("Are you sure?")
 	if (answer){
 		<?php
-	$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+	include_once 'config.php';
 
     include_once $path . 'conf/ConfigurationManager.php';
 	$manager = new ConfigurationManager();

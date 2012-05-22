@@ -1,5 +1,5 @@
 <?php
-$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+include_once 'config.php';
 include_once $path . 'DAL/table_cdr.php';
 include_once $path . 'DAL/table_callrecordmaster_tbr.php';
 include_once $path . 'conf/ConfigurationManager.php';

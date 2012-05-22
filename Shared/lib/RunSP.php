@@ -1,5 +1,5 @@
 <?php
-$path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
+$path = '../';
 include_once $path . 'DAL/Functions/DBFunction.php';
 include_once $path . 'conf/ConfigurationManager.php';
 $manager = new ConfigurationManager();
