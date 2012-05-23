@@ -1,5 +1,0 @@
-<?php
-$AdminEmail = "";
-$AutomatedEmailer = "";
-$Website = "";
-?>
