@@ -77,6 +77,9 @@ HEREDOC;
 		else if($callType == '35'){
 			$myrow['calltype'] = 'Simple Termination';
 		}
+		else if($callType == '40'){
+			$myrow['calltype'] = 'Toll-free Termination';
+		}
 		else{
 			$myrow['calltype'] = 'Unknown';
 		}

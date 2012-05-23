@@ -32,8 +32,7 @@ HEREDOC;
 	$allArrayResults = $table->SelectRatingQueue($offset, $limit);
 	
 	$titlespiped = "CallID,CustomerID,CallType,CallDateTime,Duration,Direction,SourceIP,OriginationNumber,DestinationNumber,LRN,CNAMDipped,RateCenter,CarrierID";
-	$titles = preg_split("/,/",$titlespiped,-1);
-	$htmltable = AssocArrayToTable($allArrayResults,$titles); 
+
 	/*"CallID,CustomerID,CallType,CallDateTime,Duration,Direction,SourceIP,OriginationNumber,DestinationNumber,
 	LRN,CNAMDipped,RateCenter,CarrierID";*/
 	$htmltable = <<< HEREDOC

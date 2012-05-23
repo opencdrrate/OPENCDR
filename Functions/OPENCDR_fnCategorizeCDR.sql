@@ -90,6 +90,10 @@ EndDateTime = TIMEOFDAY();
 RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
 
 
+--tollfree term
+update callrecordmaster_tbr set CallType = 40 where Direction = 'O' and CallType is null and substring(DestinationNumber from 1 for 5) in ('+1800', '+1855', '+1866', '+1877', '+1888');
+
+
 
 RAISE NOTICE 'Flagging international calls.'; gentime = TIMEOFDAY();
 --add code here to assign call type 25 for international NANPA outbound destinations
