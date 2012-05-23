@@ -5,6 +5,7 @@
 	include_once $path . 'DAL/table_internationalratemaster.php';
 	include_once $path . 'conf/ConfigurationManager.php';
 	include_once $path . 'lib/localizer.php';
+	$controllerPath = $sharedFolder . "controllers/ajax_internationalrate_controller.php";
 	$manager = new ConfigurationManager();
 	$connectstring = $manager->BuildConnectionString();
 	$locale = $manager->GetSetting('region');
@@ -54,7 +55,7 @@
 	</form>
 	
 	<!-- THE IMPORT BUTTON -->
-	<form id="action" action="/Shared/controllers/ajax_internationalrate_controller.php?customerid={$customerid}" method="POST">
+	<form id="action" action="{$controllerPath}?customerid={$customerid}" method="POST">
 	Choose a file to import: <input name="uploadedFile" type="File" id="fileselect" />
 	</form>
 	<button id="uploadbutton" type="submit">Import File </button><br>

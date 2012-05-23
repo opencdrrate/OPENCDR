@@ -5,6 +5,8 @@ include_once 'config.php';
 	include_once $path . 'lib/Page.php';
 	include_once $path . 'conf/ConfigurationManager.php';
 	include_once $path . 'lib/localizer.php';
+	$runSPPath = $sharedFolder . "lib/RunSP.php";
+	$tbrLibsPath = $sharedFolder . "lib/TBRLibs.php";
 	$manager = new ConfigurationManager();
 	$connectstring = $manager->BuildConnectionString();
 	$locale = $manager->GetSetting('region');
@@ -100,7 +102,7 @@ HEREDOC;
 				<input type="hidden" name="filename" value="TBRExport.csv">
 			</form>
 			<br>
-			<form action="/Shared/lib/TBRLibs.php" method="post" id="action">
+			<form action="<?php echo $tbrLibsPath;?>" method="post" id="action">
 				<select name="type" id="type">
 					<option value="bandwidth">Bandwidth</option>
 					<option value="vitelity">Vitelity</option>
@@ -123,6 +125,7 @@ HEREDOC;
 			<br>
 			<div id="progress"></div>
 			<div id="messages"></div>
+			<form action="<?php echo $runSPPath;?>" id="runsp"/>
 			<?php
 			$limitOptions = <<< HEREDOC
 		Showing rows : {$offset} to {$endoffset} <br>
@@ -260,7 +263,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "/Shared/lib/RunSP.php", true);
+		xhr.open("POST", $id("runsp").action, true);
 		xhr.setRequestHeader("X_SPNAME", 'fnCategorizeCDR');
 		xhr.send();
 	}
@@ -286,7 +289,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "/Shared/lib/RunSP.php", true);
+		xhr.open("POST", $id("runsp").action, true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateIndeterminateJurisdictionCDR');
 		xhr.send();
 	}
@@ -312,7 +315,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "/Shared/lib/RunSP.php", true);
+		xhr.open("POST", $id("runsp").action, true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateIndeterminateJurisdictionCDR');
 		xhr.send();
 	}
@@ -338,7 +341,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "/Shared/lib/RunSP.php", true);
+		xhr.open("POST", $id("runsp").action, true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateInterstateCDR');
 		xhr.send();
 	}
@@ -364,7 +367,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "/Shared/lib/RunSP.php", true);
+		xhr.open("POST", $id("runsp").action, true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateIntrastateCDR');
 		xhr.send();
 	}
@@ -390,7 +393,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "/Shared/lib/RunSP.php", true);
+		xhr.open("POST", $id("runsp").action, true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateSimpleTerminationCDR');
 		xhr.send();
 	}
@@ -416,7 +419,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "/Shared/lib/RunSP.php", true);
+		xhr.open("POST", $id("runsp").action, true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateTieredOriginationCDR');
 		xhr.send();
 	}
@@ -441,7 +444,7 @@ HEREDOC;
 				}
 			}
 		};
-		xhr.open("POST", "/Shared/lib/RunSP.php", true);
+		xhr.open("POST", $id("runsp").action, true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateTollFreeOriginationCDR');
 		xhr.send();
 	}

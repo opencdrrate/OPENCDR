@@ -1,7 +1,7 @@
 <?php
 	include_once 'config.php';
 include_once $path . 'conf/ConfigurationManager.php';
-include_once $path.'lib/calendar/classes/tc_calendar.php';
+include_once $path . 'lib/calendar/classes/tc_calendar.php';
 $manager = new ConfigurationManager();
 $connectstring = $manager->BuildConnectionString();	
 include_once $path . 'lib/Page.php'; 
@@ -51,7 +51,9 @@ if(isset($_POST["submit"])){
 }
 ?>
 
-<?php echo GetPageHead("Generate Billing Batch", "main.php")?>
+<?php echo GetPageHead("Generate Billing Batch", "main.php");
+echo ('<script language="javascript" src="'.$sharedFolder.'/calendar/calendar.js"></script>');
+?>
 </head>
    <div id="body"> 
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" id="standardform">
@@ -60,14 +62,13 @@ if(isset($_POST["submit"])){
 <label>
 	  <?php
 		
-		echo ('<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>');
-		
-
 		$myCalendar = new tc_calendar("billingdate", true, false);
-	  	$image = $path."lib/calendar/images/iconCalendar.gif";
+	  	$image = $sharedFolder."lib/calendar/images/iconCalendar.gif";
+		$calendarPath = $sharedFolder."lib/calendar/";
+		
 	  	$myCalendar->setIcon($image);
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
-	  	$myCalendar->setPath("/Shared/lib/calendar/");
+	  	$myCalendar->setPath($calendarPath);
 	  	$myCalendar->setYearInterval(2010, 2020);
 	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
 	  	$myCalendar->setDateFormat('j F Y');
@@ -79,14 +80,10 @@ if(isset($_POST["submit"])){
 <label>Billing Due Date:</label>
 <label>
 	  <?php
-		
-		echo ('<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>');
-
 		$myCalendar = new tc_calendar("billingduedate", true, false);
-	  	$image = $path."lib/calendar/images/iconCalendar.gif";
 	  	$myCalendar->setIcon($image);	
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
-	  	$myCalendar->setPath("/Shared/lib/calendar/");
+	  	$myCalendar->setPath($calendarPath);
 	  	$myCalendar->setYearInterval(2010, 2020);
 	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
 	  	$myCalendar->setDateFormat('j F Y');
@@ -99,14 +96,11 @@ if(isset($_POST["submit"])){
 <label>End Usage Date:</label>
 <label>
 	  <?php
-		
-		echo ('<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>');
-
 		$myCalendar = new tc_calendar("usagedateend", true, false);
-	  	$image = $path."lib/calendar/images/iconCalendar.gif";
+
 	  	$myCalendar->setIcon($image);
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
-	  	$myCalendar->setPath("/Shared/lib/calendar/");
+	  	$myCalendar->setPath($calendarPath);
 	  	$myCalendar->setYearInterval(2010, 2020);
 	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
 	  	$myCalendar->setDateFormat('j F Y');
@@ -118,14 +112,11 @@ if(isset($_POST["submit"])){
 <label>Recurring Fee Period Start:   </label>
 <label>
 	  <?php
-		
-		echo ('<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>');
-
 		$myCalendar = new tc_calendar("recurrstart", true, false);
-	  	$image = $path."lib/calendar/images/iconCalendar.gif";
+
 	  	$myCalendar->setIcon($image);
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
-	  	$myCalendar->setPath("/Shared/lib/calendar/");
+	  	$myCalendar->setPath($calendarPath);
 	  	$myCalendar->setYearInterval(2010, 2020);
 	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
 	  	$myCalendar->setDateFormat('j F Y');
@@ -138,14 +129,11 @@ if(isset($_POST["submit"])){
 <label>Recurring Fee Period End:   </label>
 <label>
 	<?php
-		
-		echo ('<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>');
-
 		$myCalendar = new tc_calendar("recurrend", true, false);
-		$image = $path."lib/calendar/images/iconCalendar.gif";
+
 	  	$myCalendar->setIcon($image);
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
-	  	$myCalendar->setPath("/Shared/lib/calendar/");
+	  	$myCalendar->setPath($calendarPath);
 	  	$myCalendar->setYearInterval(2010, 2020);
 	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
 	  	$myCalendar->setDateFormat('j F Y');

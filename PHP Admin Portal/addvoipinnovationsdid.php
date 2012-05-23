@@ -1,11 +1,11 @@
 <?php
 	include_once 'config.php';
 	include_once $path . 'lib/Page.php';
-	$voipdidpath = '/Shared/lib/ajax_getvoipdid.php?state=';
+	$voipdidpath = $sharedFolder.'lib/ajax_getvoipdid.php?state=';
 	$scripts = '';
 	
 	$scripts = <<< HEREDOC
-	<script type="text/javascript" src="/Shared/lib/jquery-1.7.2.js"></script>
+	<script type="text/javascript" src="{$sharedFolder}lib/jquery-1.7.2.js"></script>
 HEREDOC;
 ?>
 
