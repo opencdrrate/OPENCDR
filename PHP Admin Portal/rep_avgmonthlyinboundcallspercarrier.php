@@ -40,8 +40,8 @@ $htmltable .= <<<HEREDOC
 <tr>
 <td>{$myrow['carrierid']}</td>
 <td>{$myrow['Calls']}</td>
-<td>{$myrow['RawDuration']}</td>
-<td>{$myrow['BilledDuration']}</td>
+<td>{$region->FormatCurrency($myrow['RawDuration'])}</td>
+<td>{$region->FormatCurrency($myrow['BilledDuration'])}</td>
 </tr>\n
 HEREDOC;
 

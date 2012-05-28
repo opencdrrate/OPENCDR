@@ -3,9 +3,12 @@
 include_once 'config.php';
 	include_once $path . 'lib/Page.php';
 	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'lib/localizer.php';
 	$manager = new ConfigurationManager();
 	$connectstring = $manager->BuildConnectionString();
-
+	$locale = $manager->GetSetting('region');
+	$region = new localizer($locale);
+	
 $htmltable = <<<HEREDOC
 <table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
 <thead>
@@ -39,8 +42,8 @@ $htmltable .= <<<HEREDOC
 <td>{$myrow['carrierid']}</td>
 <td>{$myrow['ratecenter']}</td>
 <td>{$myrow['Calls']}</td>
-<td>{$myrow['RawDuration']}</td>
-<td>{$myrow['BilledDuration']}</td>
+<td>{$region->FormatCurrency($myrow['RawDuration'])}</td>
+<td>{$region->FormatCurrency($myrow['BilledDuration'])}</td>
 </tr>\n
 HEREDOC;
 
