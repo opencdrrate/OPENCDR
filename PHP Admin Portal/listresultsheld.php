@@ -142,8 +142,7 @@ HEREDOC;
 <div id="body">
 	<form name="export" action="exportpipe.php" method="post">
    	<input type="submit" class="btn orange export" value="Export table to CSV">
-    	<input type="hidden" value="<? echo $csv_hdr; ?>" name="csv_hdr">
-    	<input type="hidden" value="<? echo $csv_output; ?>" name="csv_output">
+		<input type="hidden" value="<?php echo htmlspecialchars($query);?>" name="queryString">
 	<input type="hidden" value="HELDExport" name="filename">
 	</form>
 	<form action="listresultsheld.php?move=1" method="post">

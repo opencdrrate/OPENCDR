@@ -52,7 +52,7 @@ HEREDOC;
 foreach($allRows as $row){
 	$viewButton = CreateViewButton($row['billingbatchid']);
 	$deleteButton = <<< HEREDOC
-	<br><a href=javascript:confirmDelete('{$row['billingbatchid']}') class="btn-action delete">Delete</a>'
+	<br><a href=javascript:confirmDelete('{$row['billingbatchid']}') class="btn-action delete">Delete</a>
 HEREDOC;
 	$htmlTable .= <<<HEREDOC
 	<tr>

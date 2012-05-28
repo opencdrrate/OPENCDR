@@ -87,7 +87,7 @@ HEREDOC;
 <label for="port">Port:	</label>			<input type="text" id="port" name="port" value="<?php echo $port;?>" /><br>
 <label for="dbnname">Database:	</label>	<input type="text" id="dbnname" name="dbname" value="<?php echo $dbname;?>" /><br>
 <label for="user">User:	</label>			<input type="text" id="user" name="user" value="<?php echo $user;?>" /><br>
-<label for="password">Password:	</label>	<input type="text" id="password" name="password" value="<?php echo $password;?>" /><br>
+<label for="password">Password:	</label>	<input type="password" id="password" name="password" value="<?php echo $password;?>" /><br>
 <br>
 <?php echo $isConnectedMsg;?>
 </div>
@@ -97,7 +97,7 @@ HEREDOC;
 <label for="smtp_host">smtp_host: </label>			<input type="text" id="smtp_host" name="smtp_host" value="<?php echo $smtp_host;?>" /><br>
 <label for="smtp_port">smtp_port:	</label>		<input type="text" id="smtp_port" name="smtp_port" value="<?php echo $smtp_port;?>" /><br>
 <label for="smtp_username">smtp_username:	</label>	<input type="text" id="smtp_username" name="smtp_username" value="<?php echo $smtp_username;?>" /><br>
-<label for="smtp_password">smtp_password:	</label>			<input type="text" id="user" name="smtp_password" value="<?php echo $smtp_password;?>" /><br>
+<label for="smtp_password">smtp_password:	</label>			<input type="password" id="user" name="smtp_password" value="<?php echo $smtp_password;?>" /><br>
 </div>
 
 <div style="border:1px solid black;">
@@ -110,7 +110,7 @@ HEREDOC;
 <div style="border:1px solid black;">
 <strong>Voip Innovations Login info</strong><br>
 <label for="smtp_host">Voip Username: </label>			<input type="text" id="voip_user" name="voip_user" value="<?php echo $voip_user;?>" /><br>
-<label for="smtp_port">Voip Password:	</label>		<input type="text" id="voip_pass" name="voip_pass" value="<?php echo $voip_pass;?>" /><br>
+<label for="smtp_port">Voip Password:	</label>		<input type="password" id="voip_pass" name="voip_pass" value="<?php echo $voip_pass;?>" /><br>
 </div>
 <div style="border:1px solid black;">
 <strong>Localization Settings</strong><br>

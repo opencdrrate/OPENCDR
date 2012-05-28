@@ -97,7 +97,7 @@ foreach($assocArray as $row){
 	<tr>
 	<td>{$region->FormatDate($row['effectivedate'])}</td>
 	<td>{$row['npanxxx']}</td>
-	<td>{$row['retailrate']}</td>
+	<td>{$region->FormatCurrency($row['retailrate'])}</td>
 	</tr>
 HEREDOC;
 }

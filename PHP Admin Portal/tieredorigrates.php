@@ -97,7 +97,7 @@ foreach($assocArray as $row){
 	<tr>
 	<td>{$region->FormatDate($row['effectivedate'])}</td>
 	<td>{$row['tier']}</td>
-	<td>{$row['retailrate']}</td>
+	<td>{$region->FormatCurrency($row['retailrate'])}</td>
 	</tr>
 HEREDOC;
 }
@@ -130,6 +130,6 @@ HEREDOC;
 	<?php echo $content;?>
 	<?php echo $htmltable;?>
 	</div>
-	<script src="<?php echo $sharedFolder;?></script>
+	<script src="<?php echo $sharedFolder;?>lib/jUpload.js"></script>
 	<?php echo GetPageFoot();?>
 	

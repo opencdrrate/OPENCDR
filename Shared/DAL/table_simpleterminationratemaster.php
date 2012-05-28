@@ -52,14 +52,19 @@ HEREDOC;
 	function Disconnect(){
 		pg_close($this->db);
 	}
+	private function E164Format($billedprefix){
+	
+		if(substr($billedprefix, 0,1) != '+' and substr($billedprefix, 0,1) != '0'){
+			$billedprefix = '+' . $billedprefix;
+		}
+		return $billedprefix;
+	}
 	function Insert($row){
 		/*expected values : ($customerid, $effectivedate,$billedprefix, $retailrate)*/
 		#To do : validate input first.
+		$billedprefix = $this->E164Format($row['billedprefix']);
 		
-		if(substr($row['billedprefix'], 0,1) != '+'){
-			$row['billedprefix'] = '+' . $row['billedprefix'];
-		}
-		$insertParams = array($row['customerid'],$row['effectivedate'],$row['billedprefix'],$row['retailrate']);
+		$insertParams = array($row['customerid'],$row['effectivedate'],$billedprefix,$row['retailrate']);
 		$result = pg_execute($this->db, "insert", $insertParams);
 		if($result){
 			$this->rowsAdded++;
@@ -68,12 +73,11 @@ HEREDOC;
 		return $result;
 	}
 	function Delete($row){
-		if(substr($row['billedprefix'], 0,1) != '+'){
-			$row['billedprefix'] = '+' . $row['billedprefix'];
-		}
+		$billedprefix = $this->E164Format($row['billedprefix']);
+		
 		/*$customerid, $effectivedate,$billedprefix*/
 		
-		$deleteParams = array($row['customerid'],$row['effectivedate'],$row['billedprefix']);
+		$deleteParams = array($row['customerid'],$row['effectivedate'],$billedprefix);
 		$result = pg_execute($this->db, "delete", $deleteParams);
 		if($result){
 			$this->rowsDeleted++;
@@ -83,10 +87,9 @@ HEREDOC;
 	}
 	function DoesExist($row){
 		/*$customerid, $effectivedate,$billedprefix*/
-		if(substr($row['billedprefix'], 0,1) != '+'){
-			$row['billedprefix'] = '+' . $row['billedprefix'];
-		}
-		$selectParams = array($row['customerid'],$row['effectivedate'],$row['billedprefix']);
+		$billedprefix = $this->E164Format($row['billedprefix']);
+		
+		$selectParams = array($row['customerid'],$row['effectivedate'],$billedprefix);
 		$result = pg_execute($this->db, "check", $selectParams);
 		$hasEntry = pg_fetch_array($result);
 		if(!$hasEntry){

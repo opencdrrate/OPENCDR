@@ -3,8 +3,11 @@
 include_once 'config.php';
 	include_once $path . 'lib/Page.php';
 	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'lib/localizer.php';
 	$manager = new ConfigurationManager();
 	$connectstring = $manager->BuildConnectionString();
+	$locale = $manager->GetSetting('region');
+	$region = new localizer($locale);
 
 if (isset($_POST['submit'])) {
 
@@ -46,7 +49,7 @@ $htmltable .= <<<HEREDOC
 <td>{$myrow['Calls']}</td>
 <td>{$myrow['RawMinutes']}</td>
 <td>{$myrow['BilledMinutes']}</td>
-<td>{$myrow['RetailPrice']}</td>
+<td>{$region->FormatCurrency($myrow['RetailPrice'])}</td>
 </tr>\n
 HEREDOC;
 

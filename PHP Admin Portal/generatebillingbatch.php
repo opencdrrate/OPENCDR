@@ -52,20 +52,20 @@ if(isset($_POST["submit"])){
 ?>
 
 <?php echo GetPageHead("Generate Billing Batch", "main.php");
-echo ('<script language="javascript" src="'.$sharedFolder.'/calendar/calendar.js"></script>');
 ?>
+<script language="javascript" src="<?php echo $sharedFolder;?>lib/calendar/calendar.js"></script>
 </head>
    <div id="body"> 
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" id="standardform">
 <label>BatchID:</label><input name="batchid" type="text"/><br />
 <label>Billing Date:</label>
-<label>
+
 	  <?php
 		
-		$myCalendar = new tc_calendar("billingdate", true, false);
-	  	$image = $sharedFolder."lib/calendar/images/iconCalendar.gif";
+	  	$image = $path."lib/calendar/images/iconCalendar.gif";
 		$calendarPath = $sharedFolder."lib/calendar/";
 		
+		$myCalendar = new tc_calendar("billingdate", true, false);
 	  	$myCalendar->setIcon($image);
 	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
 	  	$myCalendar->setPath($calendarPath);
@@ -76,9 +76,9 @@ echo ('<script language="javascript" src="'.$sharedFolder.'/calendar/calendar.js
 	  	$myCalendar->setSpecificDate(array("2010-12-25"), 0, 'year');
 	 	$myCalendar->writeScript();
 	?>
-</label><br/><br/>
+<br/><br/>
 <label>Billing Due Date:</label>
-<label>
+
 	  <?php
 		$myCalendar = new tc_calendar("billingduedate", true, false);
 	  	$myCalendar->setIcon($image);	
@@ -91,10 +91,10 @@ echo ('<script language="javascript" src="'.$sharedFolder.'/calendar/calendar.js
 	  	$myCalendar->setSpecificDate(array("2010-12-25"), 0, 'year');
 	 	$myCalendar->writeScript();
 	?>
-</label><br/><br/>
-<label>Billing CycleID:</label><?php echo CreateDropDown($connectstring); ?><br />
+<br/><br/>
+
 <label>End Usage Date:</label>
-<label>
+
 	  <?php
 		$myCalendar = new tc_calendar("usagedateend", true, false);
 
@@ -108,9 +108,9 @@ echo ('<script language="javascript" src="'.$sharedFolder.'/calendar/calendar.js
 	  	$myCalendar->setSpecificDate(array("2010-12-25"), 0, 'year');
 	 	$myCalendar->writeScript();
 	?>
-</label><br/><br/>
+<br/><br/>
 <label>Recurring Fee Period Start:   </label>
-<label>
+
 	  <?php
 		$myCalendar = new tc_calendar("recurrstart", true, false);
 
@@ -124,10 +124,10 @@ echo ('<script language="javascript" src="'.$sharedFolder.'/calendar/calendar.js
 	  	$myCalendar->setSpecificDate(array("2010-12-25"), 0, 'year');
 	 	$myCalendar->writeScript();
 	?>
-</label><br/><br/>
+<br/><br/>
 
 <label>Recurring Fee Period End:   </label>
-<label>
+
 	<?php
 		$myCalendar = new tc_calendar("recurrend", true, false);
 
@@ -141,7 +141,8 @@ echo ('<script language="javascript" src="'.$sharedFolder.'/calendar/calendar.js
 	  	$myCalendar->setSpecificDate(array("2010-12-25"), 0, 'year');
 	 	$myCalendar->writeScript();
 	?>
-</label><br/><br/>
+<br/><br/>
+<label>Billing CycleID:</label><?php echo CreateDropDown($connectstring); ?><br/>
 	<input name="generate" type="hidden" type="hidden"/>
 	<input name="connectstring" type="hidden" type="hidden" value="<?php echo $connectstring;?>"/>
 	<input type="submit" name="submit" value="Generate Billing Batch"/>

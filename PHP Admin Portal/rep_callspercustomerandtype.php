@@ -3,8 +3,11 @@
 include_once 'config.php';
 	include_once $path . 'lib/Page.php';
 	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'lib/localizer.php';
 	$manager = new ConfigurationManager();
 	$connectstring = $manager->BuildConnectionString();
+	$locale = $manager->GetSetting('region');
+	$region = new localizer($locale);
 
 $htmltable = <<<HEREDOC
 <table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
@@ -35,7 +38,34 @@ HEREDOC;
 	$result = pg_query($query);
 
 	while($myrow = pg_fetch_assoc($result)) {
-
+		$callType = $myrow['calltype'];
+		if($callType == '5'){
+			$myrow['calltype'] = 'Intrastate';
+		}
+		else if($callType == '10'){
+			$myrow['calltype'] = 'Interstate';
+		}
+		else if($callType == '15'){
+			$myrow['calltype'] = 'Tiered Origination';
+		}
+		else if($callType == '20'){
+			$myrow['calltype'] = 'Termination of Indeterminate Jurisdiction';
+		}
+		else if($callType == '25'){
+			$myrow['calltype'] = 'International';
+		}
+		else if($callType == '30'){
+			$myrow['calltype'] = 'Toll-free Origination';
+		}
+		else if($callType == '35'){
+			$myrow['calltype'] = 'Simple Termination';
+		}
+		else if($callType == '40'){
+			$myrow['calltype'] = 'Toll-free Termination';
+		}
+		else{
+			$myrow['calltype'] = 'Unknown';
+		}
 $htmltable .= <<<HEREDOC
 <tr>
 <td>{$myrow['customerid']}</td>
@@ -43,7 +73,7 @@ $htmltable .= <<<HEREDOC
 <td>{$myrow['Calls']}</td>
 <td>{$myrow['RawMinutes']}</td>
 <td>{$myrow['BilledMinutes']}</td>
-<td>{$myrow['RetailPrice']}</td>
+<td>{$region->FormatCurrency($myrow['RetailPrice'])}</td>
 </tr>\n
 HEREDOC;
 

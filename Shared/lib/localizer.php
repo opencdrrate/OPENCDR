@@ -33,15 +33,19 @@ class localizer{
 	
 	function FormatCurrency($number){
 		$region = $this->region;
-		
+		$sigDigits = 2;
+		$decimalPlaces = $sigDigits = strlen(substr(strrchr($number, "."), 1));
+		if($decimalPlaces > 2){
+			$sigDigits = $decimalPlaces;
+		}
 		if($this->region == 'CAD'){
-			return '$'.number_format($number, 2, '.',',');
+			return '$'.number_format($number, $sigDigits, '.',',');
 		}
 		else if($this->region == 'USD'){
-			return '$'.number_format($number, 2, '.',',');
+			return '$'.number_format($number, $sigDigits, '.',',');
 		}
 		else if($this->region == 'EUR'){
-			return '&euro;'.number_format($number, 2, ',',',');
+			return '&euro;'.number_format($number, $sigDigits, ',',',');
 		}
 	}
 	

@@ -1,6 +1,5 @@
 <?php
-
-include_once 'config.php';
+	include_once 'config.php';
 	include_once $path . 'lib/Page.php';
 	include_once $path . 'conf/ConfigurationManager.php';
 	$manager = new ConfigurationManager();
@@ -37,8 +36,6 @@ include_once 'config.php';
 
  else {
 	$rowid = $_GET['rowid'];
-
-	include_once $path . 'config.php'; 
 
 	$db = pg_connect($connectstring);
         if (!$db) {

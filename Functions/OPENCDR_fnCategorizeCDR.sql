@@ -31,6 +31,14 @@ RAISE NOTICE 'Function started at %', StartDateTime;
 --cleanup
 delete from callrecordmaster_tbr where Duration <= 0;
 update callrecordmaster_tbr set customerid = replace(customerid, ' ', '');
+delete from callrecordmaster_tbr where DestinationNumber = 'congestion';
+delete from callrecordmaster_tbr where DestinationNumber in ('s', 'i', 'hangup') and coalesce(CarrierID, '') = '';
+update callrecordmaster_tbr set RateCenter = 'VOICEMAIL', Direction = 'I' where char_length(DestinationNumber) = 7 and substring(DestinationNumber from 1 for 3) = 'vmu' and coalesce(RateCenter, '') = '';
+update callrecordmaster_tbr set RateCenter = 'VOICEMAIL', Direction = 'I' where DestinationNumber in ('*97', '*98') and coalesce(RateCenter, '') = '';
+update callrecordmaster_tbr set RateCenter = 'VOICEMAIL', Direction = 'I' where OriginatingNumber = DestinationNumber and coalesce(RateCenter, '') = '';
+update callrecordmaster_tbr set RateCenter = 'MUSICONHOLD', Direction = 'I' where DestinationNumber = 'musiconhold' and coalesce(RateCenter, '') = '';
+
+update callrecordmaster_tbr set DestinationNumber = substring(DestinationNumber from 4 for 4) where RateCenter = 'VOICEMAIL' and char_length(DestinationNumber) = 7 and substring(DestinationNumber from 1 for 3) = 'vmu';
 
 
 --massages source/dest into E.164
@@ -143,9 +151,12 @@ update callrecordmaster_tbr set CallType = 25 where Direction = 'O' and CallType
     and substring(DestinationNumber from 1 for 2) = '+6' and char_length(destinationnumber) = 13;
 
 
-/*south africa*/
+/*south africa and other*/
 update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 3 for 10) where CallType = 25
     and substring(DestinationNumber from 1 for 2) = '00' and char_length(DestinationNumber) = 12;
+
+update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 3 for 11) where CallType = 25
+    and substring(DestinationNumber from 1 for 2) = '00' and char_length(DestinationNumber) = 13;
 
 update callrecordmaster_tbr set DestinationNumber = '+' || substring(DestinationNumber from 3 for 12) where CallType = 25
     and substring(DestinationNumber from 1 for 2) = '00' and char_length(DestinationNumber) = 14;
@@ -178,6 +189,9 @@ update callrecordmaster_tbr set CallType = 30 where Direction = 'I' and CallType
 --tiered orig
 update callrecordmaster_tbr set CallType = 15 where Direction = 'I' and CallType is null 
     and coalesce(CustomerID, '') <> '';
+
+update callrecordmaster_tbr set RateCenter = 'INTERNAL' where CallType = 15 and char_length(DestinationNumber) = 4 and DestinationNumber in (select DID from didmaster);
+
 
 
 
@@ -221,8 +235,8 @@ update callrecordmaster_tbr set CallType = 5 where CallID in (select CallID from
 update callrecordmaster_tbr set CallType = 10 where CallID in (select CallID from cdr where SourceState <> DestState and not SourceState is null);
 
 
-/*south africa*/
-update callrecordmaster_tbr set CallType = 35 where CallType is null and Direction = 'O' and char_length(DestinationNumber) in (10, 11) and substring(DestinationNumber from 1 for 1) = '0';
+/*south africa and other*/
+update callrecordmaster_tbr set CallType = 35 where CallType is null and Direction = 'O' and char_length(DestinationNumber) in (9, 10, 11) and substring(DestinationNumber from 1 for 1) = '0';
 
 
 --any NANPA calls that were not international can go to simple term.

@@ -300,7 +300,7 @@ HEREDOC;
 				if(xhr.status == 200){
 					if(!xhr.responseText){
 						EnableProgress(3,8);
-						Output("RateIndeterminateJurisdictionCDR Done<br>");
+						Output("fnRateInternationalCDR Done<br>");
 						RateInterstateCDR();
 					}
 					else{
@@ -315,7 +315,7 @@ HEREDOC;
 			}
 		};
 		xhr.open("POST", $id("runsp").action, true);
-		xhr.setRequestHeader("X_SPNAME", 'fnRateIndeterminateJurisdictionCDR');
+		xhr.setRequestHeader("X_SPNAME", 'fnRateInternationalCDR');
 		xhr.send();
 	}
 	function RateInterstateCDR(){
