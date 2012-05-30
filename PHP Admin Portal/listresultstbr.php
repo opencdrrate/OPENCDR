@@ -405,7 +405,7 @@ HEREDOC;
 					EnableProgress(7,8);
 					if(!xhr.responseText){
 						Output("RateTieredOriginationCDR Done<br>");
-						RateTollFreeOriginationCDR();
+						RateTollFreeTerminationCDR();
 					}
 					else{
 						Output(xhr.responseText);
@@ -420,6 +420,33 @@ HEREDOC;
 		};
 		xhr.open("POST", $id("runsp").action, true);
 		xhr.setRequestHeader("X_SPNAME", 'fnRateTieredOriginationCDR');
+		xhr.send();
+	}
+	
+	function RateTollFreeTerminationCDR(){
+		Output('<blink>Rating Toll-Free Termination CDR. <br>Please wait...</blink>');
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function(e) {
+			if (xhr.readyState == 4){
+				if(xhr.status == 200){
+					EnableProgress(7,8);
+					if(!xhr.responseText){
+						Output("RateTollFreeTermination Done<br>");
+						RateTollFreeOriginationCDR();
+					}
+					else{
+						Output(xhr.responseText);
+						HideProgress();
+					}
+				}
+				else{
+					Output("Error code : " + xhr.status);
+					HideProgress();
+				}
+			}
+		};
+		xhr.open("POST", $id("runsp").action, true);
+		xhr.setRequestHeader("X_SPNAME", 'fnRateTollFreeTerminationCDR');
 		xhr.send();
 	}
 	function RateTollFreeOriginationCDR(){

@@ -1,11 +1,19 @@
 <?php
 
-include_once 'config.php';
+	include_once 'config.php';
 	include_once $path . 'lib/Page.php';		
 	include_once $path . 'conf/ConfigurationManager.php';
+	include_once $path . 'DAL/table_customercontactmaster.php';
+	include_once $path . 'DAL/table_customermaster.php';
+	
 	$manager = new ConfigurationManager();
 	$connectstring = $manager->BuildConnectionString();
-
+	$customerContactTable = new psql_customercontactmaster($connectstring);
+	$customerContactTable->Connect();
+	
+	$customerMasterTable = new psql_customermaster($connectstring);
+	$customerMasterTable->Connect();
+	
  	if (isset($_POST['submit'])) {	 
 
 		$db = pg_connect($connectstring);
@@ -66,21 +74,11 @@ include_once 'config.php';
      	}
 
 	if ($good == 0) {
-
-                                      
-     		$sql = "INSERT INTO customermaster (customerid, customername, lrndiprate, cnamdiprate, indeterminatejurisdictioncalltype, billingcycle) VALUES ('$customerid', '$customername', '$lrn', '$cnam', $calltype, '$bcycle')";
-     		$result = pg_query($db, $sql);
-	 
-    		$insertEmailStatement = "INSERT INTO customercontactmaster (customerid,primaryemailaddress) VALUES ('$customerid','$email')";
-     		$result2 = pg_query($db, $insertEmailStatement);
-	 
-		if (!$result or !$result2) {
-         		die("Error in SQL query: " . pg_last_error());
-     		}
-    
-        	pg_free_result($result);
-    
-     		pg_close($db);
+			$customerMasterTable->Upsert(array('customerid'=>$customerid),
+						array('customerid'=>$customerid,'customername'=>$customername,'lrndiprate'=>$lrn,
+							'cnamdiprate'=>$cnam,'indeterminatejurisdictioncalltype'=>$calltype,'billingcycle'=>$bcycle));
+			$customerContactTable->Upsert(array('customerid'=>$customerid),
+						array('customerid'=>$customerid, 'primaryemailaddress' => $email));
 
 		echo ("<script type='text/javascript'>");
 		echo ('window.location = "listcustomers.php";');
@@ -89,7 +87,8 @@ include_once 'config.php';
 	}
 
  }
-
+$customerContactTable->Disconnect();
+$customerMasterTable->Disconnect();
  ?> 
 <?php echo GetPageHead("Add Customer", "listcustomers.php")?>
 </head>

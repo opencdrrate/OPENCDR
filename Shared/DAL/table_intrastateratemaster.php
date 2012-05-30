@@ -65,7 +65,9 @@ HEREDOC;
 	}
 	function Delete($row){
 		/*$customerid, $effectivedate,$npanxxx*/
-		
+		if(!$this->DoesExist($row)){
+			return false;
+		}
 		$deleteParams = array($row['customerid'],$row['effectivedate'],$row['npanxxx']);
 		$result = pg_execute($this->db, "delete", $deleteParams);
 		if($result){

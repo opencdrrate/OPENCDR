@@ -2,12 +2,15 @@
 $path = $_SERVER["DOCUMENT_ROOT"]. '/Shared/';
 include_once $path . 'lib/Page.php';
 include_once $path . 'lib/session.php';
+include_once $path . 'lib/localizer.php';
 include_once $path . 'DAL/table_webportalaccesstokens.php';
 include_once $path . 'DAL/table_webportalaccess.php';
 include_once $path . 'DAL/table_billingbatchdetails.php';
 include_once $path . 'conf/ConfigurationManager.php';
 $manager = new ConfigurationManager();
 $connectstring = $manager->BuildConnectionString();
+$locale = $manager->GetSetting('region');
+$region = new localizer($locale);
 
 if(!isset($_GET['token'])){
 	#You need to be logged in to view this page
@@ -56,6 +59,7 @@ $table .= <<< HEREDOC
 <th>Line Items</th>
 <th>Total Billed Amount</th>
 <th></th>
+<th></th>
 </tr>
 </thead>
 <tbody>
@@ -68,7 +72,8 @@ foreach($billingDetailsInfo as $bill){
 		<td>{$bill['periodstartdate']}</td>
 		<td>{$bill['periodenddate']}</td>
 		<td>{$bill['items']}</td>
-		<td>{$bill['totalamount']}</td>
+		<td>{$region->FormatCurrency($bill['totalamount'])}</td>
+		<td><a href="printinvoice.php?token={$token}&batchid={$bill['billingbatchid']}">Invoice</a></td>
 		<td><a href="viewlineitems.php?token={$token}&billid={$bill['billingbatchid']}">View</a></td>
 	</tr>
 HEREDOC;

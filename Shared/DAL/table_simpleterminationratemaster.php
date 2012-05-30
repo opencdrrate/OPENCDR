@@ -45,9 +45,9 @@ HEREDOC;
 	function Connect(){
 		$this->db = pg_connect($this->connectString);
 		set_time_limit(0);
-		pg_prepare($this->db, "insert", $this->insertStatement);
-		pg_prepare($this->db, "delete", $this->deleteStatement);
-		pg_prepare($this->db, "check", $this->checkExistsStatement);
+		pg_prepare($this->db, "simpletermination_insert", $this->insertStatement);
+		pg_prepare($this->db, "simpletermination_delete", $this->deleteStatement);
+		pg_prepare($this->db, "simpletermination_check", $this->checkExistsStatement);
 	}
 	function Disconnect(){
 		pg_close($this->db);
@@ -65,7 +65,7 @@ HEREDOC;
 		$billedprefix = $this->E164Format($row['billedprefix']);
 		
 		$insertParams = array($row['customerid'],$row['effectivedate'],$billedprefix,$row['retailrate']);
-		$result = pg_execute($this->db, "insert", $insertParams);
+		$result = pg_execute($this->db, "simpletermination_insert", $insertParams);
 		if($result){
 			$this->rowsAdded++;
 			return true;
@@ -78,7 +78,7 @@ HEREDOC;
 		/*$customerid, $effectivedate,$billedprefix*/
 		
 		$deleteParams = array($row['customerid'],$row['effectivedate'],$billedprefix);
-		$result = pg_execute($this->db, "delete", $deleteParams);
+		$result = pg_execute($this->db, "simpletermination_delete", $deleteParams);
 		if($result){
 			$this->rowsDeleted++;
 			return true;
@@ -90,7 +90,7 @@ HEREDOC;
 		$billedprefix = $this->E164Format($row['billedprefix']);
 		
 		$selectParams = array($row['customerid'],$row['effectivedate'],$billedprefix);
-		$result = pg_execute($this->db, "check", $selectParams);
+		$result = pg_execute($this->db, "simpletermination_check", $selectParams);
 		$hasEntry = pg_fetch_array($result);
 		if(!$hasEntry){
 			return false;

@@ -71,12 +71,11 @@ $billingDetails->Connect();
 $billingDetailsInfo = $billingDetails->GetBatches($customerid);
 $billingDetails->Disconnect();
 
-$total = 0;
+$totalBilled = 0;
 foreach($billingDetailsInfo as $detail){
-	$total += $detail['totalamount'];
+	$totalBilled += $detail['totalamount'];
 }
-$totalBilled = $locale->FormatCurrency($total);
-
+$totalBilledLabel = $locale->FormatCurrency($totalBilled);
 $paymentDetails = new psql_paymentmaster($connectstring);
 $paymentDetails->Connect();
 $paymentDetailsInfo = $paymentDetails->Select($customerid);
@@ -86,14 +85,16 @@ $totalPaid = 0;
 foreach($paymentDetailsInfo as $bill){
 	$totalPaid += floatval($bill['paymentamount']);
 }
-$totalPaid = $locale->FormatCurrency($totalPaid);
+$totalPaidLabel = $locale->FormatCurrency($totalPaid);
 $callrecordmaster = new psql_callrecordmaster($connectstring);
 $callrecordmaster->Connect();
 $callrecordmasterInfo = $callrecordmaster->Select($customerid);
 $callrecordmaster->Disconnect();
 
 $CDRCount = count($callrecordmasterInfo);
-
+$balanceAmount = $totalBilled - $totalPaid;
+$balance_label = $balanceAmount < 0 ? 'Prepaid Balance' : 'Balance';
+$balance = $locale->FormatCurrency(abs($balanceAmount));
 $table = '';
 $table .= <<< HEREDOC
 
@@ -105,10 +106,13 @@ $table .= <<< HEREDOC
 		<td>Address: </td><td>{$address}</td>
 		</tr>
 		<tr>
-		<td>Total Billed: </td><td><a href="viewbills.php?token={$token}">{$totalBilled}</a></td>
+		<td>Total Billed: </td><td><a href="viewbills.php?token={$token}">{$totalBilledLabel}</a></td>
 		</tr>
 		<tr>
-		<td>Payments Received: </td><td><a href="viewpayments.php?token={$token}">{$totalPaid}</a></td>
+		<td>Payments Received: </td><td><a href="viewpayments.php?token={$token}">{$totalPaidLabel}</a></td>
+		</tr>
+		<tr>
+		<td>{$balance_label}</td><td>{$balance}</td>
 		</tr>
 		<tr>
 		<td>CDR: </td><td><a href="viewcdr.php?token={$token}">{$CDRCount}</a></td>

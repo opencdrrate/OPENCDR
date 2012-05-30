@@ -27,6 +27,31 @@
 	$table = new psql_intrastateratemaster($connectstring);
 	$table->Connect();
 	
+	if(isset($_GET['delete'])){
+		$deleteList;
+		if(isset($_POST['deleteList'])){
+			$count = 0;
+			$deleteList = $_POST['deleteList'];
+			foreach($deleteList as $row){
+				$info = explode(',',$row);
+				$effectivedate = $info[0];
+				$npanxxx = $info[1];
+				$deleteArray = array('effectivedate'=>$effectivedate, 'npanxxx'=>$npanxxx, 'customerid'=>$customerid);
+				
+				if($table->Delete($deleteArray)){
+					$count++;
+				}
+			}
+			$content .= '<font color="red">'.$count . ' rows deleted.</font	><br>';
+		}
+		else{
+		}
+	}
+	
+	if(isset($_GET['deleteall'])){
+		pg_query("delete from intrastateratemaster where customerid='".$customerid."'");
+	}
+	
 	$numberOfRows = $table->CountRows($customerid);
 	
 	$offset = 0;
@@ -86,6 +111,7 @@ HEREDOC;
 <table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
 <thead>
 <tr>
+<th><button type="button" onclick="confirmDelete()" id="deleteButton">Delete Selected Rates</button></th>
 <th>effectivedate</th>
 <th>npanxxx</th>
 <th>retailrate</th>
@@ -93,29 +119,54 @@ HEREDOC;
 </thead>
 <tbody>
 HEREDOC;
+$i = 0;
 foreach($assocArray as $row){
 	$htmltable .= <<< HEREDOC
 	<tr>
+	<td><Input type="checkbox" name="deleteList[{$i}]" value="{$row['effectivedate']},{$row['npanxxx']}"/></td>
 	<td>{$region->FormatDate($row['effectivedate'])}</td>
 	<td>{$row['npanxxx']}</td>
 	<td>{$region->FormatCurrency($row['retailrate'])}</td>
 	</tr>
 HEREDOC;
+	$i++;
 }
 	$htmltable .= <<< HEREDOC
 	</tbody>
 	    <tfoot>
 	    	<tr>
-		    <td colspan="3"></td>
+		    <td colspan="4"></td>
 	    	</tr>
 	    </tfoot>
 		</table>
 HEREDOC;
 	$table->Disconnect();
+		$javascripts = <<< HEREDOC
+	<script type="text/javascript">
+function confirmDelete(){
+	var agree=confirm("Are you sure you want to delete these rates?");
+	if (agree){
+		document.forms["deleteAction"].submit();
+		return true;
+	}
+	else{
+	}
+}
+function confirmDeleteAll(){
+var agree=confirm("Are you sure you want to delete ALL rates?");
+	if (agree){
+		document.forms["deleteAllAction"].submit();
+		return true;
+	}
+	else{
+	}
+}
+</script>
+HEREDOC;
 ?>
 
 
-	<?php echo GetPageHead('View Customer intrastate Rates', 'rates.php');?>
+	<?php echo GetPageHead('View Customer intrastate Rates', 'rates.php', $javascripts);?>
 	<div id="body">
 	<?php echo $errors;?>
 	<?php
@@ -129,7 +180,15 @@ HEREDOC;
 	<div id="messages"></div>
 
 	<?php echo $content;?>
+	<br>
+	<button name="deleteAllButton" onclick="confirmDeleteAll()">Delete All</button>
+	<br>
+	<form action="intrastaterates.php?deleteall=1&customerid=<?php echo $customerid?>" method="POST" name="deleteAllAction">
+	</form>
+	<form action="intrastaterates.php?delete=1&customerid=<?php echo $customerid?>" method="POST" name="deleteAction">
 	<?php echo $htmltable;?>
+	</form>
+	
 	</div>
 	<script src="<?php echo $sharedFolder;?>lib/jUpload.js"></script>
 	<?php echo GetPageFoot();?>

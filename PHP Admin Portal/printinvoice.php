@@ -10,7 +10,7 @@ include_once 'config.php';
 	$companyAddress1 = $manager->GetSetting('company_address1');
 	$companyAddress2 = $manager->GetSetting('company_address2');
 	$companyCountry = $manager->GetSetting('company_country');
-	$logopath = $manager->GetSetting('logo');
+	$logopath = $sharedFolder.'images/invoicelogo.jpg';
 	
 	$region = new localizer($locale);
 	

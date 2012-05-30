@@ -65,7 +65,9 @@ HEREDOC;
 			$row['billedprefix'] = '+' . $row['billedprefix'];
 		}
 		/*$customerid, $effectivedate,$billedprefix*/
-		
+		if(!$this->DoesExist($row)){
+			return false;
+		}
 		$deleteParams = array($row['customerid'],$row['effectivedate'],$row['billedprefix']);
 		$result = pg_execute($this->db, "delete", $deleteParams);
 		if($result){

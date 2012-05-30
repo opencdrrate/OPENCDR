@@ -22,9 +22,22 @@ class psql_customermaster extends SQLTable{
 	private $insertStatement;
 	private $deleteStatement;
 	private $selectStatement;
+	private $checkStatement;
 	
 	function psql_customermaster($connectString){
 		$this->connectString = $connectString;
+		$this->insertStatement = <<< HEREDOC
+		INSERT INTO {$this->table_name} 
+		(customerid, customername, lrndiprate, cnamdiprate, indeterminatejurisdictioncalltype, 
+		billingcycle) 
+		VALUES ($1,$2,$3,$4,$5,$6)
+HEREDOC;
+		$this->checkStatement = <<< HEREDOC
+		SELECT 1 FROM {$this->table_name} WHERE customerid = $1
+HEREDOC;
+		$this->deleteStatement = <<< HEREDOC
+		DELETE FROM {$this->table_name} WHERE customerid = $1
+HEREDOC;
 	}
 	
 	function Connect(){
@@ -33,22 +46,57 @@ class psql_customermaster extends SQLTable{
 			throw new Exception("Error in connection: " . pg_last_error());
 		}
 		set_time_limit(0);
+		pg_prepare($this->db, "insert_customermaster", $this->insertStatement);
+		pg_prepare($this->db, "check_customermaster", $this->checkStatement);
+		pg_prepare($this->db, "delete_customermaster", $this->deleteStatement);
 	}
 	function Disconnect(){
 		pg_close($this->db);
 	}
 
 	function Insert($row){
-		throw new Exception('This function is not implemented yet');
+	/*(customerid, customername, lrndiprate, 
+	cnamdiprate, indeterminatejurisdictioncalltype, billingcycle) */
+	$customerid = $row['customerid']; 
+	$customername = $row['customername'];
+	$lrndiprate = $row['lrndiprate'];
+	$cnamdiprate = $row['cnamdiprate'];
+	$indeterminatejurisdictioncalltype = $row['indeterminatejurisdictioncalltype'];
+	$billingcycle = $row['billingcycle'];
+	
+		$insertParams = array($customerid, $customername,$lrndiprate,
+								$cnamdiprate, $indeterminatejurisdictioncalltype,$billingcycle);
+		
+		if($this->DoesExist(array('customerid' => $customerid)) ){
+			return false;
+		}
+		
+		$result = pg_execute($this->db, "insert_customermaster", $insertParams);
+		if($result){
+			$this->rowsAdded++;
+			return true;
+		}
+		return $result;
 	}
 	function Delete($row){
-		throw new Exception('This function is not implemented yet');
+		$deleteParams = array($row['customerid']);
+		$result = pg_execute($this->db, "delete_customermaster", $deleteParams);
+		if($result){
+			$this->rowsDeleted++;
+			return true;
+		}
+		return $result;
 	}
 	function DoesExist($row){
-		throw new Exception('This function is not implemented yet');
-	}
-	function Update($old, $new){
-		throw new Exception('This function is not implemented yet');
+		$selectParams = array($row['customerid']);
+		$result = pg_execute($this->db, "check_customermaster", $selectParams);
+		$hasEntry = pg_fetch_array($result);
+		if(!$hasEntry){
+			return false;
+		}
+		else{
+			return true;
+		}
 	}
 	function SelectAll(){
 		$selectQuery = <<< HEREDOC
