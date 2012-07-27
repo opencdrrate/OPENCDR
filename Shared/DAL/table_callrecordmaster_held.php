@@ -26,14 +26,23 @@ CREATE TABLE callrecordmaster_held
 )
 */
 class psql_callrecordmaster_held extends SQLTable{
-	public $table_name = 'callrecordmaster_held';
+	public $table_name = <<< HEREDOC
+	callrecordmaster_held
+HEREDOC;
 	public $IsConnected = false;
 	private $connectString;
 	private $db;
 	
+	private $selectStatement;
 	function psql_callrecordmaster_held($connectString){
 		$this->connectString = $connectString;
-		
+		$this->selectStatement = <<< HEREDOC
+		SELECT callid, customerid, calltype, calldatetime, duration, direction, 
+       sourceip, originatingnumber, destinationnumber, lrn, cnamdipped, 
+       ratecenter, carrierid, wholesalerate, wholesaleprice, errormessage, 
+       rowid
+  FROM {$this->table_name};
+HEREDOC;
 	}
 	
 	function Connect(){
@@ -42,7 +51,7 @@ class psql_callrecordmaster_held extends SQLTable{
 		if(!$this->db){
 			throw new Exception("Error in connection: " . pg_last_error());
 		}
-		set_time_limit(0);
+		pg_prepare($this->db, "selectAll_callrecordmaster_held", $this->selectStatement);
 	}
 	function Disconnect(){
 		pg_close($this->db);
@@ -60,11 +69,16 @@ class psql_callrecordmaster_held extends SQLTable{
 	function Update($old, $new){
 		throw new Exception('This function is not implemented yet');
 	}
+	
 	function SelectAll(){
-		$query = <<< HEREDOC
-		SELECT * FROM {$this->table_name}'
-HEREDOC;
-		return pg_query($this->db, $query);
+		$result = pg_execute($this->db, "selectAll_callrecordmaster_held", array());
+		
+		if(!$result){
+			return array();
+		}
+		else{
+			return $result;
+		}
 	}
 	
 	function SelectSubset($offset = 0, $limit = 0){
@@ -73,13 +87,13 @@ HEREDOC;
 HEREDOC;
 		
 		$limitedQuery = $query;
-		if($limit > 0){
+		/*if($limit > 0){
 			$limitedQuery .= " LIMIT "
 				. $limit
 				. " OFFSET "
 				. $offset	
 				. ";";
-		}
+		}*/
 		$queryResults = pg_query($this->db, $limitedQuery);
 		$allArrayResults = array();
 		while($row = pg_fetch_assoc($queryResults)){

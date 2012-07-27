@@ -30,6 +30,7 @@ $htmltable = <<<HEREDOC
 <tr>
 <th>CustomerID</th>
 <th>Customer Name</th>
+<th>Customer Type</th>
 <th>Billing Address</th>
 <th>LRN Dip Rate</th>
 <th>CNAM Dip Rate</th>
@@ -46,10 +47,10 @@ $htmltable = <<<HEREDOC
 <tbody>
 HEREDOC;
 
-	$query = 'SELECT customermaster.customerid, customername, lrndiprate, cnamdiprate, "CallTypeDesc", billingcycle, coalesce("TotalCharges", 0) as "TotalCharges", customermaster.rowid FROM customermaster join vwcalltypes on (customermaster.indeterminatejurisdictioncalltype = vwcalltypes."CallType") left outer join vwcustomercharges on (customermaster.customerid = vwcustomercharges.customerid) order by customerid;';
+	$query = 'SELECT customermaster.customerid, customername, customertype, lrndiprate, cnamdiprate, "CallTypeDesc", billingcycle, coalesce("TotalCharges", 0) as "TotalCharges", customermaster.rowid FROM customermaster join vwcalltypes on (customermaster.indeterminatejurisdictioncalltype = vwcalltypes."CallType") left outer join vwcustomercharges on (customermaster.customerid = vwcustomercharges.customerid) order by customerid;';
 	
 	$csv_output = "";
-	$csv_hdr = "CustomerID|CustomerName|LRNDipRate|CNAMDipRate|IndeterminateCallType|BillingCycle|TotalBilled|Balance";
+	$csv_hdr = "CustomerID|CustomerName|CustomerType|LRNDipRate|CNAMDipRate|IndeterminateCallType|BillingCycle|TotalBilled|Balance";
 	$csv_hdr .= "\n";
 
 	$result = pg_query($query);
@@ -75,6 +76,7 @@ $htmltable .= <<<HEREDOC
 <tr>
 <td>{$myrow['customerid']}</td>
 <td>{$myrow['customername']}</td>
+<td>{$myrow['customertype']}</td>
 <td><a href=editcustomerbillingaddress.php?customerid={$myrow['customerid']}>Edit</a></td>
 <td>{$myrow['lrndiprate']}</td>
 <td>{$myrow['cnamdiprate']}</td>
@@ -102,7 +104,7 @@ HEREDOC;
 	    </tbody>
 	    <tfoot>
 	    	<tr>
-		    <td colspan="13"></td>
+		    <td colspan="14"></td>
 	    	</tr>
 	    </tfoot>
 		</table>';

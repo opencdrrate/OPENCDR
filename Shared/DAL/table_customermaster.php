@@ -29,8 +29,8 @@ class psql_customermaster extends SQLTable{
 		$this->insertStatement = <<< HEREDOC
 		INSERT INTO {$this->table_name} 
 		(customerid, customername, lrndiprate, cnamdiprate, indeterminatejurisdictioncalltype, 
-		billingcycle) 
-		VALUES ($1,$2,$3,$4,$5,$6)
+		billingcycle, customertype) 
+		VALUES ($1,$2,$3,$4,$5,$6,$7)
 HEREDOC;
 		$this->checkStatement = <<< HEREDOC
 		SELECT 1 FROM {$this->table_name} WHERE customerid = $1
@@ -63,9 +63,10 @@ HEREDOC;
 	$cnamdiprate = $row['cnamdiprate'];
 	$indeterminatejurisdictioncalltype = $row['indeterminatejurisdictioncalltype'];
 	$billingcycle = $row['billingcycle'];
+	$customertype = $row['customertype'];
 	
 		$insertParams = array($customerid, $customername,$lrndiprate,
-								$cnamdiprate, $indeterminatejurisdictioncalltype,$billingcycle);
+								$cnamdiprate, $indeterminatejurisdictioncalltype,$billingcycle,$customertype);
 		
 		if($this->DoesExist(array('customerid' => $customerid)) ){
 			return false;

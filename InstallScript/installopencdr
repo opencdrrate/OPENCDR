@@ -11,6 +11,7 @@ download_opencdr(){
 	git init
 	git remote add origin git://github.com/opencdrrate/OPENCDR.git
 	git pull origin master
+
 }
 install_git(){
 	sudo yum -y install zlib-devel openssl-devel cpio expat-devel gettext-devel make gcc perl-ExtUtils-MakeMaker
@@ -33,32 +34,31 @@ install_httpd()
 }
 install_postgres()
 {
-	echo "Installing postgres"
-	echo "Please follow the instructions at : http://wiki.postgresql.org/wiki/YUM_Installation"
-	#check if centos or amazon ec2
-	# linux = cat /etc/*-release
-	#centos :
-	#    On CentOS: /etc/yum.repos.d/CentOS-Base.repo, [base] and [updates] sections
-	#	exclude=postgresql*
+	 echo "Installing postgres"
+        #echo "Please follow the instructions at : http://wiki.postgresql.org/wiki/YUM_Installation"
+        #check if centos or amazon ec2
+        # linux = cat /etc/*-release
+        #centos :
+        #    On CentOS: /etc/yum.repos.d/CentOS-Base.repo, [base] and [updates] sections
+        #       exclude=postgresql*
+
+        cd ~/
+		sudo cat /etc/yum.repos.d/CentOS-Base.repo | sed '/\[base\]/ a\exclude=postgresql*' > test && sudo mv test /etc/yum.repos.d/CentOS-Base.repo
+
+        sudo cat /etc/yum.repos.d/CentOS-Base.repo | sed '/\[updates\]/ a\exclude=postgresql*' <test && sudo mv test /etc/yum.repos.d/CentOS-Base.repo
+
+        sudo curl -O http://yum.postgresql.org/8.4/redhat/rhel-5-x86_64/pgdg-centos-8.4-3.noarch.rpm
+        rpm -ivh ~/pgdg-centos-8.4-3.noarch.rpm
+        sudo yum -y install postgresql-server.x86_64
+        sudo service postgresql initdb
+        sudo chkconfig postgresql on
+
+        #find the path of pg_hba.conf
+        hbapath=`sudo find / -name 'pg_hba.conf'`
+        sudo cat $hbapath | sed 's/ident/trust/' >test && sudo mv test $hbapath
+		sudo service postgresql restart
 	
-	sudo sed '/[base]/ a\exclude=postgresql*' <test && sudo mv test /etc/yum.repos.d/CentOS-Base.repo
-	sudo sed '/[updates]/ a\exclude=postgresql*' <test && sudo mv test /etc/yum.repos.d/CentOS-Base.repo
-	
-	sudo curl -O http://yum.postgresql.org/8.4/redhat/rhel-5-x86_64/pgdg-centos-8.4-3.noarch.rpm
-	sudo yum install postgresql8-server
-	sudo service postgresql initdb
-	sudo chkconfig postgresql on
-	
-	#find the path of pg_hba.conf
-	hbapath = `sudo find / -name 'pg_hba.conf'`
-	echo $hbapath
-	sudo cat $hbapath | sudo sed 's/local   all             all                                     peer/local   all             all                                     trust/' >test && sudo mv test $hbapath
-	sudo cat $hbapath | sudo sed 's/host    all             all             127.0.0.1\/32            ident/host    all             all             127.0.0.1\/32            trust/' >test && sudo mv test $hbapath
-	sudo cat $hbapath | sudo sed 's/host    all             all             ::1\/128                 ident/host    all             all             ::1\/128                 trust/' >test && sudo mv test $hbapath
-	
-	sudo service postgresql restart
-	
-	sudo createdb OPENCDR -U postgres
+		sudo createdb OPENCDR -U postgres
 }
 
 install_php()
@@ -71,11 +71,7 @@ install_php()
 	
 	sudo sed 's/Options Indexes/Options/g' </etc/httpd/conf/httpd.conf >test && sudo mv test /etc/httpd/conf/httpd.conf
 	sudo sed 's/DirectoryIndex/DirectoryIndex main.php/g' </etc/httpd/conf/httpd.conf >test && sudo mv test /etc/httpd/conf/httpd.conf
-
-}
-create_db(){
-	#sudo createdb OPENCDR -U postgres
-	echo "It's best to do this manually :)"
+	sudo service httpd restart
 }
 install_tables(){
         echo "Installing tables"
@@ -95,6 +91,9 @@ install_opencdr(){
 	cd ~/opencdr
 	sudo cp -r PHP\ Admin\ Portal/* /var/www/html/
 	sudo cp -r Shared/* /var/www/html/Shared/
+	
+	sudo chmod 777 /var/www/html/Shared/conf/opencdr.conf
+	sudo chmod 777 /var/www/html/files/queryresult.csv
 }
 
 

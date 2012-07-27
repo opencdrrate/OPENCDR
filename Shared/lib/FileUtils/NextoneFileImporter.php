@@ -12,7 +12,7 @@ class NextoneFileImporter extends AbstractFileImporter{
 		$assocItem['calldatetime'] = $data[0];
 		$assocItem['duration'] = $data[35];
 		$assocItem['cnamdipped'] = 'f';
-		$assocItem['carrierid'] = $data[6];
+		$assocItem['carrierid'] = $data[54];
 		$assocItem['callid'] = $data[23];
 		if($assocItem['duration'] == 0){
 			return false;

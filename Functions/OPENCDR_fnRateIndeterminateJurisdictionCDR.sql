@@ -1,21 +1,4 @@
---======================================================================--
-/*  OpenCDRRate – Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
-CREATE OR REPLACE FUNCTION "fnRateIndeterminateJurisdictionCDR"() RETURNS int AS $$
+ï»¿CREATE OR REPLACE FUNCTION "fnRateIndeterminateJurisdictionCDR"() RETURNS int AS $$
 
 
 
@@ -46,29 +29,30 @@ CREATE TEMPORARY TABLE cdrindjur (
         CallType smallint,
         CallDateTime timestamp NOT NULL,
         Duration integer NOT NULL,
-				BilledDuration integer,
+	BilledDuration integer,
         Direction char(1),
         SourceIP varchar(15),
         OriginatingNumber varchar(50) NOT NULL,
         DestinationNumber varchar(50) NOT NULL,
         LRN      varchar(50),
-		LRNDipFee numeric(9,9) NOT NULL DEFAULT 0,
-		BilledNumber varchar(50), 
-		NPANXXX varchar(7),
-		RetailRate numeric(9,7),
-		RetailPrice numeric(19,7),
+	LRNDipFee numeric(9,9) NOT NULL DEFAULT 0,
+	BilledNumber varchar(50), 
+	NPANXXX varchar(7),
+	RetailRate numeric(9,7),
+	RetailPrice numeric(19,7),
         CNAMDipped boolean,
-		CNAMFee numeric (9,9) NOT NULL DEFAULT 0,
-		WholesaleRate numeric (19, 7),
-		WholesalePrice numeric(19, 7),
-		RowID serial4 UNIQUE NOT NULL
+	CNAMFee numeric (9,9) NOT NULL DEFAULT 0,
+	WholesaleRate numeric (19, 7),
+	WholesalePrice numeric(19, 7),
+        RoutingPrefix varchar(10),
+	RowID serial4 UNIQUE NOT NULL
 )ON COMMIT DROP;
 
 -- collect cdr to be rated now. The rate can be changed in the variable PROCESSING_LIMIT
 RAISE NOTICE 'Gathering new records to rate.'; gentime = TIMEOFDAY();
 
-INSERT INTO cdrindjur (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, Destinationnumber, LRN, LRNDipFee, BilledNumber, NPANXXX, RetailRate, RetailPrice, CNAMDipped, CNAMFee, wholesalerate, wholesaleprice)
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, 0, null, null, null, null, CNAMdipped, 0, wholesalerate, wholesaleprice
+INSERT INTO cdrindjur (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, Destinationnumber, LRN, LRNDipFee, BilledNumber, NPANXXX, RetailRate, RetailPrice, CNAMDipped, CNAMFee, wholesalerate, wholesaleprice, RoutingPrefix)
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, 0, null, null, null, null, CNAMdipped, 0, wholesalerate, wholesaleprice, RoutingPrefix
 FROM callrecordmaster_tbr 
 WHERE cast(CallDateTime as date) = CDRDate AND CallType = 20
 LIMIT PROCESSING_LIMIT;
@@ -212,8 +196,8 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 		-- move all records to HELD that we could not find the rate for
 		RAISE NOTICE 'Moving unrated records to HELD table.'; gentime = TIMEOFDAY();
-		INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, ErrorMessage) 
-		SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, 'No Rate for NPANXXX'
+		INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, RoutingPrefix, ErrorMessage) 
+		SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, wholesalerate, wholesaleprice, RoutingPrefix, 'No Rate for NPANXXX'
 		FROM cdrindjur where cdrindjur.RetailRate is null AND cdrindjur.CallID not in (SELECT CallID FROM callrecordmaster_held);
 
 		DELETE FROM callrecordmaster_tbr WHERE callrecordmaster_tbr.CallID in (SELECT CallID FROM cdrindjur WHERE RetailRate is null);
@@ -246,8 +230,8 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- move rated records to the CallRecordMaster
 RAISE NOTICE 'Moving rated records to the master table.'; gentime = TIMEOFDAY();
-INSERT INTO callrecordmaster (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, current_timestamp, RetailRate, CNAMdipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice
+INSERT INTO callrecordmaster (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice, RoutingPrefix) 
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, current_timestamp, RetailRate, CNAMdipped, CNAMFee, RetailPrice, wholesalerate, wholesaleprice, RoutingPrefix
 FROM cdrindjur; 
 -- WHERE CallID not in (SELECT CallID FROM callrecordmaster); This can go in as a failsafe, but will slow things down
 

@@ -1,21 +1,4 @@
---======================================================================--
-/*  OpenCDRRate – Rate your call records.
-    Copyright (C) 2012  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
-CREATE OR REPLACE FUNCTION "fnRateTollFreeTerminationCDR"() RETURNS int AS $$
+ï»¿CREATE OR REPLACE FUNCTION "fnRateTollFreeTerminationCDR"() RETURNS int AS $$
 
 
 DECLARE 
@@ -54,14 +37,15 @@ CREATE TEMPORARY TABLE cdrtfterm (
 	CarrierID varchar(100),
 	WholesaleRate numeric(19, 7),
 	WholesalePrice numeric(19, 7),
+        RoutingPrefix varchar(10),
         RowID serial4 UNIQUE NOT NULL
 )ON COMMIT DROP;
 
 -- collect cdr to be rated now. The rate can be changed in the variable PROCESSING_LIMIT
 RAISE NOTICE 'Gathering new records to rate.'; gentime = TIMEOFDAY();
 
-INSERT INTO cdrtfterm (callid, customerid, calltype, calldatetime, duration, billedduration, direction, sourceip, originatingnumber, destinationnumber, billedprefix, retailrate, retailprice, CarrierID, wholesalerate, wholesaleprice) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, null, CarrierID, wholesalerate, wholesaleprice
+INSERT INTO cdrtfterm (callid, customerid, calltype, calldatetime, duration, billedduration, direction, sourceip, originatingnumber, destinationnumber, billedprefix, retailrate, retailprice, CarrierID, wholesalerate, wholesaleprice, RoutingPrefix) 
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, null, CarrierID, wholesalerate, wholesaleprice, RoutingPrefix
 FROM callrecordmaster_tbr 
 WHERE CallType = 40 
 LIMIT PROCESSING_LIMIT;
@@ -91,8 +75,8 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- move all records to HELD that we could not find the customerid for
 RAISE NOTICE 'Moving invalid customerid to HELD table.'; gentime = TIMEOFDAY();
-INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, ErrorMessage) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, CarrierID, wholesalerate, wholesaleprice, 'Invalid CustomerID.'
+INSERT INTO callrecordmaster_held (CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, CNAMdipped, CarrierID, wholesalerate, wholesaleprice, RoutingPrefix, ErrorMessage) 
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, CarrierID, wholesalerate, wholesaleprice, RoutingPrefix, 'Invalid CustomerID.'
 FROM cdrtfterm where coalesce(customerid, '') = '' AND CallID not in (SELECT CallID FROM callrecordmaster_held);
 
 DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT CallID FROM cdrtfterm where coalesce(customerid, '') = '');
@@ -129,8 +113,8 @@ RAISE NOTICE 'Completed in: %', age(EndDateTime,gentime);
 
 -- move rated records to the CallRecordMaster
 RAISE NOTICE 'Moving rated records to the master table.'; gentime = TIMEOFDAY();
-INSERT INTO callrecordmaster (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, CarrierID, wholesalerate, wholesaleprice, BilledPrefix) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, null, 0, DestinationNumber, current_timestamp, RetailRate, null, 0, RetailPrice, CarrierID, wholesalerate, wholesaleprice, BilledPrefix
+INSERT INTO callrecordmaster (CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, Direction, SourceIP, OriginatingNumber, DestinationNumber, LRN, LRNDipFee, BilledNumber, RatedDateTime, RetailRate, CNAMDipped, CNAMFee, RetailPrice, CarrierID, wholesalerate, wholesaleprice, BilledPrefix, RoutingPrefix) 
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, BilledDuration, 'O', SourceIP, OriginatingNumber, DestinationNumber, null, 0, DestinationNumber, current_timestamp, RetailRate, null, 0, RetailPrice, CarrierID, wholesalerate, wholesaleprice, BilledPrefix, RoutingPrefix
 FROM cdrtfterm; -- WHERE CallID not in (SELECT CallID FROM callrecordmaster); This can go in as a failsafe, but will slow things down
 
 DELETE FROM callrecordmaster_tbr WHERE CallID in (SELECT CallID FROM cdrtfterm);

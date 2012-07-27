@@ -1,20 +1,3 @@
---======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
 CREATE OR REPLACE VIEW vwcalltypes AS  
 
 SELECT 5 as "CallType", 'Intrastate' as "CallTypeDesc"
@@ -30,4 +13,12 @@ UNION ALL
 SELECT 30 as "CallType", 'Toll-free Origination' as "CallTypeDesc"
 UNION ALL
 SELECT 35 as "CallType", 'Simple Termination' as "CallTypeDesc"
+UNION ALL
+SELECT 40 as "CallType", 'Toll-free Termination' as "CallTypeDesc"
+UNION ALL
+SELECT 60 as "CallType", 'Retail Termination' as "CallTypeDesc"
+UNION ALL
+SELECT 65 as "CallType", 'Retail Origination' as "CallTypeDesc"
+UNION ALL
+SELECT 68 as "CallType", 'Retail Origination (Toll-free)' as "CallTypeDesc"
 ;

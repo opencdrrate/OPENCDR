@@ -6,6 +6,7 @@ include_once $path . 'DAL/table_webportalaccesstokens.php';
 include_once $path . 'DAL/table_webportalaccess.php';
 include_once $path . 'DAL/table_callrecordmaster.php';
 include_once $path . 'conf/ConfigurationManager.php';
+include_once $path . 'lib/calendar/classes/tc_calendar.php';
 $manager = new ConfigurationManager();
 $connectstring = $manager->BuildConnectionString();
 
@@ -38,67 +39,116 @@ $userInfo = $user->Select($username);
 $user->Disconnect();
 $customerid = $userInfo[0]['customerid'];
 
-$callrecordmasterDetails = new psql_callrecordmaster($connectstring);
-$callrecordmasterDetails->Connect();
-$callrecordmasterDetailsInfo = $callrecordmasterDetails->Select($customerid);
-$callrecordmasterDetails->Disconnect();
-
-/*
-callid, calltype, calldatetime, billedduration, 
-       originatingnumber, destinationnumber,  
-       lrndipfee, retailrate,cnamfee, retailprice
-*/
-$table .= <<< HEREDOC
-<table id="listcostumer-table" border="0" cellspacing="0" cellpadding="0">
-<thead>
-<tr>
-<th>callid</th>
-<th>calltype</th>
-<th>calldatetime</th>
-<th>billedduration</th>
-<th>originatingnumber</th>
-<th>destinationnumber</th>
-<th>lrndipfee</th>
-<th>retailrate</th>
-<th>cnamfee</th>
-<th>retailprice</th>
-</tr>
-</thead>
-<tbody>
-HEREDOC;
-foreach($callrecordmasterDetailsInfo as $cdr){
-	#add cdr to table
-	$table .= <<< HEREDOC
-	<tr>
-		<td>{$cdr['callid']}</td>
-		<td>{$cdr['calltype']}</td>
-		<td>{$cdr['calldatetime']}</td>
-		<td>{$cdr['billedduration']}</td>
-		<td>{$cdr['originatingnumber']}</td>
-		<td>{$cdr['destinationnumber']}</td>
-		<td>{$cdr['lrndipfee']}</td>
-		<td>{$cdr['retailrate']}</td>
-		<td>{$cdr['cnamfee']}</td>
-		<td>{$cdr['retailprice']}</td>
-	</tr>
-HEREDOC;
-}
-$table .= <<< HEREDOC
-</tbody>
-
-	    <tfoot>
-	    	<tr>
-		    <td colspan="13"></td>
-	    	</tr>
-	    </tfoot>
-</table>
-HEREDOC;
 ?>
+<script type='text/javascript' src='/Shared/lib/Table.js'></script>
+<script language="javascript" src="/Shared/lib/calendar/calendar.js"></script>
+<script type="text/javascript">
+function $name(name){
+        return document.getElementsByName(name)[0].value;
+    }
+function $id(id) {
+	return document.getElementById(id);
+}
+function Output(msg) {
+		var m = $id("table");
+		m.innerHTML = msg;
+	}
+function LoadDateRange(Start, End){
+	var startdate = $name("startdate");
+	var enddate = $name("enddate") + " 23:59:59";
 
-
-<?php echo GetPageHead('View CDRs', 'main.php?token='.$token);?>
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function(e) {
+		if (xhr.readyState == 4) {
+			if(xhr.status == 200){
+				var xmlDoc=xhr.responseXML;
+				//Output(xmlDoc);
+				var table = XMLToTable(xmlDoc);
+				Output(table.ToHtml(0,0));
+			}
+			else{
+				Output("Error code : " + xhr.status);
+			}
+		}
+		else{
+			Output("<blink>Please wait...</blink>");
+		}
+	};
+	xhr.open("POST", 'controllers/viewcdr_controller.php?FUNCTION=SELECTDATE&TOKEN=<?php echo $token?>', true);
+	xhr.setRequestHeader("STARTDATE", startdate);
+	xhr.setRequestHeader("ENDDATE", enddate);
+	xhr.send();
+}
+function LoadTable(){
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function(e) {
+		if (xhr.readyState == 4) {
+			if(xhr.status == 200){
+				var xmlDoc=xhr.responseXML;
+		
+				var table = XMLToTable(xmlDoc);
+				Output(table.ToHtml(0,0));
+				
+			}
+			else{
+				Output("Error code : " + xhr.status);
+			}
+		}
+		else{
+			Output("<blink>Please wait...</blink>");
+		}
+	};
+	xhr.open("POST", 'controllers/viewcdr_controller.php?FUNCTION=SELECT&TOKEN=<?php echo $token?>', true);
+	xhr.send();
+}
+function DownloadData(){
+	window.location = 'controllers/viewcdr_controller.php?FUNCTION=DOWNLOAD&TOKEN=<?php echo $token?>';
+}
+LoadTable();
+</script>
+<?php echo GetPageHead('View CDRs', 'main.php?token='.$token, '');?>
 <div id='body'>
+<form name="SelectDates" action="javascript:LoadDateRange()" method="post">
+	<label>Start date</label><br>
+	  <?php
+		
+	  	$image = "/Shared/calendar/images/iconCalendar.gif";
+		$calendarPath = "/Shared/lib/calendar/";
+		
+		$myCalendar = new tc_calendar("startdate", true, false);
+	  	$myCalendar->setIcon($image);
+	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
+	  	$myCalendar->setPath($calendarPath);
+	  	$myCalendar->setYearInterval(2010, 2020);
+	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
+	  	$myCalendar->setDateFormat('j F Y');
+	  	$myCalendar->setAlignment('left', 'bottom');
+	  	$myCalendar->setSpecificDate(array("2010-12-25"), 0, 'year');
+	 	$myCalendar->writeScript();
+	?><br>
+	<label>End date</label><br>
+		  <?php
+		
+	  	$image = "/Shared/lib/calendar/images/iconCalendar.gif";
+		$calendarPath = "/Shared/lib/calendar/";
+		
+		$myCalendar = new tc_calendar("enddate", true, false);
+	  	$myCalendar->setIcon($image);
+	  	$myCalendar->setDate(date('d'), date('m'), date('Y'));
+	  	$myCalendar->setPath($calendarPath);
+	  	$myCalendar->setYearInterval(2010, 2020);
+	  	$myCalendar->dateAllow('2010-01-01', '2020-12-31');
+	  	$myCalendar->setDateFormat('j F Y');
+	  	$myCalendar->setAlignment('left', 'bottom');
+	  	$myCalendar->setSpecificDate(array("2010-12-25"), 0, 'year');
+	 	$myCalendar->writeScript();
+	?><br>
+	<button type="submit">Search CDRs</button>
+</form>
+<form name="export" action="javascript:DownloadData()" method="post">
+   	<input type="submit" class="btn orange export" value="Export table to CSV">
+</form><br>
 <?php echo $content;?><br>
-<?php echo $table;?>
+<div id="table"></div>
 </div>
 <?php echo GetPageFoot();?>

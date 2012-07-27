@@ -94,11 +94,14 @@ HEREDOC;
 		<div id="body">
 			
 			<br>
-				<input type="submit" class="btn blue add-customer" value="Rate Calls" id="ratebutton"/>
+			<input type="submit" class="btn blue add-customer" value="Rate Calls" id="ratebutton"/>
 			<form name="export" action="exportpipe.php" method="post">
 				<input type="submit" class="btn orange export" value="Export Table">
 				<input type="hidden" name="queryString" value="<?php echo htmlspecialchars($query);?>">
 				<input type="hidden" name="filename" value="TBRExport.csv">
+			</form>
+			<form action="https://sourceforge.net/p/opencdrrate/home/CustomerMaster/" method="POST" target="_blank">
+				<input type="submit" class="btn blue add-customer" value="HELP"/>
 			</form>
 			<br>
 			<form action="<?php echo $tbrLibsPath;?>" method="post" id="action">
@@ -118,7 +121,7 @@ HEREDOC;
 					<option value="asterisk">Asterisk</option>
 					<option value="itel">iTel</option>
 				</select>
-				<input name="uploadedFile" type="File" id="fileselect" />
+				<input name="uploadedFile[]" type="File" id="fileselect" multiple="multiple" />
 			</form>
 			<button id="uploadbutton" type="submit">Import File </button>
 			<br>
@@ -169,7 +172,6 @@ HEREDOC;
 		var m = $id("messages");
 		m.innerHTML = msg;
 	}
-	
 	function EnableProgress(value, max){
 		var p = $id("progress");
 		p.innerHTML = '<progress value="'+value+'" max="'+max+'"/>';
@@ -181,10 +183,12 @@ HEREDOC;
 	
 	function UploadHandler(e) {
 		var fileselect = $id("fileselect");
-		var file = fileselect.files[0];
 		//alert(file.name);
 		//UploadFileByLine(file);
-		UploadFile(file);
+		for (var x = 0; x < fileselect.files.length; x++) {
+			var file = fileselect.files[x];
+			UploadFile(file);
+		}
 	}
 
 	// upload JPEG files

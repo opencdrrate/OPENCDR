@@ -1,20 +1,3 @@
---======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
 CREATE OR REPLACE FUNCTION "fnGenerateBillingBatch"(IN billingbatchid_in "varchar", IN billingdate_in "date", IN duedate_in "date", IN billingcycleid_in "varchar", IN usageperiodend_in "date", IN recurringfeeperiodstart_in "date", IN recurringfeeperiodend_in "date") RETURNS int AS $$
 
 
@@ -25,6 +8,10 @@ EndDateTime timestamp;
 gentime timestamp;
 curs1 CURSOR FOR SELECT DISTINCT (CustomerID) FROM customermaster WHERE customermaster.BillingCycle = billingcycleid_in ORDER BY CustomerID;
 id varchar(15);
+maxfreeminutes integer;
+usedfreeminutes integer ;
+retailprice numeric(9, 2);
+averageminuterate numeric(9, 7);
 
 BEGIN
 
@@ -82,6 +69,12 @@ OPEN curs1;
 LOOP
 	FETCH curs1 INTO id;
 	EXIT WHEN NOT FOUND;
+
+
+        --add retail plan fees.
+	INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
+	                          SELECT billingbatchid_in, id, null, 7, b.PlanDescription, b.ServiceFee, 1, recurringfeeperiodstart_in, recurringfeeperiodend_in from customerretailplanmaster as a inner join retailplanmaster as b on a.PlanID = b.PlanID where a.CustomerID = id and a.ActivationDate <= recurringfeeperiodstart_in order by a.ActivationDate;
+
 
 	--add recurring charges
 	--RAISE NOTICE 'Adding recurring charges.';
@@ -176,7 +169,7 @@ LOOP
 	-- Create entry for each tier of tiered orig
 	IF EXISTS (SELECT * FROM callrecordmaster WHERE BillingBatchID = billingbatchid_in and CustomerID = id and CallType = 15) THEN
 		INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
-		SELECT billingbatchid_in, id, 15, 10, concat('Tiered Origination Calls - Tier ', BilledTier), sum(crm.retailprice), count(*), min(CallDateTime), max(CallDateTime) from callrecordmaster as crm where BillingBatchID = billingbatchid_in and CustomerID = id and CallType = 15 group by BilledTier, date_part('month', CallDateTime) order by date_part('month', CallDateTime);
+		SELECT billingbatchid_in, id, 15, 10, 'Tiered Origination Calls - Tier ' || BilledTier, sum(crm.retailprice), count(*), min(CallDateTime), max(CallDateTime) from callrecordmaster as crm where BillingBatchID = billingbatchid_in and CustomerID = id and CallType = 15 group by BilledTier, date_part('month', CallDateTime) order by date_part('month', CallDateTime);
 
 		--create taxes for tiered orig
 		INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
@@ -197,6 +190,67 @@ LOOP
 		INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
 		SELECT billingbatchid_in, id, 0, 30, 'LRN Dip Charges', sum(crm.lrndipfee), count(*), min(CallDateTime), max(CallDateTime) from callrecordmaster as crm where BillingBatchID = billingbatchid_in AND CustomerID = id group by date_part('month', CallDateTime) order by date_part('month', CallDateTime);
 	
+	END IF;
+
+
+        --create entry for retail termination.
+	IF EXISTS (SELECT * FROM callrecordmaster WHERE BillingBatchID = billingbatchid_in and CustomerID = id and CallType = 60) THEN
+		INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
+		SELECT billingbatchid_in, id, 60, 10, 'Outbound Calls', sum(crm.retailprice), count(*), min(CallDateTime), max(CallDateTime) from callrecordmaster as crm where BillingBatchID = billingbatchid_in and CustomerID = id and CallType = 60 group by date_part('month', CallDateTime) order by date_part('month', CallDateTime);
+
+		--create taxes for retail termination
+		INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
+		select billingbatchid_in, id, 60, 40, taxes.TaxType, bills.LineItemAmount * taxes.TaxRate, 0, bills.periodstartdate, bills.periodenddate from billingbatchdetails as bills inner join customertaxsetup as taxes on bills.CustomerID = taxes.CustomerID and bills.CallType = taxes.CallType where bills.billingbatchid = billingbatchid_in and bills.customerid = id and bills.calltype = 60 ;
+
+	
+	END IF;
+
+
+        --create entry for retail origination.
+	IF EXISTS (SELECT * FROM callrecordmaster WHERE BillingBatchID = billingbatchid_in and CustomerID = id and CallType = 65) THEN
+		INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
+		SELECT billingbatchid_in, id, 65, 10, 'Inbound Calls', sum(crm.retailprice), count(*), min(CallDateTime), max(CallDateTime) from callrecordmaster as crm where BillingBatchID = billingbatchid_in and CustomerID = id and CallType = 65 group by date_part('month', CallDateTime) order by date_part('month', CallDateTime);
+
+		--create taxes for retail origination.
+		INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
+		select billingbatchid_in, id, 65, 40, taxes.TaxType, bills.LineItemAmount * taxes.TaxRate, 0, bills.periodstartdate, bills.periodenddate from billingbatchdetails as bills inner join customertaxsetup as taxes on bills.CustomerID = taxes.CustomerID and bills.CallType = taxes.CallType where bills.billingbatchid = billingbatchid_in and bills.customerid = id and bills.calltype = 65 ;
+
+	
+	END IF;
+
+
+        --create entry for retail origination (tollfree).
+	IF EXISTS (SELECT * FROM callrecordmaster WHERE BillingBatchID = billingbatchid_in and CustomerID = id and CallType = 68) THEN
+		INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
+		SELECT billingbatchid_in, id, 68, 10, 'Inbound Calls (Toll-free)', sum(crm.retailprice), count(*), min(CallDateTime), max(CallDateTime) from callrecordmaster as crm where BillingBatchID = billingbatchid_in and CustomerID = id and CallType = 68 group by date_part('month', CallDateTime) order by date_part('month', CallDateTime);
+
+		--create taxes for retail origination.
+		INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
+		select billingbatchid_in, id, 68, 40, taxes.TaxType, bills.LineItemAmount * taxes.TaxRate, 0, bills.periodstartdate, bills.periodenddate from billingbatchdetails as bills inner join customertaxsetup as taxes on bills.CustomerID = taxes.CustomerID and bills.CallType = taxes.CallType where bills.billingbatchid = billingbatchid_in and bills.customerid = id and bills.calltype = 68 ;
+
+	
+	END IF;
+
+
+	--determine if customer should get a discount for free minutes.
+	IF EXISTS (SELECT * FROM callrecordmaster WHERE BillingBatchID = billingbatchid_in and CustomerID = id and CallType in (60, 65, 68) and canbefree = true) THEN
+		
+                select maxfreeminutes = sum(b.FreeMinutesPerCycle) from customerretailplanmaster as a inner join retailplanmaster as b on a.planid = b.planid where a.customerid = id;
+
+                IF maxfreeminutes > 0 THEN
+                	select usedfreeminutes = sum(billedduration) / 60, retailprice = sum(retailprice), averageminuteprice = avg(retailrate) from callrecordmaster WHERE BillingBatchID = billingbatchid_in and CustomerID = id and CallType in (60, 65, 68) and canbefree = true and retailprice > 0;
+
+                        IF usedfreeminutes <= maxfreeminutes THEN --all calls free
+				INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
+		                                         values (billingbatchid_in, id, null, 38, 'Discount for Free Minutes', retailprice * -1.00, null, null, null);
+
+			ELSE --determine average call rate and give them that
+				INSERT INTO billingbatchdetails (billingbatchid, customerid, calltype, LineItemType, lineitemdesc, lineitemamount, lineitemquantity, periodstartdate, periodenddate) 
+		                                         values (billingbatchid_in, id, null, 38, 'Discount for Free Minutes', (averageminuteprice * maxfreeminutes) * -1.00 , null, null, null);
+
+			END IF;
+                END IF;
+
 	END IF;
 	
 END LOOP;

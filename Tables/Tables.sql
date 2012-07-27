@@ -1,20 +1,4 @@
---======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+﻿
 CREATE TABLE arettacdr(
         CallDate timestamp NOT NULL,
         Trunk varchar(100),
@@ -23,25 +7,9 @@ CREATE TABLE arettacdr(
         Destination varchar(50) NOT NULL,              
         Sec integer NOT NULL,
         Disposition varchar(100),
-		Cost numeric(9, 4),
+	Cost numeric(9, 4),
         RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE asteriskcdr(
         accountcode varchar(40) NOT NULL,
         src varchar(80) NOT NULL,
@@ -51,23 +19,18 @@ CREATE TABLE asteriskcdr(
         disposition varchar(100),          
         uniqueid varchar(32) NOT NULL PRIMARY KEY,
         RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
+CREATE TABLE asteriskserversetup(
+        ServerName varchar(50) PRIMARY KEY,
+	ServerIPOrDNS varchar(100) NOT NULL,
+        MySQLPort int NOT NULL DEFAULT 3306,
+        MySQLLogin varchar(50) NOT NULL,
+        MySQLPassword varchar(50) NOT NULL,
+        CDRDatabase varchar(50) NOT NULL DEFAULT 'asteriskcdrdb',
+        CDRTable varchar(50) NOT NULL DEFAULT 'cdr',
+        Active smallint NOT NULL DEFAULT 1,
+        RowID serial4 UNIQUE NOT NULL
+);
 CREATE TABLE bandwidthcdr(
         DEBTOR_ID varchar(15) NOT NULL,
         itemid varchar(100) NOT NULL,
@@ -85,23 +48,7 @@ CREATE TABLE bandwidthcdr(
         CallType smallint, 
         RawDuration int,
         RowID serial4 UNIQUE NOT NULL PRIMARY KEY
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE billingbatchdetails(
 	BillingBatchID varchar(15) NOT NULL,
 	CustomerID varchar(15) NOT NULL,
@@ -113,23 +60,7 @@ CREATE TABLE billingbatchdetails(
 	PeriodStartDate date,
 	PeriodEndDate date,
 	RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE billingbatchmaster(
 	BillingBatchID varchar(15) PRIMARY KEY,
 	BillingDate date NOT NULL, 
@@ -137,67 +68,7 @@ CREATE TABLE billingbatchmaster(
 	BillingCycleID varchar(15) NOT NULL,
 	UsagePeriodEnd date NOT NULL,
 	RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
-CREATE TABLE callrecordmaster(
-        CallID varchar(100)     PRIMARY KEY,
-        CustomerID varchar(15) NOT NULL,
-        CallType smallint,
-        CallDateTime timestamp NOT NULL,
-        Duration integer NOT NULL,
-		BilledDuration integer NOT NULL,
-        Direction char(1),
-        SourceIP varchar(15),
-        OriginatingNumber varchar(50) NOT NULL,
-        DestinationNumber varchar(50) NOT NULL,
-        LRN      varchar(50),
-		LRNDipFee numeric(9,9) NOT NULL DEFAULT 0,
-		BilledNumber varchar(50) NOT NULL,
-		BilledPrefix varchar(10),
-		RatedDateTime timestamp NOT NULL,
-		RetailRate numeric(9,7) NOT NULL,		
-        CNAMDipped boolean,
-		CNAMFee numeric (9,9) NOT NULL DEFAULT 0,
-		BilledTier smallint,
-		RateCenter varchar(50),
-		BillingBatchID Varchar(15),
-		RetailPrice numeric(19,7) NOT NULL,
-		CarrierID varchar(100),
-		WholesaleRate numeric(19, 7),
-		WholesalePrice numeric(19, 7),		
-        RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE callrecordmaster_held(
         CallID varchar(100)     PRIMARY KEY,
         CustomerID varchar(15),
@@ -208,31 +79,46 @@ CREATE TABLE callrecordmaster_held(
         SourceIP varchar(15),
         OriginatingNumber varchar(50) NOT NULL,
         DestinationNumber varchar(50) NOT NULL,
-        LRN      varchar(50),
+        LRN varchar(50),
         CNAMdipped boolean,
-		RateCenter varchar(50),
-		CarrierID varchar(100),
-		WholesaleRate numeric(19, 7),
-		WholesalePrice numeric(19, 7),		
-		ErrorMessage varchar(100) NOT NULL,
+	RateCenter varchar(50),
+	CarrierID varchar(100),
+	WholesaleRate numeric(19, 7),
+	WholesalePrice numeric(19, 7),	
+        RoutingPrefix varchar(10),	
+	ErrorMessage varchar(100) NOT NULL,
         RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
+CREATE TABLE callrecordmaster(
+        CallID varchar(100)     PRIMARY KEY,
+        CustomerID varchar(15) NOT NULL,
+        CallType smallint,
+        CallDateTime timestamp NOT NULL,
+        Duration integer NOT NULL,
+	BilledDuration integer NOT NULL,
+        Direction char(1),
+        SourceIP varchar(15),
+        OriginatingNumber varchar(50) NOT NULL,
+        DestinationNumber varchar(50) NOT NULL,
+        LRN      varchar(50),
+	LRNDipFee numeric(9,9) NOT NULL DEFAULT 0,
+	BilledNumber varchar(50) NOT NULL,
+	BilledPrefix varchar(10),
+	RatedDateTime timestamp NOT NULL,
+	RetailRate numeric(9,7) NOT NULL,		
+        CNAMDipped boolean,
+	CNAMFee numeric (9,9) NOT NULL DEFAULT 0,
+	BilledTier smallint,
+	RateCenter varchar(50),
+	BillingBatchID Varchar(15),
+	RetailPrice numeric(19,7) NOT NULL,
+	CarrierID varchar(100),
+	WholesaleRate numeric(19, 7),
+	WholesalePrice numeric(19, 7),	
+        RoutingPrefix varchar(10),
+        CanBeFree boolean,	
+        RowID serial4 UNIQUE NOT NULL
+);
 CREATE TABLE callrecordmaster_tbr(
         CallID varchar(100)     PRIMARY KEY,
         CustomerID varchar(15),
@@ -243,74 +129,15 @@ CREATE TABLE callrecordmaster_tbr(
         SourceIP varchar(15),
         OriginatingNumber varchar(50) NOT NULL,
         DestinationNumber varchar(50) NOT NULL,
-        LRN      varchar(50),
+        LRN varchar(50),
         CNAMdipped boolean,
-		RateCenter varchar(50),
-		CarrierID varchar(100),
-		WholesaleRate numeric(19, 7),
-		WholesalePrice numeric(19, 7),
+	RateCenter varchar(50),
+	CarrierID varchar(100),
+	WholesaleRate numeric(19, 7),
+	WholesalePrice numeric(19, 7),
+        RoutingPrefix varchar(10),
         RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
-CREATE TABLE concurrentcalls(
-        CallDateTime timestamp without time zone NOT NULL PRIMARY KEY,
-        ConcurrentCalls integer NOT NULL,
-        RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
-CREATE TABLE concurrentcallsdirection(
-        CallDateTime timestamp without time zone NOT NULL,
-        Direction char(1) NOT NULL,
-        ConcurrentCalls integer NOT NULL,
-        RowID serial4 UNIQUE NOT NULL,
-        PRIMARY KEY(CallDateTime, Direction)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE concurrentcallsdirectioncarrier(
         CallDateTime timestamp without time zone NOT NULL,
         Direction char(1) NOT NULL,
@@ -318,23 +145,7 @@ CREATE TABLE concurrentcallsdirectioncarrier(
         ConcurrentCalls integer NOT NULL,
         RowID serial4 UNIQUE NOT NULL,
         PRIMARY KEY(CallDateTime, Direction, CarrierID)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE concurrentcallsdirectionratecenter(
         CallDateTime timestamp without time zone NOT NULL,
         Direction char(1) NOT NULL,
@@ -342,23 +153,19 @@ CREATE TABLE concurrentcallsdirectionratecenter(
         ConcurrentCalls integer NOT NULL,
         RowID serial4 UNIQUE NOT NULL,
         PRIMARY KEY(CallDateTime, Direction, RateCenter)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
+CREATE TABLE concurrentcallsdirection(
+        CallDateTime timestamp without time zone NOT NULL,
+        Direction char(1) NOT NULL,
+        ConcurrentCalls integer NOT NULL,
+        RowID serial4 UNIQUE NOT NULL,
+        PRIMARY KEY(CallDateTime, Direction)
+);
+CREATE TABLE concurrentcalls(
+        CallDateTime timestamp without time zone NOT NULL PRIMARY KEY,
+        ConcurrentCalls integer NOT NULL,
+        RowID serial4 UNIQUE NOT NULL
+);
 CREATE TABLE customerbillingaddressmaster(
 		CustomerID varchar(15) PRIMARY KEY,
 		Address1 varchar(100) NOT NULL,
@@ -368,44 +175,12 @@ CREATE TABLE customerbillingaddressmaster(
 		Country varchar(100) NOT NULL,
 		ZipCode varchar(15) NOT NULL,
 		RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE customercontactmaster(
 		CustomerID varchar(15) PRIMARY KEY,
 		PrimaryEmailAddress varchar(100) NOT NULL,
 		RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE customermaster(
 		CustomerID varchar(15) PRIMARY KEY,
 		CustomerName varchar(100) NOT NULL,
@@ -413,24 +188,23 @@ CREATE TABLE customermaster(
 		CNAMDipRate numeric(9,9) NOT NULL DEFAULT 0,
 		IndeterminateJurisdictionCallType smallint CHECK (IndeterminateJurisdictionCallType = 5 OR IndeterminateJurisdictionCallType = 10),
 		BillingCycle varchar(15),
+                CustomerType varchar(50),
+                CreditLimit numeric(9, 2),
 		RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
+CREATE TABLE customerretailplanmaster(
+		CustomerID varchar(15) PRIMARY KEY,
+                PlanID varchar(15) NOT NULL,
+		ActivationDate date NOT NULL,
+		RowID serial4 UNIQUE NOT NULL
+);
+CREATE TABLE customersipcredentials(
+		CustomerID varchar(15) PRIMARY KEY,
+		SIPUsername varchar(100) NOT NULL,
+		SIPPassword varchar(100) NOT NULL,
+		Status smallint NOT NULL DEFAULT 1,
+		RowID serial4 UNIQUE NOT NULL
+);
 CREATE TABLE customertaxsetup(
 	CustomerID varchar(15) NOT NULL,
 	CallType smallint NOT NULL,
@@ -438,154 +212,45 @@ CREATE TABLE customertaxsetup(
 	TaxRate numeric(9,7) NOT NULL,
 	RowID serial4 UNIQUE NOT NULL,
 	PRIMARY KEY(CustomerID, CallType, TaxType)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE didmaster(
 		DID varchar(15) PRIMARY KEY,
 		CustomerID varchar(15) not null,
+                SIPUsername varchar(100),
+                SIPPassword varchar(100),
+                SIPStatus smallint NOT NULL DEFAULT 1,
 		RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE effectiveinternationalratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
 		RetailRate numeric(9,7) NOT NULL,
 		PRIMARY KEY(CustomerID, BilledPrefix)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE effectiveinterstateratemaster(
 		CustomerID varchar(15) NOT NULL,
 		NPANXXX varchar(7) NOT NULL,
 		RetailRate numeric(9,7) NOT NULL,
 		PRIMARY KEY(CustomerID, NPANXXX)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE effectiveintrastateratemaster(
 		CustomerID varchar(15) NOT NULL,
 		NPANXXX varchar(7) NOT NULL,
 		RetailRate numeric(9,7) NOT NULL,
 		PRIMARY KEY(CustomerID, NPANXXX)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE effectivesimpleterminationratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
 		RetailRate numeric(9,7) NOT NULL,
 		PRIMARY KEY(CustomerID, BilledPrefix)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE effectivetollfreeoriginationratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
 		RetailRate numeric(9,7) NOT NULL,
 		PRIMARY KEY(CustomerID, BilledPrefix)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE internationalratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
@@ -593,23 +258,7 @@ CREATE TABLE internationalratemaster(
 		RetailRate numeric(9,7) NOT NULL,
 		RowID serial4 UNIQUE NOT NULL,
 		PRIMARY KEY(CustomerID, BilledPrefix, EffectiveDate)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE interstateratemaster(
         CustomerID varchar(15) NOT NULL,
         EffectiveDate date NOT NULL,
@@ -617,23 +266,7 @@ CREATE TABLE interstateratemaster(
         RetailRate numeric(9,7) NOT NULL,
         RowID serial4 UNIQUE NOT NULL,
         PRIMARY KEY(CustomerID, EffectiveDate, NPANXXX)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE intrastateratemaster(
         CustomerID varchar(15) NOT NULL,
         EffectiveDate date NOT NULL,
@@ -641,65 +274,17 @@ CREATE TABLE intrastateratemaster(
         RetailRate numeric(9,7) NOT NULL,
         RowID serial4 UNIQUE NOT NULL,
         PRIMARY KEY(CustomerID, EffectiveDate, NPANXXX)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE ipaddressmaster(
 		IPAddress varchar(15) PRIMARY KEY,
 		CustomerID varchar(15) not null,
 		RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE npamaster(
 		NPA char(3) PRIMARY KEY,
 		State varchar(50) not null,
 		RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE onetimechargequeue(
         OneTimeChargeID serial4 UNIQUE NOT NULL PRIMARY KEY,
         CustomerID varchar(15) NOT NULL,
@@ -708,45 +293,13 @@ CREATE TABLE onetimechargequeue(
         Quantity numeric(9, 2) NOT NULL,
 		ChargeDesc varchar(100) NOT NULL,
 		BillingBatchID varchar(15)	
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE passwordresetmaster(
-		Token varchar(100) NOT NULL PRIMARY KEY,
+	Token varchar(100) NOT NULL PRIMARY KEY,
         username varchar(15) NOT NULL,	
         Expires timestamp NOT NULL,
         RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE paymentmaster(
 		CustomerID varchar(15),
 		PaymentDate timestamp NOT NULL,
@@ -754,23 +307,7 @@ CREATE TABLE paymentmaster(
 		PaymentType varchar(20) NOT NULL,
 		PaymentNote varchar(100) NOT NULL,
 		RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE processhistory(
 		ProcessName varchar(100) NOT NULL,
 		StartDateTime timestamp NOT NULL,
@@ -779,23 +316,7 @@ CREATE TABLE processhistory(
 		Records integer,
 		RowID serial4 UNIQUE NOT NULL,
 		PRIMARY KEY(ProcessName, StartDateTime)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE recurringchargemaster(
         RecurringChargeID serial4 UNIQUE NOT NULL PRIMARY KEY,
         CustomerID varchar(15) NOT NULL,
@@ -804,23 +325,25 @@ CREATE TABLE recurringchargemaster(
         UnitAmount numeric(9, 2) NOT NULL,
         Quantity numeric(9, 2) NOT NULL,
 		ChargeDesc varchar(100) NOT NULL	
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
+CREATE TABLE retailplanmaster(
+		PlanID varchar(15) PRIMARY KEY,
+		PlanDescription varchar(100) NOT NULL,
+                ServiceFee numeric(9, 2) NOT NULL DEFAULT 0,
+		OriginationRate numeric(9,7) NOT NULL DEFAULT 0,
+		TollFreeOriginationRate numeric(9,9) NOT NULL DEFAULT 0,
+                FreeMinutesPerCycle integer NOT NULL DEFAULT 0,
+		RowID serial4 UNIQUE NOT NULL
+);
+CREATE TABLE retailplanterminationratemaster(
+		PlanID varchar(15) NOT NULL,
+		BilledPrefix varchar(10) NOT NULL,
+		EffectiveDate timestamp NOT NULL,
+		RetailRate numeric(9,7) NOT NULL,
+                CanBeFree boolean NOT NULL,
+		RowID serial4 UNIQUE NOT NULL,
+		PRIMARY KEY(PlanID, BilledPrefix, EffectiveDate)
+);
 CREATE TABLE simpleterminationratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
@@ -828,43 +351,15 @@ CREATE TABLE simpleterminationratemaster(
 		RetailRate numeric(9,7) NOT NULL,
 		RowID serial4 UNIQUE NOT NULL,
 		PRIMARY KEY(CustomerID, BilledPrefix, EffectiveDate)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE systemsettings_date(
 		SettingName varchar(50) PRIMARY KEY,
 		SettingValue date
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
+CREATE TABLE systemsettings_string(
+		SettingName varchar(50) PRIMARY KEY,
+		SettingValue varchar(500)
+);
 CREATE TABLE thinktelcdr(
         SourceNumber varchar(50) NOT NULL,
         DestinationNumber varchar(50) NOT NULL,
@@ -875,44 +370,12 @@ CREATE TABLE thinktelcdr(
         Direction char(1),
         CallType smallint, 
         RowID serial4 UNIQUE NOT NULL PRIMARY KEY
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE tieredoriginationratecentermaster(
         RateCenter varchar(50) PRIMARY KEY,
-		Tier smallint NOT NULL,
+	Tier smallint NOT NULL,
         RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE tieredoriginationratemaster(
         CustomerID varchar(15) NOT NULL,
 		Tier smallint NOT NULL,
@@ -920,23 +383,7 @@ CREATE TABLE tieredoriginationratemaster(
         RetailRate numeric(9,7) NOT NULL,
         RowID serial4 UNIQUE NOT NULL,
         PRIMARY KEY(CustomerID, Tier, EffectiveDate)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE tollfreeoriginationratemaster(
 		CustomerID varchar(15) NOT NULL,
 		BilledPrefix varchar(11) NOT NULL,
@@ -944,23 +391,7 @@ CREATE TABLE tollfreeoriginationratemaster(
 		RetailRate numeric(9,7) NOT NULL,
 		RowID serial4 UNIQUE NOT NULL,
 		PRIMARY KEY(CustomerID, BilledPrefix, EffectiveDate)
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE vitelitycdr(
         CallDateTime timestamp without time zone NOT NULL,
         Source varchar(50) NOT NULL,
@@ -973,25 +404,9 @@ CREATE TABLE vitelitycdr(
         CallType smallint,
         Direction char(1),
         RowID serial4 UNIQUE NOT NULL PRIMARY KEY
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE voipinnovationscdr(
-		CallType varchar(100) NOT NULL,
+	CallType varchar(100) NOT NULL,
         StartTime timestamp NOT NULL,
         CallDuration numeric(19, 5) NOT NULL,
         CustomerIP varchar(20),
@@ -1000,49 +415,26 @@ CREATE TABLE voipinnovationscdr(
         LRN varchar(50) NOT NULL,
         OrigTier smallint,
         RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE webportalaccess(
         Username varchar(100)     PRIMARY KEY,
         Nonce char(10) NOT NULL,
         HashedPassword varchar(500),
         CustomerID varchar(15),		
         RowID serial4 UNIQUE NOT NULL
-);--======================================================================--
-/*  OpenCDRRate Rate your call records.
-    Copyright (C) 2011  DTH Software, Inc
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
- 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    See <http://www.gnu.org/licenses/>.                                 */
---======================================================================-- 
-
+);
 CREATE TABLE webportalaccesstokens(
 		Token varchar(100) NOT NULL PRIMARY KEY,
         CustomerID varchar(15) NOT NULL,	
         Expires timestamp NOT NULL,
         RowID serial4 UNIQUE NOT NULL
+);
+CREATE TABLE users(
+        ID serial4 PRIMARY KEY,
+        Username varchar(50) NOT NULL,
+        Password varchar(50) NOT NULL,
+        Role varchar(20) NOT NULL,
+        CustomerID varchar(15),
+        Created timestamp NOT NULL,
+        Modified timestamp
 );

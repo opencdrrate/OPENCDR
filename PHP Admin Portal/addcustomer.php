@@ -15,12 +15,6 @@
 	$customerMasterTable->Connect();
 	
  	if (isset($_POST['submit'])) {	 
-
-		$db = pg_connect($connectstring);
-        	if (!$db) {
-         	die("Error in connection: " . pg_last_error());
-     	}
-
 	$good = 0;
 
 	function BadEntry($errormessage) {
@@ -35,6 +29,7 @@
     
      	$customerid = pg_escape_string($_POST['customerid']);
      	$customername = pg_escape_string($_POST['customername']);
+		$customertype = pg_escape_string($_POST['customertype']);
      	$lrn = pg_escape_string($_POST['lrn']);
      	$cnam = pg_escape_string($_POST['cnam']);
      	$calltype = pg_escape_string($_POST['calltype']);
@@ -44,12 +39,12 @@
 	if ($customerid == "") {
 	
 		$good = BadEntry("CustomerID is required");
-     	}
+     }
 
-     	else if ($customername == "") {
-
+     else if ($customername == "") {
+		
 		$good = BadEntry("Customer Name is required");
-     	}
+     }
 
 	else if ($email <> "") {
 
@@ -57,7 +52,9 @@
     			$good = BadEntry("Email is not in a valid format");
 		}
 	}
-
+	else if ($customertype == ""){
+		$good = BadEntry("Customer Type is required");
+	}
 	else if (!is_numeric($lrn)) {
 
 		$good = BadEntry("LRN must be numeric");
@@ -69,13 +66,12 @@
 	}
 
 	else if ($bcycle == "") {
-	
 		$good = BadEntry("Billing Cycle is required");
-     	}
+    }
 
 	if ($good == 0) {
 			$customerMasterTable->Upsert(array('customerid'=>$customerid),
-						array('customerid'=>$customerid,'customername'=>$customername,'lrndiprate'=>$lrn,
+						array('customerid'=>$customerid,'customertype'=>$customertype,'customername'=>$customername,'lrndiprate'=>$lrn,
 							'cnamdiprate'=>$cnam,'indeterminatejurisdictioncalltype'=>$calltype,'billingcycle'=>$bcycle));
 			$customerContactTable->Upsert(array('customerid'=>$customerid),
 						array('customerid'=>$customerid, 'primaryemailaddress' => $email));
@@ -97,6 +93,12 @@ $customerMasterTable->Disconnect();
     <form name="customerform" id="standardform" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
       <tr><td><label>CustomerID:</label></td>		<td><input type="text" name="customerid" value="<?php if (isset($_POST['submit'])) {echo $customerid;} ?>" ></td></tr>
       <tr><td><label>Customer Name:</label></td>	<td><input type="text" name="customername" value="<?php if (isset($_POST['submit'])) {echo $customername;} ?>" ></td></tr>
+	  <tr><td><label>Customer Type:</label></td><td>
+      <select name="customertype">
+		  <option value="">-- Choose a type --</option>
+		  <option value="Wholesale" <?php if (isset($_POST['submit'])) { if ($customertype == "Wholesale") { echo "selected"; }} ?>>Wholesale</option>
+		  <option value="Retail" <?php if (isset($_POST['submit'])) { if ($customertype == "Retail") { echo "selected"; }} ?>>Retail</option>
+      </select></td></tr>
       <tr><td><label>E-mail:</label></td>		<td><input type="text" name="email" value="<?php if (isset($_POST['submit'])) { echo $email; } ?>" ></td></tr>
       <tr><td><label>LRN Dip Rate:</label></td>		<td><input type="text" name="lrn" value="<?php if (isset($_POST['submit'])) { echo $lrn; } else { echo 0; } ?>" ></td></tr>  
       <tr><td><label>CNAM Dip Rate:</label></td>	<td><input type="text" name="cnam" value="<?php if (isset($_POST['submit'])) { echo $cnam; } else { echo 0; } ?>" ></td></tr>

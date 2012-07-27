@@ -42,12 +42,20 @@ class psql_callrecordmaster extends SQLTable{
 	private $connectString;
 	
 	private $selectStatement;
+	private $selectDateStatement;
+	
 	function psql_callrecordmaster($connectString){
 		$this->connectString = $connectString;
 		$this->selectStatement = <<< HEREDOC
 		SELECT callid, calltype, calldatetime, billedduration, 
        originatingnumber, destinationnumber,  
        lrndipfee, retailrate,cnamfee, retailprice FROM {$this->table_name} WHERE customerid = $1;
+HEREDOC;
+		$this->selectDateStatement = <<< HEREDOC
+	SELECT callid, calltype, calldatetime, billedduration, 
+       originatingnumber, destinationnumber,  
+       lrndipfee, retailrate,cnamfee, retailprice FROM {$this->table_name} 
+	   WHERE customerid = $1 and calldatetime > $2 and calldatetime < $3;
 HEREDOC;
 	}
 	function Connect(){
@@ -57,7 +65,8 @@ HEREDOC;
 		}
 		set_time_limit(0);
 		//pg_prepare($this->db, "insertcallrecordmaster", $this->insertStatement);
-		pg_prepare($this->db, "selectcallrecordmaster", $this->selectStatement);
+		pg_prepare($this->db, "select_callrecordmaster", $this->selectStatement);
+		pg_prepare($this->db, "selectdate_callrecordmaster", $this->selectDateStatement);
 		/*
 		pg_prepare($this->db, "check", $this->checkStatement);
 		pg_prepare($this->db, "delete", $this->deleteStatement);*/
@@ -83,7 +92,17 @@ HEREDOC;
 	}
 	
 	function Select($customerid){
-		$execute_result = pg_execute($this->db, "selectcallrecordmaster", array($customerid));
+		$execute_result = pg_execute($this->db, "select_callrecordmaster", array($customerid));
+		$result = pg_fetch_all($execute_result);
+		if(!$result){
+			return array();
+		}
+		else{
+			return $result;
+		}
+	}
+	function SelectDate($customerid, $startdate,$enddate){
+		$execute_result = pg_execute($this->db, "selectdate_callrecordmaster", array($customerid, $startdate, $enddate));
 		$result = pg_fetch_all($execute_result);
 		if(!$result){
 			return array();

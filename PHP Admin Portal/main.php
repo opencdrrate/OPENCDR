@@ -103,7 +103,7 @@
 
 		<tr>
                 <td>
-                    Customer Rates:
+                    Customer Rates (Wholesale):
                 </td>
 		<td>
  
@@ -111,6 +111,16 @@
 
 	    </td>
             </tr>
+		<tr>
+                <td>
+                    Customer Plans (Retail):
+                </td>
+			<td>
+	 
+				<a href="" class="edit">Edit</a>
+
+			</td>
+        </tr>
             <tr>
             <tr>
 	
