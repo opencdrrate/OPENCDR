@@ -23,7 +23,6 @@ class CallrecordmasterTbr extends AppModel {
 	}
 
 	function loadtype($line, $type){
-		//Not included here: bandwidth, vitelity, thinktel
 		if($type == 'asterisk'){
 			// NOTE: the fields in Master.csv can vary. This should work by default 
 			//on all installations but you may have to edit the next line to match your configuration
@@ -348,6 +347,50 @@ class CallrecordmasterTbr extends AppModel {
 									. '_' . $assocItem['destinationnumber']
 									. '_' . $assocItem['duration'];
 			
+		}
+		else if($type =='dash'){
+			$data = str_getcsv($line, "\t");
+			if(count($data) < 4){
+				return false;
+			}
+			$assocItem = array();
+			$assocItem['originatingnumber'] = $data[1];
+			$assocItem['destinationnumber'] = $data[3];
+			$assocItem['calldatetime'] = $data[6];
+			$assocItem['duration'] = $data[8];
+			$assocItem['sourceip'] = $data[4];
+			$assocItem['cnamdipped'] = 'f';
+			$assocItem['carrierid'] = "DASH";
+			$assocItem['wholesaleprice'] = $data[12];
+			$assocItem['wholesalerate'] = $data[11];
+			$assocItem['callid'] = $assocItem['calldatetime'] 
+									. '_' . $assocItem['originatingnumber']
+									. '_' . $assocItem['destinationnumber']
+									. '_' . $assocItem['duration'];
+			
+		}
+		
+		else if($type =='verizon'){
+			$rawdatetime = substr($line,356,14);
+			$year = substr($rawdatetime, 0, 4);
+			$month = substr($rawdatetime,4,2);
+			$day = substr($rawdatetime,6,2);
+			$hour = substr($rawdatetime,8,2);
+			$min = substr($rawdatetime,10,2);
+			$sec = substr($rawdatetime,12,2);
+			
+			$assocItem = array();
+			$assocItem['originatingnumber'] = substr($line,34,15);
+			$assocItem['destinationnumber'] = substr($line,49,15);
+			$assocItem['sourceip'] = substr($line,64,39);
+			$assocItem['calldatetime'] = $year . '-' . $month . '-' . $day . ' ' . $hour . ':' . $min . ':' . $sec;
+			$assocItem['duration'] = substr($line,398,10);
+			$assocItem['cnamdipped'] = 'f';
+			$assocItem['carrierid'] = "VERIZON";
+			$assocItem['callid'] = $assocItem['calldatetime'] 
+									. '_' . $assocItem['originatingnumber']
+									. '_' . $assocItem['destinationnumber']
+									. '_' . $assocItem['duration'];
 		}
 		if($this->find('first', array('conditions' => array('callid'=>$assocItem['callid'])))){
 				return false;

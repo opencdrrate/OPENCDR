@@ -4,12 +4,23 @@ class User extends AppModel{
 	var $primaryKey = 'id';
 	var $useTable = 'users';
 	
+	public $belongsTo = array(
+		'Customer' => array(
+			'className' => 'Customer',
+			'foreignKey' => 'customerid'
+		)
+	);
+	
 	public $validate = array(
         'username' => array(
             'required' => array(
                 'rule' => array('notEmpty'),
                 'message' => 'A username is required'
-            )
+            ),
+			'unique' => array(
+				'rule' => 'isUnique',
+				'message' => 'A user by this name already exists'
+			)
         ),
         'password' => array(
             'required' => array(
@@ -27,7 +38,7 @@ class User extends AppModel{
     );
 	
 	
-	public function beforeSave() {
+	public function beforeSave($options = array()) {
 		if (isset($this->data[$this->alias]['password'])) {
 			$this->data[$this->alias]['password'] = AuthComponent::password($this->data[$this->alias]['password']);
 		}

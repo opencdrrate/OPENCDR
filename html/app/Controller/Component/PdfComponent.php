@@ -10,8 +10,8 @@ class PdfComponent extends Object {
   function init() {
 
       // Include the class file and create Html2ps instance
-      App::import('vendor', 'Html2PsConfig', array('file' => 'html2ps'.DS.'config.inc.php'));
-      App::import('vendor', 'Html2Ps', array('file' => 'html2ps'.DS.'pipeline.factory.class.php'));
+      App::import('Vendor', 'Html2PsConfig', array('file' => 'html2ps'.DS.'config.inc.php'));
+      App::import('Vendor', 'Html2Ps', array('file' => 'html2ps'.DS.'pipeline.factory.class.php'));
       parse_config_file(APP .'Vendor'. DS .'html2ps'. DS .'html2ps.config');
 
       global $g_config;

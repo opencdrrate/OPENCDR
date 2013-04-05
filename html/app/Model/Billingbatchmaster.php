@@ -23,6 +23,10 @@ class Billingbatchmaster extends AppModel {
 			'fifteenandunder' => array(
 				'rule' => array('maxLength',15),
 				'message' => 'This field must be under 16 characters long.'
+			),
+			'nospace' => array(
+				'rule' => '/^[\S]*$/i',
+				'message' => 'This field doesnt allow whitespace.'
 			)
 		)
 	);

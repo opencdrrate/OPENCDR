@@ -130,6 +130,26 @@ $currencySettings = $siteconfiguration['currencysettings'];
 	</div>
 	
 	<div class="view">
+		<h3><?php echo __('Login Info');?></h3>
+		<dl>	<?php $i = 0; $class = ' class="altrow"';?>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php echo __('User Name');?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+	<?php echo $customer['LoginInfo']['username'];?>
+&nbsp;</dd>
+		</dl>
+		<div class="actions">
+			<ul>
+		<?php if (!empty($customer['LoginInfo']['username'])):?>
+				<li><?php echo $this->Html->link(__('Change Password', true), array('controller' => 'Users', 'action' => 'edit', $customer['Customer']['customerid'])); ?></li>
+		<?php endif; ?>
+		<?php if (empty($customer['LoginInfo']['username'])):?>
+			<li><?php echo $this->Html->link(__('Create User', true), array('controller' => 'Users', 'action' => 'adduser', $customer['Customer']['customerid'])); ?></li>
+		<?php endif; ?>
+			</ul>
+		</div>
+	</div>
+	
+	<div class="view">
 		<h3><?php echo __('SIP Credentials');?>
 				<div id="tooltip1"><a>What's this?
 				<span>

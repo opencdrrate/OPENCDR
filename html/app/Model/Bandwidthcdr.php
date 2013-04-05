@@ -35,7 +35,7 @@ $dest_rcs,$src_ocn,$src_oocn,$src_rcs,$lrn,$ipaddress,$billedtier,$rateddatetime
 	function MoveToCdr(){
 		$numberofdetails = $this->find('count');
 		$moveString = 'SELECT "fnMoveBandwidthCDRToTBR"();';
-		$db =& ConnectionManager::getDataSource($this->useDbConfig);
+		$db = ConnectionManager::getDataSource($this->useDbConfig);
 		$db->rawQuery($moveString);
 		return $numberofdetails . ' items inserted.';
 	}

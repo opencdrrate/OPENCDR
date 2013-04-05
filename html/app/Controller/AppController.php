@@ -43,4 +43,13 @@ class AppController extends Controller {
 			'authError' => 'You aren\'t logged in.  Please log in to continue.'
         )
     );
+	
+	public function beforeFilter(){
+		if ($this->Auth->user('role') != 'admin' and $this->Auth->user() != null) {
+				$this->Session->setFlash(__('This site is for admin access only.'));
+				$this->Auth->logout();
+			return false;
+		}
+		return true;
+	}
 }

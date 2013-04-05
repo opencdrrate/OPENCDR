@@ -1,5 +1,5 @@
 <div class="interstateratemasters form">
-<?php echo $this->Form->create('', array('enctype' => 'multipart/form-data', 'action'=>'import') );?>
+<?php echo $this->Form->create('Tollfreeoriginationrates', array('enctype' => 'multipart/form-data', 'action'=>'import') );?>
 	<fieldset>
 		<legend><?php echo __('Upload toll-free origination rate file'); ?></legend>
 		<?php echo $this->Form->input('customerid', array('type'=>'hidden', 'value' => $customerid)); ?>

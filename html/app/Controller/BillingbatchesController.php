@@ -31,6 +31,10 @@ class BillingbatchesController extends AppController {
 				$this->Session->setFlash(__('ERROR: empty Batch ID', true));
 				$this->redirect(array('action' => 'index'));
 			}
+			if(strstr($this->data['Billingbatchmaster']['billingbatchid'], ' ')){
+				$this->Session->setFlash(__('ERROR: No spaces allowed in Batch ID', true));
+				$this->redirect(array('action' => 'index'));
+			}
 			if($count > 0){
 				$this->Session->setFlash(__('ERROR: Batch ID already exists', true));
 				$this->redirect(array('action' => 'index'));

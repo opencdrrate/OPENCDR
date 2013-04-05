@@ -58,7 +58,7 @@ $currencySettings = $siteconfiguration['currencysettings'];
 <div class="actions">
 <h3><?php echo __('Actions'); ?></h3>
 	<ul>
-		<li><?php echo $this->Html->link('Back', '/');?></li>
+		<li><?php echo $this->Html->link('Back', '/pages/reports');?></li>
 		<li><?php echo $this->Html->link(__('Export Table', true), array('action' => 'tocsv')); ?></li>
 	</ul>
 </div>

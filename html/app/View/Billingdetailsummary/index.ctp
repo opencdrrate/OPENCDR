@@ -29,6 +29,7 @@ $currencySettings = $siteconfiguration['currencysettings'];
 		<td><?php echo $summary[0]['periodenddate'];?></td>
 		<td class="actions">
 			<?php //echo $this->Html->link(__('Download Invoice as PDF', true), array('action'=>'pdf', $summary['Billingbatchdetail']['billingbatchid'], $summary['Billingbatchdetail']['customerid'])); ?>
+			<?php echo $this->Html->link(__('View PDF', true), array('action'=>'pdf', $summary['Billingbatchdetail']['billingbatchid'], $summary['Billingbatchdetail']['customerid'])); ?>
 			<?php echo $this->Html->link(__('Print Invoice to Screen', true), array('action'=>'invoice', $summary['Billingbatchdetail']['billingbatchid'], $summary['Billingbatchdetail']['customerid'])); ?>
 			<?php echo $this->Html->link(__('Export to Quickbooks', true),array('action'=>'quickbooks', $summary['Billingbatchdetail']['billingbatchid'], $summary['Billingbatchdetail']['customerid'])); ?>
 			<?php echo $this->Html->link(__('View Details', true),  array( 'controller' => 'Billingbatchdetails', 'action'=>'index', $summary['Billingbatchdetail']['billingbatchid'], $summary['Billingbatchdetail']['customerid'])); ?>
@@ -45,6 +46,9 @@ $currencySettings = $siteconfiguration['currencysettings'];
 	</li>
 	<li>
 		<?php echo $this->Html->link(__('Export all to Quickbooks', true), array('controller'=>'Billingdetailsummary','action'=>'allquickbooks',$batchid)); ?>
+	</li>
+	<li>
+		<?php echo $this->Html->link(__('Email All Invoices', true), array('controller'=>'Billingdetailsummary','action'=>'SendInvoices',$batchid), null, sprintf(__('This will send an email to all your customers.  Are you sure?', true))); ?>
 	</li>
 </ul>
 </div>

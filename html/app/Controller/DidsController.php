@@ -10,6 +10,15 @@ class DidsController extends AppController {
 		$settings = $this->Siteconfiguration->ListAll();
 		return array('username' => $settings['voip_user'], 'password' => $settings['voip_pwd']);
 	}
+	function import(){
+		if (!empty($this->data)) {
+			$filename = $this->data['Document']['filename']['tmp_name'];
+			$type = '';
+			$messages = $this->Didmaster->import($filename, $type);
+			$this->Session->setFlash(__($messages, true));
+			$this->redirect(array('action' => 'index'));
+		}
+	}
 	function countvoipdids($state = '', $ratecenter = '', $tier = '', $lata = ''){
 		$voip = $this->GetVOIPCredentials();
 		$username = $voip['username'];

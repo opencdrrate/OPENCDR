@@ -23,10 +23,18 @@ class Tollfreeoriginationratemaster extends AppModel {
 	
 	function loadtype($line, $type = null){
 		$data = str_getcsv($line);
-		$item['customerid'] = $type;
-		$item['effectivedate'] = $data[0];
-		$item['billedprefix'] = $data[1];
-		$item['retailrate'] = $data[2];
+		if($type == null){
+			$item['customerid'] = $data[0];
+			$item['billedprefix'] = $data[1];
+			$item['effectivedate'] = $data[2];
+			$item['retailrate'] = $data[3];
+		}
+		else{
+			$item['customerid'] = $type;
+			$item['billedprefix'] = $data[0];
+			$item['effectivedate'] = $data[1];
+			$item['retailrate'] = $data[2];
+		}
 		
 		return $item;
 	}

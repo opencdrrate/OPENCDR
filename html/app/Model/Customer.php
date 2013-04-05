@@ -32,6 +32,10 @@ class Customer extends AppModel {
 		'Unbilledcdr' => array(
 			'className' => 'Unbilledcdr',
 			'foreignKey' => 'customerid'
+		),
+		'LoginInfo' => array(
+			'className' => 'User',
+			'foreignKey' => 'customerid'
 		)
 	); 
 	

@@ -62,6 +62,7 @@ HEREDOC;
 	
 	function RunStoredProcedure($sp){
 		$db = ConnectionManager::getDataSource($this->useDbConfig);
+		print_r($sp);
 		$exeString = <<< HEREDOC
 			SELECT "{$sp}"();
 HEREDOC;

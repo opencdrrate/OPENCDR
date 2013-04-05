@@ -43,7 +43,7 @@ class TollfreeoriginationratesController extends AppController {
 	function import($customerid = null){
 		$this->set('customerid', $customerid);
 		if (!empty($this->data)) {
-			$customerid = $this->data['Tollfreeoriginationratemaster']['customerid'];
+			$customerid = $this->data['Tollfreeoriginationrates']['customerid'];
 			$error = $this->data['Document']['filename']['error'];
 			if($error == 1){
 				$this->Session->setFlash(__('Max file upload size exceeded.', true));

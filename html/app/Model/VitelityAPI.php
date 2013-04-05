@@ -9,7 +9,7 @@ class VitelityAPI extends AppModel{
 	
 	function FetchCDR($login = '', $password = ''){
 		$url = <<< HEREDOC
-http://api.vitelity.net/api.php?login={$login}&pass={$password}&cmd=cdrlist&xml=yes
+http://api.vitelity.net/api.php?login={$login}&pass={$password}&cmd=cdrlist&xml=yes&addsub=yes
 HEREDOC;
 		
 		$input = file_get_contents($url);
@@ -39,6 +39,7 @@ HEREDOC;
 				$dst = $call['dst'];
 				$duration = $call['duration'];
 				$cost = $call['cost'];
+				$ipaddress = $call['subaccount'];
 				
 				$cdr = array();
 				$cdr['CallrecordmasterTbr']['callid'] = 
@@ -51,6 +52,7 @@ HEREDOC;
 				$cdr['CallrecordmasterTbr']['destinationnumber'] = $dst;
 				$cdr['CallrecordmasterTbr']['duration'] = $duration;
 				$cdr['CallrecordmasterTbr']['wholesaleprice'] = $cost;
+				$cdr['CallrecordmasterTbr']['sourceip'] = $ipaddress;
 				$cdr['CallrecordmasterTbr']['carrierid'] = 'VITELITY';
 				$cdrs[] = $cdr;
 			}

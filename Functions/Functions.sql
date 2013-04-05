@@ -1,4 +1,153 @@
-CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCallsDirectionCarrier"()
+CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCalls"()
+  RETURNS integer AS
+$BODY$
+
+
+DECLARE 
+StartDateTime timestamp = TIMEOFDAY();
+EndDateTime timestamp;
+CCDateTime timestamp without time zone; 
+MaxCCDateTime timestamp without time zone; 
+gentime timestamp;
+iConcurrentCalls int;
+iSamplingInterval int = 60; --(seconds). The lower the interval the more accurate it will be but slower as well.
+BEGIN
+
+RAISE NOTICE 'Function started at %', StartDateTime;
+RAISE NOTICE 'Interval (seconds): %', iSamplingInterval;
+
+-- get datetime of the last calc we did.
+SELECT INTO CCDateTime max(CallDateTime) FROM concurrentcalls;
+IF CCDateTime IS NULL THEN 
+	SELECT INTO CCDateTime min(CallDateTime) FROM callrecordmaster;
+END IF;
+RAISE NOTICE 'Min CDR Date: %', CCDateTime;
+
+IF CCDateTime IS NULL THEN 
+	RAISE NOTICE 'No calls in the system.';
+	RETURN 1;
+END IF;
+
+CCDateTime := CCDateTime + iSamplingInterval * interval '1 second';
+RAISE NOTICE 'CDR Date: %', CCDateTime;
+
+
+SELECT INTO MaxCCDateTime max(CallDateTime) FROM callrecordmaster;
+RAISE NOTICE 'Max CDR Date: %', MaxCCDateTime;
+
+RAISE NOTICE 'Calculating concurrent calls...';
+while CCDateTime <= MaxCCDateTime LOOP
+
+	RAISE NOTICE 'CDR Date: %', CCDateTime;
+
+	select into iConcurrentCalls count(*) from callrecordmaster where CCDateTime between CallDateTime and CallDateTime + Duration * interval '1 second';
+
+	insert into concurrentcalls (CallDateTime, ConcurrentCalls)
+	values  (CCDateTime, iConcurrentCalls);
+
+	CCDateTime := CCDateTime + iSamplingInterval * interval '1 second';
+
+END LOOP;
+
+EndDateTime = TIMEOFDAY();
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
+
+-- calculate/display how long the process took
+EndDateTime = TIMEOFDAY();
+
+
+RAISE NOTICE 'Funtion took %', age(EndDateTime,StartDateTime);
+
+INSERT INTO processhistory VALUES('fnCalculateConcurrentCalls', StartDateTime, EndDateTime, age(EndDateTime, StartDateTime), null);
+
+RETURN 00000;
+
+END;
+
+
+
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;﻿CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCallsDirection"()
+  RETURNS integer AS
+$BODY$
+
+
+DECLARE 
+StartDateTime timestamp = TIMEOFDAY();
+EndDateTime timestamp;
+CCDateTime timestamp without time zone; 
+MaxCCDateTime timestamp without time zone; 
+gentime timestamp;
+iConcurrentCallsIN int;
+iConcurrentCallsOUT int;
+iSamplingInterval int = 60; --(seconds). The lower the interval the more accurate it will be but slower as well.
+
+BEGIN
+
+RAISE NOTICE 'Function started at %', StartDateTime;
+RAISE NOTICE 'Interval (seconds): %', iSamplingInterval;
+
+-- get datetime of the last calc we did.
+SELECT INTO CCDateTime max(CallDateTime) FROM concurrentcallsdirection;
+
+IF CCDateTime IS NULL THEN 
+	SELECT INTO CCDateTime min(CallDateTime) FROM callrecordmaster;
+END IF;
+
+RAISE NOTICE 'Min CDR Date: %', CCDateTime;
+
+IF CCDateTime IS NULL THEN 
+	RAISE NOTICE 'No calls in the system.';
+	RETURN 1;
+END IF;
+
+CCDateTime := CCDateTime + iSamplingInterval * interval '1 second';
+RAISE NOTICE 'CDR Date: %', CCDateTime;
+
+
+SELECT INTO MaxCCDateTime max(CallDateTime) FROM callrecordmaster;
+RAISE NOTICE 'Max CDR Date: %', MaxCCDateTime;
+
+RAISE NOTICE 'Calculating concurrent calls...';
+while CCDateTime <= MaxCCDateTime LOOP
+
+	RAISE NOTICE 'CDR Date: %', CCDateTime;
+
+	select into iConcurrentCallsIN count(*) from callrecordmaster where CCDateTime between CallDateTime and CallDateTime + Duration * interval '1 second' and Direction = 'I';
+
+	insert into concurrentcallsdirection (CallDateTime, Direction, ConcurrentCalls)
+	                               values  (CCDateTime, 'I', iConcurrentCallsIN);
+
+
+	select into iConcurrentCallsOUT count(*) from callrecordmaster where CCDateTime between CallDateTime and CallDateTime + Duration * interval '1 second' and Direction = 'O';
+
+	insert into concurrentcallsdirection (CallDateTime, Direction, ConcurrentCalls)
+	                               values  (CCDateTime, 'O', iConcurrentCallsOUT);
+	
+	CCDateTime := CCDateTime + iSamplingInterval * interval '1 second';
+
+END LOOP;
+
+EndDateTime = TIMEOFDAY();
+RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
+
+-- calculate/display how long the process took
+EndDateTime = TIMEOFDAY();
+
+
+RAISE NOTICE 'Funtion took %', age(EndDateTime, StartDateTime);
+
+INSERT INTO processhistory VALUES('fnCalculateConcurrentCallsDirection', StartDateTime, EndDateTime, age(EndDateTime, StartDateTime), null);
+
+RETURN 00000;
+
+END;
+
+
+
+$BODY$
+  LANGUAGE plpgsql;﻿CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCallsDirectionCarrier"()
   RETURNS integer AS
 $BODY$
 
@@ -90,8 +239,7 @@ END;
 
 
 $BODY$
-  LANGUAGE plpgsql;
-CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCallsDirectionRateCenter"()
+  LANGUAGE plpgsql;﻿CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCallsDirectionRateCenter"()
   RETURNS integer AS
 $BODY$
 
@@ -180,157 +328,7 @@ END;
 
 
 $BODY$
-  LANGUAGE plpgsql;
-CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCallsDirection"()
-  RETURNS integer AS
-$BODY$
-
-
-DECLARE 
-StartDateTime timestamp = TIMEOFDAY();
-EndDateTime timestamp;
-CCDateTime timestamp without time zone; 
-MaxCCDateTime timestamp without time zone; 
-gentime timestamp;
-iConcurrentCallsIN int;
-iConcurrentCallsOUT int;
-iSamplingInterval int = 60; --(seconds). The lower the interval the more accurate it will be but slower as well.
-
-BEGIN
-
-RAISE NOTICE 'Function started at %', StartDateTime;
-RAISE NOTICE 'Interval (seconds): %', iSamplingInterval;
-
--- get datetime of the last calc we did.
-SELECT INTO CCDateTime max(CallDateTime) FROM concurrentcallsdirection;
-
-IF CCDateTime IS NULL THEN 
-	SELECT INTO CCDateTime min(CallDateTime) FROM callrecordmaster;
-END IF;
-
-RAISE NOTICE 'Min CDR Date: %', CCDateTime;
-
-IF CCDateTime IS NULL THEN 
-	RAISE NOTICE 'No calls in the system.';
-	RETURN 1;
-END IF;
-
-CCDateTime := CCDateTime + iSamplingInterval * interval '1 second';
-RAISE NOTICE 'CDR Date: %', CCDateTime;
-
-
-SELECT INTO MaxCCDateTime max(CallDateTime) FROM callrecordmaster;
-RAISE NOTICE 'Max CDR Date: %', MaxCCDateTime;
-
-RAISE NOTICE 'Calculating concurrent calls...';
-while CCDateTime <= MaxCCDateTime LOOP
-
-	RAISE NOTICE 'CDR Date: %', CCDateTime;
-
-	select into iConcurrentCallsIN count(*) from callrecordmaster where CCDateTime between CallDateTime and CallDateTime + Duration * interval '1 second' and Direction = 'I';
-
-	insert into concurrentcallsdirection (CallDateTime, Direction, ConcurrentCalls)
-	                               values  (CCDateTime, 'I', iConcurrentCallsIN);
-
-
-	select into iConcurrentCallsOUT count(*) from callrecordmaster where CCDateTime between CallDateTime and CallDateTime + Duration * interval '1 second' and Direction = 'O';
-
-	insert into concurrentcallsdirection (CallDateTime, Direction, ConcurrentCalls)
-	                               values  (CCDateTime, 'O', iConcurrentCallsOUT);
-	
-	CCDateTime := CCDateTime + iSamplingInterval * interval '1 second';
-
-END LOOP;
-
-EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
-
--- calculate/display how long the process took
-EndDateTime = TIMEOFDAY();
-
-
-RAISE NOTICE 'Funtion took %', age(EndDateTime, StartDateTime);
-
-INSERT INTO processhistory VALUES('fnCalculateConcurrentCallsDirection', StartDateTime, EndDateTime, age(EndDateTime, StartDateTime), null);
-
-RETURN 00000;
-
-END;
-
-
-
-$BODY$
-  LANGUAGE plpgsql;CREATE OR REPLACE FUNCTION "fnCalculateConcurrentCalls"()
-  RETURNS integer AS
-$BODY$
-
-
-DECLARE 
-StartDateTime timestamp = TIMEOFDAY();
-EndDateTime timestamp;
-CCDateTime timestamp without time zone; 
-MaxCCDateTime timestamp without time zone; 
-gentime timestamp;
-iConcurrentCalls int;
-iSamplingInterval int = 60; --(seconds). The lower the interval the more accurate it will be but slower as well.
-BEGIN
-
-RAISE NOTICE 'Function started at %', StartDateTime;
-RAISE NOTICE 'Interval (seconds): %', iSamplingInterval;
-
--- get datetime of the last calc we did.
-SELECT INTO CCDateTime max(CallDateTime) FROM concurrentcalls;
-IF CCDateTime IS NULL THEN 
-	SELECT INTO CCDateTime min(CallDateTime) FROM callrecordmaster;
-END IF;
-RAISE NOTICE 'Min CDR Date: %', CCDateTime;
-
-IF CCDateTime IS NULL THEN 
-	RAISE NOTICE 'No calls in the system.';
-	RETURN 1;
-END IF;
-
-CCDateTime := CCDateTime + iSamplingInterval * interval '1 second';
-RAISE NOTICE 'CDR Date: %', CCDateTime;
-
-
-SELECT INTO MaxCCDateTime max(CallDateTime) FROM callrecordmaster;
-RAISE NOTICE 'Max CDR Date: %', MaxCCDateTime;
-
-RAISE NOTICE 'Calculating concurrent calls...';
-while CCDateTime <= MaxCCDateTime LOOP
-
-	RAISE NOTICE 'CDR Date: %', CCDateTime;
-
-	select into iConcurrentCalls count(*) from callrecordmaster where CCDateTime between CallDateTime and CallDateTime + Duration * interval '1 second';
-
-	insert into concurrentcalls (CallDateTime, ConcurrentCalls)
-	values  (CCDateTime, iConcurrentCalls);
-
-	CCDateTime := CCDateTime + iSamplingInterval * interval '1 second';
-
-END LOOP;
-
-EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Completed in: %', age(EndDateTime, gentime);
-
--- calculate/display how long the process took
-EndDateTime = TIMEOFDAY();
-
-
-RAISE NOTICE 'Funtion took %', age(EndDateTime,StartDateTime);
-
-INSERT INTO processhistory VALUES('fnCalculateConcurrentCalls', StartDateTime, EndDateTime, age(EndDateTime, StartDateTime), null);
-
-RETURN 00000;
-
-END;
-
-
-
-$BODY$
-  LANGUAGE plpgsql VOLATILE
-  COST 100;CREATE OR REPLACE FUNCTION "fnCategorizeCDR"() RETURNS int AS $$
+  LANGUAGE plpgsql;CREATE OR REPLACE FUNCTION "fnCategorizeCDR"() RETURNS int AS $$
 
 DECLARE
 StartDateTime timestamp = TIMEOFDAY();
@@ -1284,7 +1282,7 @@ RETURN 00000;
 
 END;
 
-$$ LANGUAGE plpgsql;CREATE OR REPLACE FUNCTION "fnRateIndeterminateJurisdictionCDR"() RETURNS int AS $$
+$$ LANGUAGE plpgsql;﻿CREATE OR REPLACE FUNCTION "fnRateIndeterminateJurisdictionCDR"() RETURNS int AS $$
 
 
 
@@ -2481,7 +2479,7 @@ CREATE TEMPORARY TABLE cdrretailorig (
 RAISE NOTICE 'Gathering new records to rate.'; gentime = TIMEOFDAY();
 
 INSERT INTO cdrretailorig (callid, customerid, calltype, calldatetime, duration, billedduration, direction, sourceip, originatingnumber, destinationnumber, PlanID, billedprefix, retailrate, retailprice, CarrierID, RateCenter, wholesalerate, wholesaleprice, RoutingPrefix, canbefree) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, null, null, CarrierID, RateCenter, wholesalerate, wholesaleprice, RoutingPrefix, 1
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, null, null, CarrierID, RateCenter, wholesalerate, wholesaleprice, RoutingPrefix, true
 FROM callrecordmaster_tbr 
 WHERE cast(CallDateTime as date) = CDRDate AND CallType = 65
 LIMIT PROCESSING_LIMIT;
@@ -2669,7 +2667,7 @@ CREATE TEMPORARY TABLE cdrretailorigtf (
 RAISE NOTICE 'Gathering new records to rate.'; gentime = TIMEOFDAY();
 
 INSERT INTO cdrretailorigtf (callid, customerid, calltype, calldatetime, duration, billedduration, direction, sourceip, originatingnumber, destinationnumber, PlanID, billedprefix, retailrate, retailprice, CarrierID, RateCenter, wholesalerate, wholesaleprice, RoutingPrefix, canbefree) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, null, null, CarrierID, RateCenter, wholesalerate, wholesaleprice, RoutingPrefix, 0
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, null, null, CarrierID, RateCenter, wholesalerate, wholesaleprice, RoutingPrefix, false
 FROM callrecordmaster_tbr 
 WHERE cast(CallDateTime as date) = CDRDate AND CallType = 68
 LIMIT PROCESSING_LIMIT;
@@ -2876,7 +2874,7 @@ CREATE TEMPORARY TABLE cdrretailterm (
 	WholesaleRate numeric(19, 7),
 	WholesalePrice numeric(19, 7),
         RoutingPrefix varchar(10),
-        CanBeFree boolean NOT NULL,
+        CanBeFree boolean NOT NULL
         RowID serial4 UNIQUE NOT NULL
 )ON COMMIT DROP;
 
@@ -3032,7 +3030,7 @@ END;
 
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION "fnRateSimpleTerminationCDR"() RETURNS int AS $$
+﻿CREATE OR REPLACE FUNCTION "fnRateSimpleTerminationCDR"() RETURNS int AS $$
 
 
 DECLARE 
@@ -3438,7 +3436,7 @@ END;
 
 
 $$ LANGUAGE plpgsql;
-CREATE OR REPLACE FUNCTION "fnRateTollFreeOriginationCDR"() RETURNS int AS $$
+﻿CREATE OR REPLACE FUNCTION "fnRateTollFreeOriginationCDR"() RETURNS int AS $$
 
 
 DECLARE 
@@ -3466,33 +3464,33 @@ RAISE NOTICE 'CDR Date: %', CDRDate;
 RAISE NOTICE 'PROCESSING_LIMIT: %', PROCESSING_LIMIT;
 
 -- determine if we need to regenerate effective rate sheet
-IF CDRDate <> (SELECT SettingValue FROM systemsettings_date
-WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') OR (select count(*) FROM systemsettings_date WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') = 0
-THEN
-gentime = TIMEOFDAY();
-RAISE NOTICE 'Generating new effective rates. This may take several minutes. Process Started At %', gentime;
+--IF CDRDate <> (SELECT SettingValue FROM systemsettings_date
+--WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') OR (select count(*) FROM systemsettings_date WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') = 0
+--THEN
+	gentime = TIMEOFDAY();
+	RAISE NOTICE 'Generating new effective rates. This may take several minutes. Process Started At %', gentime;
 -- Generate Effective international Rate Sheet
-TRUNCATE TABLE effectivetollfreeoriginationratemaster;
+	TRUNCATE TABLE effectivetollfreeoriginationratemaster;
 
-INSERT INTO effectivetollfreeoriginationratemaster 
-SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM tollfreeoriginationratemaster AS ratesheet
-INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM tollfreeoriginationratemaster WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
-ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.BilledPrefix = inaffect.BilledPrefix AND ratesheet.effectivedate = inaffect. EffectiveDate;
-GET DIAGNOSTICS rec_count = ROW_COUNT;
+	INSERT INTO effectivetollfreeoriginationratemaster 
+	SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM tollfreeoriginationratemaster AS ratesheet
+	INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM tollfreeoriginationratemaster WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
+	ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.BilledPrefix = inaffect.BilledPrefix AND ratesheet.effectivedate = inaffect. EffectiveDate;
+	GET DIAGNOSTICS rec_count = ROW_COUNT;
 
-DELETE FROM systemsettings_date WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE';
-INSERT INTO systemsettings_date VALUES ('TFORIG_EFFECTIVE_RATE_DATE', CDRDate);
+	DELETE FROM systemsettings_date WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE';
+	INSERT INTO systemsettings_date VALUES ('TFORIG_EFFECTIVE_RATE_DATE', CDRDate);
 
-EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Generation of new rates completed at %', age(EndDateTime,gentime);
+	EndDateTime = TIMEOFDAY();
+	RAISE NOTICE 'Generation of new rates completed at %', age(EndDateTime,gentime);
 
-INSERT INTO processhistory VALUES('Generating TollFree Origination Rate Sheet',gentime,EndDateTime,age(EndDateTime,gentime),rec_count);
-END IF;
+	INSERT INTO processhistory VALUES('Generating TollFree Origination Rate Sheet',gentime,EndDateTime,age(EndDateTime,gentime),rec_count);
+--END IF;
 
 -- create temporary processing table 
 CREATE TEMPORARY TABLE cdrtforig (
         CallID varchar(100)     PRIMARY KEY,
-        CustomerID varchar(15) NOT NULL,
+        CustomerID varchar(15) ,
         CallType smallint,
         CallDateTime timestamp NOT NULL,
         Duration integer NOT NULL,
@@ -3646,7 +3644,7 @@ END;
 
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION "fnRateTollFreeTerminationCDR"() RETURNS int AS $$
+﻿CREATE OR REPLACE FUNCTION "fnRateTollFreeTerminationCDR"() RETURNS int AS $$
 
 
 DECLARE 
@@ -3786,4 +3784,3 @@ END;
 
 
 $$ LANGUAGE plpgsql;
-

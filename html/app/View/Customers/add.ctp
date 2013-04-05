@@ -11,7 +11,6 @@
 							)
 						);
 	?>
-
 	<?php
 		echo $this->Form->input('customername',array('label' => 'Customer Name'));
 		echo $this->Form->input('ContactInformation.primaryemailaddress',array('label' => 'Primary Email Address'));
@@ -40,11 +39,8 @@
 								);
 		echo $this->Form->input('indeterminatejurisdictioncalltype', 
 			array(
-				'label' => 'Indeterminate Jurisdiction Call Type',
-				'options' => array(
-					'5'=>'Intrastate',
-					'10'=>'Interstate'
-				)
+				'type' => 'hidden',
+				'value' => '10'
 			)
 		);
 	?>

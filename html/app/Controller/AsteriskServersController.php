@@ -7,6 +7,11 @@ class AsteriskServersController extends AppController{
 		$this->set('asteriskservers', $this->paginate());
 	}
 	
+    public function beforeFilter() {
+		parent::beforeFilter();
+		$this->Auth->allow('massimport','index'); // Letting users register themselves
+	}
+	
 	function add(){
 		if (!empty($this->data)) {
 			$this->AsteriskServer->create();

@@ -36,13 +36,19 @@
 <body>
 	<div id="container">
 		<div id="header">
-			<h1><?php echo $this->Html->link(__('www.opencdrrate.org', true), 'http://opencdrrate.org', array('target' => '_blank')); ?></h1>
-			<h1 class="right"><?php echo $this->Html->link(__('logout', true),  array('controller' => 'users','action' => 'logout'), array()); ?></h1>
+			<h1 class="left"><?php echo $this->Html->link(__('www.opencdrrate.org', true), 'http://opencdrrate.org', array('target' => '_blank')); ?></h1>
+			<h1 class="right">
+			<?php 
+				$username = $this->Session->read('Auth.User.username');
+				if(!empty($username)){
+					echo 'Logged in as '. $username. ': ';
+					echo $this->Html->link(__('logout', true),  array('controller' => 'users','action' => 'logout'), array()); 
+				}
+			?></h1>
 		</div>
 		<div id="content">
 
 			<?php echo $this->Session->flash(); ?>
-
 			<?php echo $content_for_layout; ?>
 
 		</div>

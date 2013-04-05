@@ -16,7 +16,9 @@
 						'nextone' => 'Nextone',
 						'telastic' => 'Telastic',
 						'netsapiens' => 'NetSapiens',
-						'sansay' => 'Sansay');
+						'sansay' => 'Sansay',
+						'dash' => 'Dash',
+						'verizon' => 'Verizon');
 						
 		echo $this->Form->select('type', $options)?>
 		<label>Choose a file:</label><?php echo $this->Form->file('Document.filename', array('multiple'=>'multiple'));?>

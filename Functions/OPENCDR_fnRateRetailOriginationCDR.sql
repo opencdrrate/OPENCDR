@@ -55,7 +55,7 @@ CREATE TEMPORARY TABLE cdrretailorig (
 RAISE NOTICE 'Gathering new records to rate.'; gentime = TIMEOFDAY();
 
 INSERT INTO cdrretailorig (callid, customerid, calltype, calldatetime, duration, billedduration, direction, sourceip, originatingnumber, destinationnumber, PlanID, billedprefix, retailrate, retailprice, CarrierID, RateCenter, wholesalerate, wholesaleprice, RoutingPrefix, canbefree) 
-SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, null, null, CarrierID, RateCenter, wholesalerate, wholesaleprice, RoutingPrefix, 1
+SELECT CallID, CustomerID, CallType, CallDateTime, Duration, null, Direction, SourceIP, OriginatingNumber, DestinationNumber, null, null, null, null, CarrierID, RateCenter, wholesalerate, wholesaleprice, RoutingPrefix, true
 FROM callrecordmaster_tbr 
 WHERE cast(CallDateTime as date) = CDRDate AND CallType = 65
 LIMIT PROCESSING_LIMIT;

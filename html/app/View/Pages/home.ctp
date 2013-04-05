@@ -48,6 +48,9 @@
 <tr><td>Reports:	</td><td><?php
 		echo $this->Html->link('17','/pages/reports');
 ?></td></tr>
+<tr><td>Users:	</td><td><?php
+		echo $this->Html->link('View',array('controller' => 'Users'));
+?></td></tr>
 <tr><td>Adhoc Query:	</td><td><?php
 		echo $this->Html->link('Query',array('controller' => 'AdHocQuery'));
 ?></td></tr>

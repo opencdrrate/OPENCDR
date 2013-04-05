@@ -54,6 +54,7 @@
 		<li><?php echo $this->Html->link(__('Back', true), '/'); ?></li>
 		<li><?php echo $this->Html->link(__('Add DID', true), array('action' => 'add')); ?></li>
 		<li><?php echo $this->Html->link(__('Add VoIP Innovations DID', true), array('action' => 'addVoip')); ?></li>
+		<li><?php echo $this->Html->link(__('Import From CSV', true), array('action' => 'import')); ?></li>
 		<li><?php echo $this->Html->link(__('Export Table', true), array('action' => 'tocsv')); ?></li>
 	</ul>
 </div>

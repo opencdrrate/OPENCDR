@@ -26,33 +26,33 @@ RAISE NOTICE 'CDR Date: %', CDRDate;
 RAISE NOTICE 'PROCESSING_LIMIT: %', PROCESSING_LIMIT;
 
 -- determine if we need to regenerate effective rate sheet
-IF CDRDate <> (SELECT SettingValue FROM systemsettings_date
-WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') OR (select count(*) FROM systemsettings_date WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') = 0
-THEN
-gentime = TIMEOFDAY();
-RAISE NOTICE 'Generating new effective rates. This may take several minutes. Process Started At %', gentime;
+--IF CDRDate <> (SELECT SettingValue FROM systemsettings_date
+--WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') OR (select count(*) FROM systemsettings_date WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE') = 0
+--THEN
+	gentime = TIMEOFDAY();
+	RAISE NOTICE 'Generating new effective rates. This may take several minutes. Process Started At %', gentime;
 -- Generate Effective international Rate Sheet
-TRUNCATE TABLE effectivetollfreeoriginationratemaster;
+	TRUNCATE TABLE effectivetollfreeoriginationratemaster;
 
-INSERT INTO effectivetollfreeoriginationratemaster 
-SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM tollfreeoriginationratemaster AS ratesheet
-INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM tollfreeoriginationratemaster WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
-ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.BilledPrefix = inaffect.BilledPrefix AND ratesheet.effectivedate = inaffect. EffectiveDate;
-GET DIAGNOSTICS rec_count = ROW_COUNT;
+	INSERT INTO effectivetollfreeoriginationratemaster 
+	SELECT ratesheet.CustomerID, ratesheet.BilledPrefix, RetailRate FROM tollfreeoriginationratemaster AS ratesheet
+	INNER JOIN (SELECT CustomerID, BilledPrefix, MAX(effectivedate) AS effectivedate FROM tollfreeoriginationratemaster WHERE effectivedate <= CDRDate GROUP BY CustomerID, BilledPrefix) AS inaffect
+	ON ratesheet.CustomerID = inaffect.CustomerID AND ratesheet.BilledPrefix = inaffect.BilledPrefix AND ratesheet.effectivedate = inaffect. EffectiveDate;
+	GET DIAGNOSTICS rec_count = ROW_COUNT;
 
-DELETE FROM systemsettings_date WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE';
-INSERT INTO systemsettings_date VALUES ('TFORIG_EFFECTIVE_RATE_DATE', CDRDate);
+	DELETE FROM systemsettings_date WHERE SettingName = 'TFORIG_EFFECTIVE_RATE_DATE';
+	INSERT INTO systemsettings_date VALUES ('TFORIG_EFFECTIVE_RATE_DATE', CDRDate);
 
-EndDateTime = TIMEOFDAY();
-RAISE NOTICE 'Generation of new rates completed at %', age(EndDateTime,gentime);
+	EndDateTime = TIMEOFDAY();
+	RAISE NOTICE 'Generation of new rates completed at %', age(EndDateTime,gentime);
 
-INSERT INTO processhistory VALUES('Generating TollFree Origination Rate Sheet',gentime,EndDateTime,age(EndDateTime,gentime),rec_count);
-END IF;
+	INSERT INTO processhistory VALUES('Generating TollFree Origination Rate Sheet',gentime,EndDateTime,age(EndDateTime,gentime),rec_count);
+--END IF;
 
 -- create temporary processing table 
 CREATE TEMPORARY TABLE cdrtforig (
         CallID varchar(100)     PRIMARY KEY,
-        CustomerID varchar(15) NOT NULL,
+        CustomerID varchar(15) ,
         CallType smallint,
         CallDateTime timestamp NOT NULL,
         Duration integer NOT NULL,

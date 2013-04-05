@@ -1,5 +1,5 @@
 <div class="intrastateratemasters form">
-<?php echo $this->Form->create('', array('enctype' => 'multipart/form-data', 'action'=>'import') );?>
+<?php echo $this->Form->create('Intrastaterates', array('enctype' => 'multipart/form-data', 'action'=>'import') );?>
 	<fieldset>
 		<legend><?php echo __('Upload Intrastate Rate File'); ?></legend>
 		<?php echo $this->Form->input('customerid', array('type'=>'hidden', 'value' => $customerid)); ?>

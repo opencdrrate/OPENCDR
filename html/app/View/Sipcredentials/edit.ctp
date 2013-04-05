@@ -1,4 +1,4 @@
-O<div class="sipcredential form">
+<div class="sipcredential form">
 <?php echo $this->Form->create('', array('action' => 'edit'));?>
 	<fieldset>
 		<legend><?php echo __('Edit SIP Credentials for '. $customerid); ?></legend>

@@ -1,5 +1,5 @@
 <div class="interstateratemasters form">
-<?php echo $this->Form->create('', array('enctype' => 'multipart/form-data', 'action'=>'import') );?>
+<?php echo $this->Form->create('Simpleterminationrates', array('enctype' => 'multipart/form-data', 'action'=>'import') );?>
 	<fieldset>
 		<legend><?php echo __('Upload Simple Termination Rate file'); ?></legend>
 		<?php echo $this->Form->input('customerid', array('type'=>'hidden', 'value' => $customerid)); ?>

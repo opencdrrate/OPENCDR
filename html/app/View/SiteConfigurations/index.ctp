@@ -9,7 +9,8 @@
 			array(
 				'options' => array(
 							'USD' => 'Dollar',
-							'EUR' => 'Euro'
+							'EUR' => 'Euro',
+							'R' => 'Rand'
 							),
 				'type' => 'select',
 				'empty' => '-- Select a Currency --',
@@ -35,7 +36,7 @@
 	<fieldset>
 		<legend><?php echo __('Vitelity Credentials'); ?></legend>
 	<?php echo $this->Form->input('vitelity_username', array('label' => 'Vitelity API Username')); ?>
-	<?php echo $this->Form->input('vitelity_password', array('label' => 'Vitelity API Password')); ?>
+	<?php echo $this->Form->input('vitelity_password', array('label' => 'Vitelity API Password', 'type'=>'password')); ?>
 	</fieldset>
 	<fieldset>
 		<legend><?php echo __('SMTP Settings'); ?></legend>

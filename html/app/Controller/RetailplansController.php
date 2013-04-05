@@ -5,7 +5,7 @@ class RetailplansController extends AppController {
 	
 	function index(){
 		$this->set('siteconfiguration', $this->Siteconfiguration->ListAll());
-		$this->Retailplanmaster->recursive = 1;
+		$this->Retailplanmaster->recursive = 0;
 		$this->set('retailplanmasters', $this->paginate());
 	}
 	

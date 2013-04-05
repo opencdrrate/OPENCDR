@@ -7,6 +7,7 @@
     <?php
         echo $this->Form->input('username');
         echo $this->Form->input('password');
+        echo $this->Form->input('confirm', array('label' => 'Confirm Password', 'type' => 'password'));
     ?>
     </fieldset>
 <?php echo $this->Form->end(__('Submit')); ?>
